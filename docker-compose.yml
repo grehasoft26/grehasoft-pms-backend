@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: grehasoft_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: grehasoft_dev
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: grehasoft_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: grehasoft_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: mysql://root:rootpassword@mysql:3306/grehasoft_dev
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: supersecretjwtkeyforaccess
+      JWT_REFRESH_SECRET: supersecretjwtkeyforrefresh
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_USER: test
+      SMTP_PASS: test
+      SMTP_FROM: noreply@grehasoft.com
+      STORAGE_LOCAL_PATH: ./uploads
+    depends_on:
+      - mysql
+      - redis
+
+volumes:
+  mysql_data:
+  redis_data:

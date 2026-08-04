@@ -1,0 +1,350 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ----------------------------------------------------
+// Enums
+// ----------------------------------------------------
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  LOCKED
+  SUSPENDED
+  ARCHIVED
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+// ----------------------------------------------------
+// Global Settings
+// ----------------------------------------------------
+
+model SystemSetting {
+  id    String @id @default(uuid()) @db.Char(36)
+  key   String @unique @db.VarChar(100)
+  value String @db.Text
+}
+
+// ----------------------------------------------------
+// Identity & Security (IAM) Models
+// ----------------------------------------------------
+
+model User {
+  id             String     @id @default(uuid()) @db.Char(36)
+  email          String     @unique @db.VarChar(255)
+  firstName      String     @db.VarChar(100)
+  lastName       String     @db.VarChar(100)
+  password       String     @db.VarChar(255)
+  avatarUrl      String?    @db.VarChar(255)
+  status         UserStatus @default(PENDING)
+  
+  // Relations
+  roleId         String?    @db.Char(36)
+  role           Role?      @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  
+  departmentId   String?    @db.Char(36)
+  department     Department? @relation("DepartmentMembers", fields: [departmentId], references: [id], onDelete: Restrict)
+  
+  designationId  String?    @db.Char(36)
+  designation    Designation? @relation(fields: [designationId], references: [id], onDelete: Restrict)
+  
+  preferences    UserPreference?
+  teams          UserTeam[]
+  
+  // Head/Lead Back-relations
+  managedDepartments Department[] @relation("DepartmentManager")
+  deputyDepartments  Department[] @relation("DepartmentDeputy")
+  ledTeams           Team[]       @relation("TeamLead")
+
+  // Authentication & Security Additions
+  failedLoginAttempts   Int                  @default(0)
+  lockedUntil           DateTime?            @db.Timestamp
+  lastLoginAt           DateTime?            @db.Timestamp
+  lastPasswordChangedAt DateTime?            @db.Timestamp
+  emailVerifiedAt       DateTime?            @db.Timestamp
+  emailVerificationToken String?             @db.VarChar(255)
+  mfaEnabled            Boolean              @default(false)
+  mfaSecret             String?              @db.VarChar(255)
+  backupCodes           Json?
+
+  sessions              UserSession[]
+  passwordHistories     PasswordHistory[]
+  passwordResetTokens   PasswordResetToken[]
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@index([status])
+  @@map("users")
+}
+
+model UserPreference {
+  id                  String    @id @default(uuid()) @db.Char(36)
+  userId              String    @unique @db.Char(36)
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme               String    @default("light") @db.VarChar(20)
+  language            String    @default("en") @db.VarChar(10)
+  timezone            String    @default("Asia/Kolkata") @db.VarChar(50)
+  notificationsEnabled Boolean   @default(true)
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@map("user_preferences")
+}
+
+model Role {
+  id             String    @id @default(uuid()) @db.Char(36)
+  name           String    @unique @db.VarChar(100)
+  description    String?   @db.VarChar(255)
+  isSystem       Boolean   @default(false)
+  
+  // Hierarchy self-relation
+  parentId       String?   @db.Char(36)
+  parent         Role?     @relation("RoleHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children       Role[]    @relation("RoleHierarchy")
+  
+  // Relations
+  users          User[]
+  permissions    Permission[] @relation("RolePermissions")
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@map("roles")
+}
+
+model PermissionGroup {
+  id             String               @id @default(uuid()) @db.Char(36)
+  name           String               @unique @db.VarChar(100)
+  description    String?              @db.VarChar(255)
+  categories     PermissionCategory[]
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@map("permission_groups")
+}
+
+model PermissionCategory {
+  id             String          @id @default(uuid()) @db.Char(36)
+  name           String          @unique @db.VarChar(100)
+  description    String?         @db.VarChar(255)
+  
+  // Relations
+  groupId        String          @db.Char(36)
+  group          PermissionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  permissions    Permission[]
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@map("permission_categories")
+}
+
+model Permission {
+  id             String             @id @default(uuid()) @db.Char(36)
+  name           String             @unique @db.VarChar(100)
+  code           String             @unique @db.VarChar(100) // e.g. "users.create"
+  
+  // Relations
+  categoryId     String             @db.Char(36)
+  category       PermissionCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  roles          Role[]             @relation("RolePermissions")
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@map("permissions")
+}
+
+model Department {
+  id              String       @id @default(uuid()) @db.Char(36)
+  name            String       @unique @db.VarChar(100)
+  code            String       @unique @db.VarChar(50)
+  displayOrder    Int          @default(0)
+  isRoot          Boolean      @default(false)
+  status          Status       @default(ACTIVE)
+
+  // Hierarchy self-relation
+  parentId        String?      @db.Char(36)
+  parent          Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children        Department[] @relation("DepartmentHierarchy")
+
+  // Relations
+  managerId       String?      @db.Char(36)
+  manager         User?        @relation("DepartmentManager", fields: [managerId], references: [id], onDelete: Restrict)
+  deputyManagerId String?      @db.Char(36)
+  deputyManager   User?        @relation("DepartmentDeputy", fields: [deputyManagerId], references: [id], onDelete: Restrict)
+  
+  users           User[]       @relation("DepartmentMembers")
+  designations    Designation[]
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@map("departments")
+}
+
+model Team {
+  id             String     @id @default(uuid()) @db.Char(36)
+  name           String     @unique @db.VarChar(100)
+  code           String     @unique @db.VarChar(50)
+  description    String?    @db.VarChar(255)
+  status         Status     @default(ACTIVE)
+
+  // Relations
+  leadId         String?    @db.Char(36)
+  lead           User?      @relation("TeamLead", fields: [leadId], references: [id], onDelete: Restrict)
+  members        UserTeam[]
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@map("teams")
+}
+
+model UserTeam {
+  userId     String   @db.Char(36)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId     String   @db.Char(36)
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  roleInTeam String   @default("member") @db.VarChar(50)
+
+  // Audit Fields
+  createdAt  DateTime @default(now()) @db.Timestamp
+  updatedAt  DateTime @updatedAt @db.Timestamp
+
+  @@id([userId, teamId])
+  @@map("user_teams")
+}
+
+model Designation {
+  id             String      @id @default(uuid()) @db.Char(36)
+  name           String      @unique @db.VarChar(100)
+  code           String      @unique @db.VarChar(50)
+  description    String?     @db.VarChar(255)
+  sortOrder      Int         @default(0)
+  status         Status      @default(ACTIVE)
+  
+  // Relations
+  departmentId   String?     @db.Char(36)
+  department     Department? @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  users          User[]
+
+  // Audit Fields
+  createdAt      DateTime   @default(now()) @db.Timestamp
+  updatedAt      DateTime   @updatedAt @db.Timestamp
+  deletedAt      DateTime?  @db.Timestamp
+  createdBy      String?    @db.Char(36)
+  updatedBy      String?    @db.Char(36)
+  deletedBy      String?    @db.Char(36)
+  version        Int        @default(0)
+
+  @@map("designations")
+}
+
+model UserSession {
+  id               String    @id @default(uuid()) @db.Char(36)
+  userId           String    @db.Char(36)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @db.VarChar(255)
+  deviceName       String?   @db.VarChar(100)
+  deviceType       String?   @db.VarChar(50)
+  browser          String?   @db.VarChar(100)
+  operatingSystem  String?   @db.VarChar(100)
+  ipAddress        String?   @db.VarChar(50)
+  userAgent        String?   @db.VarChar(255)
+  lastActivityAt   DateTime  @default(now()) @db.Timestamp
+  revokedAt        DateTime? @db.Timestamp
+  expiresAt        DateTime  @db.Timestamp
+  createdAt        DateTime  @default(now()) @db.Timestamp
+  updatedAt        DateTime  @updatedAt @db.Timestamp
+
+  @@index([userId])
+  @@map("user_sessions")
+}
+
+model PasswordHistory {
+  id           String   @id @default(uuid()) @db.Char(36)
+  userId       String   @db.Char(36)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  passwordHash String   @db.VarChar(255)
+  createdAt    DateTime @default(now()) @db.Timestamp
+
+  @@index([userId])
+  @@map("password_histories")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Char(36)
+  userId    String    @db.Char(36)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique @db.VarChar(255)
+  expiresAt DateTime  @db.Timestamp
+  usedAt    DateTime? @db.Timestamp
+  createdAt DateTime  @default(now()) @db.Timestamp
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
