@@ -27,7 +27,8 @@ export class EnvironmentVariables {
   DATABASE_URL: string;
 
   @IsString()
-  REDIS_HOST: string;
+  @IsOptional()
+  REDIS_HOST?: string;
 
   @IsNumber()
   @IsOptional()
@@ -40,19 +41,24 @@ export class EnvironmentVariables {
   JWT_REFRESH_SECRET: string;
 
   @IsString()
-  SMTP_HOST: string;
+  @IsOptional()
+  SMTP_HOST?: string;
 
   @IsNumber()
-  SMTP_PORT: number;
+  @IsOptional()
+  SMTP_PORT?: number;
 
   @IsString()
-  SMTP_USER: string;
+  @IsOptional()
+  SMTP_USER?: string;
 
   @IsString()
-  SMTP_PASS: string;
+  @IsOptional()
+  SMTP_PASS?: string;
 
   @IsString()
-  SMTP_FROM: string;
+  @IsOptional()
+  SMTP_FROM?: string;
 
   @IsString()
   @IsOptional()
@@ -89,11 +95,11 @@ export function validate(config: Record<string, any>) {
 
     throw new Error(
       `\n==================================================\n` +
-        `❌ CONFIGURATION ERROR: Invalid environment variables\n` +
-        `==================================================\n` +
-        `${errorDetails}\n` +
-        `==================================================\n` +
-        `⚠️  Application failed to start. Fix .env or system environment variables.\n`,
+      `❌ CONFIGURATION ERROR: Invalid environment variables\n` +
+      `==================================================\n` +
+      `${errorDetails}\n` +
+      `==================================================\n` +
+      `⚠️  Application failed to start. Fix .env or system environment variables.\n`,
     );
   }
 

@@ -6,21 +6,23 @@ export default registerAs('app', () => ({
   database: {
     url: process.env.DATABASE_URL,
   },
-  redis: {
-    host: process.env.REDIS_HOST,
-    port: parseInt(process.env.REDIS_PORT || '6379', 10),
-  },
+ redis: {
+  enabled: false,
+  host: process.env.REDIS_HOST,
+  port: parseInt(process.env.REDIS_PORT || '6379', 10),
+},
   jwt: {
     secret: process.env.JWT_SECRET,
     refreshSecret: process.env.JWT_REFRESH_SECRET,
   },
-  smtp: {
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-    from: process.env.SMTP_FROM,
-  },
+ smtp: {
+  enabled: false,
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || '587', 10),
+  user: process.env.SMTP_USER,
+  pass: process.env.SMTP_PASS,
+  from: process.env.SMTP_FROM,
+},
   storage: {
     localPath: process.env.STORAGE_LOCAL_PATH || './uploads',
   },
