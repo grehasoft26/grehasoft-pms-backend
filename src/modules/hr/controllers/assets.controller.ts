@@ -1,6 +1,20 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AssetsService } from '../services/assets.service';
 import { CreateAssetAssignmentDto, ReturnAssetDto } from '../dto/assets.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -17,7 +31,8 @@ export class AssetsController {
   constructor(private readonly service: AssetsService) {}
 
   private getContext(req: Request): RequestContext {
-    const user = (req as any).user;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const user = (req as any).user as { id?: string } | undefined;
     return {
       userId: user?.id || (req.headers['x-user-id'] as string) || 'system',
       ip: req.ip || '',
@@ -28,12 +43,15 @@ export class AssetsController {
 
   @Post('assignments/:profileId')
   @Permissions('assets.manage')
-  @ApiOperation({ summary: 'Assign asset to employee (Laptop, Monitor, SIM, Access Card, License)' })
+  @ApiOperation({
+    summary:
+      'Assign asset to employee (Laptop, Monitor, SIM, Access Card, License)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async assign(
     @Param('profileId') profileId: string,
     @Body() dto: CreateAssetAssignmentDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.assignAsset(profileId, dto, context);
@@ -42,16 +60,30 @@ export class AssetsController {
 
   @Patch('assignments/:id/status')
   @Permissions('assets.manage')
-  @ApiOperation({ summary: 'Update asset status (Returned, Lost, Damaged, Repair, Disposed)' })
+  @ApiOperation({
+    summary: 'Update asset status (Returned, Lost, Damaged, Repair, Disposed)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async updateStatus(
     @Param('id') id: string,
     @Body() dto: ReturnAssetDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.updateAssetStatus(id, dto, context);
-    return { message: `Asset assignment status updated to ${dto.status}`, data };
+    return {
+      message: `Asset assignment status updated to ${dto.status}`,
+      data,
+    };
+  }
+
+  @Get('assignments/all')
+  @Permissions('hr.read')
+  @ApiOperation({ summary: 'Get list of all company asset assignments' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getAllAssignments() {
+    const data = await this.service.getAllAssetAssignments();
+    return { message: 'All asset assignments list retrieved', data };
   }
 
   @Get('assignments/:profileId')

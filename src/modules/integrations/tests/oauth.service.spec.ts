@@ -7,9 +7,23 @@ describe('OAuthService', () => {
 
   beforeEach(() => {
     mockRepository = {
-      createOAuthApp: jest.fn().mockImplementation((tenantId, data) => Promise.resolve({ id: 'app-123', name: data.name, clientId: data.clientId, clientSecret: data.clientSecret, redirectUris: data.redirectUris })),
+      createOAuthApp: jest.fn().mockImplementation((tenantId, data) =>
+        Promise.resolve({
+          id: 'app-123',
+          name: data.name,
+          clientId: data.clientId,
+          clientSecret: data.clientSecret,
+          redirectUris: data.redirectUris,
+        }),
+      ),
       findOAuthAppByClientId: jest.fn(),
-      createOAuthToken: jest.fn().mockImplementation((tenantId, data) => Promise.resolve({ accessToken: data.accessToken, refreshToken: data.refreshToken, expiresAt: data.expiresAt })),
+      createOAuthToken: jest.fn().mockImplementation((tenantId, data) =>
+        Promise.resolve({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          expiresAt: data.expiresAt,
+        }),
+      ),
       findOAuthTokenByRefresh: jest.fn(),
       logAudit: jest.fn().mockResolvedValue(null),
       prisma: {
@@ -22,7 +36,10 @@ describe('OAuthService', () => {
   });
 
   it('should register oauth application', async () => {
-    const dto: CreateOAuthAppDto = { name: 'Test App', redirectUris: 'https://redirect.com/callback' };
+    const dto: CreateOAuthAppDto = {
+      name: 'Test App',
+      redirectUris: 'https://redirect.com/callback',
+    };
     const result = await service.createApplication('tenant-1', 'user-1', dto);
 
     expect(result.clientId).toBeDefined();
@@ -44,7 +61,7 @@ describe('OAuthService', () => {
       'client-id-123',
       'secret-123',
       'auth-code-123',
-      'https://redirect.com/callback'
+      'https://redirect.com/callback',
     );
 
     expect(result.accessToken).toBeDefined();

@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { NotificationChannel, NotificationStatus, ApprovalDecision } from '@prisma/client';
+import {
+  NotificationChannel,
+  NotificationStatus,
+  ApprovalDecision,
+} from '@prisma/client';
 
 @Injectable()
 export class NotificationsRepository {
@@ -43,7 +47,11 @@ export class NotificationsRepository {
     });
   }
 
-  async findNotifications(tenantId: string, userId: string, unreadOnly = false) {
+  async findNotifications(
+    tenantId: string,
+    userId: string,
+    unreadOnly = false,
+  ) {
     const where: any = this.tenantWhere(tenantId, { userId });
     if (unreadOnly) {
       where.status = 'PENDING';
@@ -93,10 +101,7 @@ export class NotificationsRepository {
   async findAnnouncements(tenantId: string, departmentId?: string) {
     const where: any = this.tenantWhere(tenantId);
     if (departmentId) {
-      where.OR = [
-        { departmentId: null },
-        { departmentId },
-      ];
+      where.OR = [{ departmentId: null }, { departmentId }];
     }
     return this.prisma.announcement.findMany({
       where,
@@ -112,14 +117,44 @@ export class NotificationsRepository {
     });
   }
 
-  async findReminders(tenantId: string, isCompleted?: boolean) {
+  async findReminders(
+    tenantId: string,
+    isCompleted?: boolean,
+    userId?: string,
+  ) {
     const where: any = this.tenantWhere(tenantId);
     if (isCompleted !== undefined) {
       where.isCompleted = isCompleted;
     }
+    if (userId) {
+      where.createdBy = userId;
+    }
     return this.prisma.reminder.findMany({
       where,
       orderBy: { targetDate: 'asc' },
+    });
+  }
+
+  async findReminderById(tenantId: string, id: string) {
+    return this.prisma.reminder.findFirst({
+      where: this.tenantWhere(tenantId, { id }),
+    });
+  }
+
+  async updateReminder(tenantId: string, id: string, data: any) {
+    return this.prisma.reminder.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async deleteReminder(tenantId: string, id: string, deletedBy?: string) {
+    return this.prisma.reminder.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        deletedBy,
+      },
     });
   }
 
@@ -153,7 +188,10 @@ export class NotificationsRepository {
   async findWorkflowExecutionById(tenantId: string, id: string) {
     return this.prisma.workflowExecution.findFirst({
       where: this.tenantWhere(tenantId, { id }),
-      include: { workflowDefinition: { include: { steps: true } }, approvalRequests: true },
+      include: {
+        workflowDefinition: { include: { steps: true } },
+        approvalRequests: true,
+      },
     });
   }
 
@@ -183,7 +221,12 @@ export class NotificationsRepository {
     });
   }
 
-  async updateApprovalDecision(tenantId: string, id: string, decision: ApprovalDecision, comments?: string) {
+  async updateApprovalDecision(
+    tenantId: string,
+    id: string,
+    decision: ApprovalDecision,
+    comments?: string,
+  ) {
     const updated = await this.prisma.approvalRequest.update({
       where: { id },
       data: {

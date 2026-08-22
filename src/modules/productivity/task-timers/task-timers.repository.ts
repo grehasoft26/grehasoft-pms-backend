@@ -10,7 +10,9 @@ export class TaskTimersRepository {
     return this.prisma.taskTimer.create({
       data,
       include: {
-        task: { select: { id: true, code: true, title: true, projectId: true } },
+        task: {
+          select: { id: true, code: true, title: true, projectId: true },
+        },
       },
     });
   }
@@ -19,7 +21,9 @@ export class TaskTimersRepository {
     return this.prisma.taskTimer.findFirst({
       where: { userId, isRunning: true },
       include: {
-        task: { select: { id: true, code: true, title: true, projectId: true } },
+        task: {
+          select: { id: true, code: true, title: true, projectId: true },
+        },
       },
     });
   }
@@ -42,7 +46,9 @@ export class TaskTimersRepository {
         lastHeartbeat: { lt: fiveMinutesAgo },
       },
       include: {
-        task: { select: { id: true, code: true, title: true, projectId: true } },
+        task: {
+          select: { id: true, code: true, title: true, projectId: true },
+        },
       },
     });
   }
@@ -52,7 +58,9 @@ export class TaskTimersRepository {
       where: { id },
       data,
       include: {
-        task: { select: { id: true, code: true, title: true, projectId: true } },
+        task: {
+          select: { id: true, code: true, title: true, projectId: true },
+        },
       },
     });
   }

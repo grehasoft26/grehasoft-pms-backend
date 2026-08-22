@@ -1,6 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { TaskInteractionsRepository } from './task-interactions.repository';
-import { CreateTaskChecklistDto, CreateTaskChecklistItemDto, UpdateTaskChecklistItemDto, CreateTaskCommentDto, CreateTaskAttachmentDto, AddTaskDependencyDto, AddWatcherDto } from './dto/task-interactions.dto';
+import {
+  CreateTaskChecklistDto,
+  CreateTaskChecklistItemDto,
+  UpdateTaskChecklistItemDto,
+  CreateTaskCommentDto,
+  CreateTaskAttachmentDto,
+  AddTaskDependencyDto,
+  AddWatcherDto,
+} from './dto/task-interactions.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -10,7 +22,7 @@ export class TaskInteractionsService {
   constructor(
     private readonly repository: TaskInteractionsRepository,
     private readonly logger: LoggerService,
-    private readonly eventEmitter: EventEmitter2
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   // 1. Checklist
@@ -31,7 +43,9 @@ export class TaskInteractionsService {
   }
 
   async deleteChecklistItem(id: string) {
-    const item = await this.repository.prisma.taskChecklistItem.findUnique({ where: { id } });
+    const item = await this.repository.prisma.taskChecklistItem.findUnique({
+      where: { id },
+    });
     if (!item) throw new NotFoundException('Checklist item not found');
     await this.repository.deleteChecklistItem(id);
     await this.recalculateTaskProgress(item.checklistId);
@@ -42,7 +56,9 @@ export class TaskInteractionsService {
     if (!checklist) return;
 
     // Get all checklists for the task
-    const checklists = await this.repository.findChecklistsByTaskId(checklist.taskId);
+    const checklists = await this.repository.findChecklistsByTaskId(
+      checklist.taskId,
+    );
     let totalItems = 0;
     let completedItems = 0;
 
@@ -53,7 +69,8 @@ export class TaskInteractionsService {
       }
     }
 
-    const progressPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+    const progressPercentage =
+      totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
     // Update parent task
     await this.repository.prisma.task.update({
@@ -98,7 +115,10 @@ export class TaskInteractionsService {
   }
 
   // 3. Attachments
-  async createAttachment(dto: CreateTaskAttachmentDto, context: RequestContext) {
+  async createAttachment(
+    dto: CreateTaskAttachmentDto,
+    context: RequestContext,
+  ) {
     const attachment = await this.repository.createAttachment({
       ...dto,
       uploadedById: context.userId,
@@ -116,7 +136,7 @@ export class TaskInteractionsService {
     return attachment;
   }
 
-  async deleteAttachment(id: string, context: RequestContext) {
+  async deleteAttachment(id: string, _context: RequestContext) {
     const before = await this.repository.findAttachmentById(id);
     if (!before) throw new NotFoundException('Attachment not found');
     await this.repository.deleteAttachment(id);
@@ -125,7 +145,7 @@ export class TaskInteractionsService {
   // 4. Watchers
   async addWatcher(dto: AddWatcherDto, context: RequestContext) {
     const watcher = await this.repository.addWatcher(dto.taskId, dto.userId);
-    
+
     await this.repository.prisma.taskTimeline.create({
       data: {
         taskId: dto.taskId,
@@ -138,7 +158,11 @@ export class TaskInteractionsService {
     return watcher;
   }
 
-  async removeWatcher(taskId: string, userId: string, context: RequestContext) {
+  async removeWatcher(
+    taskId: string,
+    userId: string,
+    _context: RequestContext,
+  ) {
     await this.repository.removeWatcher(taskId, userId);
   }
 
@@ -149,12 +173,21 @@ export class TaskInteractionsService {
     }
 
     // Check circular dependency
-    const hasCycle = await this.checkCircularDependency(dto.taskId, dto.dependsOnTaskId);
+    const hasCycle = await this.checkCircularDependency(
+      dto.taskId,
+      dto.dependsOnTaskId,
+    );
     if (hasCycle) {
-      throw new BadRequestException(`Circular dependency detected: Task cannot depend on task ID ${dto.dependsOnTaskId}`);
+      throw new BadRequestException(
+        `Circular dependency detected: Task cannot depend on task ID ${dto.dependsOnTaskId}`,
+      );
     }
 
-    const dep = await this.repository.addDependency(dto.taskId, dto.dependsOnTaskId, dto.type);
+    const dep = await this.repository.addDependency(
+      dto.taskId,
+      dto.dependsOnTaskId,
+      dto.type,
+    );
 
     await this.repository.prisma.taskTimeline.create({
       data: {
@@ -168,9 +201,36 @@ export class TaskInteractionsService {
     return dep;
   }
 
-  private async checkCircularDependency(taskId: string, dependsOnTaskId: string): Promise<boolean> {
+  async removeDependency(
+    taskId: string,
+    dependsOnTaskId: string,
+    context: RequestContext,
+  ) {
+    await this.repository.prisma.taskDependency.delete({
+      where: {
+        taskId_dependsOnTaskId: {
+          taskId,
+          dependsOnTaskId,
+        },
+      },
+    });
+
+    await this.repository.prisma.taskTimeline.create({
+      data: {
+        taskId,
+        event: 'DEPENDENCY_REMOVED',
+        description: `Task scheduling dependency removed.`,
+        createdBy: context.userId,
+      },
+    });
+  }
+
+  private async checkCircularDependency(
+    taskId: string,
+    dependsOnTaskId: string,
+  ): Promise<boolean> {
     const visited = new Set<string>();
-    
+
     const check = async (currentId: string): Promise<boolean> => {
       if (currentId === taskId) return true;
       if (visited.has(currentId)) return false;

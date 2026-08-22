@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RedirectsService } from '../redirects/redirects.service';
 import { CreateRedirectDto } from '../dto/redirects.dto';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
@@ -16,7 +29,10 @@ export class RedirectsController {
   constructor(private readonly service: RedirectsService) {}
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post()
@@ -26,7 +42,7 @@ export class RedirectsController {
   async create(
     @Param('seoProjectId') seoProjectId: string,
     @Body() dto: CreateRedirectDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const tenantId = this.getTenantId(req);
     const data = await this.service.addRedirect(tenantId, seoProjectId, dto);

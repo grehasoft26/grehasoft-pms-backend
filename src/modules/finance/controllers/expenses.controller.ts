@@ -1,6 +1,21 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ExpensesService } from '../services/expenses.service';
 import { CreateExpenseDto, UpdateExpenseStatusDto } from '../dto/expenses.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -18,7 +33,7 @@ export class ExpensesController {
   constructor(private readonly service: ExpensesService) {}
 
   private getContext(req: Request): RequestContext {
-    const user = (req as any).user;
+    const user = (req as Request & { user?: { id: string } }).user;
     return {
       userId: user?.id || (req.headers['x-user-id'] as string) || 'system',
       ip: req.ip || '',
@@ -39,12 +54,15 @@ export class ExpensesController {
 
   @Patch(':id/status')
   @Permissions('expenses.approve')
-  @ApiOperation({ summary: 'Update expense status (Draft → Submitted → Manager Approved → Finance Approved → Paid / Rejected)' })
+  @ApiOperation({
+    summary:
+      'Update expense status (Draft → Submitted → Manager Approved → Finance Approved → Paid / Rejected)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateExpenseStatusDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.updateStatus(id, dto.status, context);
@@ -58,10 +76,19 @@ export class ExpensesController {
   async getMany(
     @Query('projectId') projectId?: string,
     @Query('userId') userId?: string,
-    @Query('status') status?: ExpenseStatus
+    @Query('status') status?: ExpenseStatus,
   ) {
     const data = await this.service.getExpenses({ projectId, userId, status });
     return { message: 'Expenses list retrieved successfully', data };
+  }
+
+  @Get('categories')
+  @Permissions('finance.read')
+  @ApiOperation({ summary: 'Get list of expense categories' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getCategories() {
+    const data = await this.service.getExpenseCategories();
+    return { message: 'Expense categories retrieved successfully', data };
   }
 
   @Get(':id')

@@ -22,10 +22,7 @@ import { TaskDashboardController } from './task-dashboard/task-dashboard.control
 import { TaskDashboardService } from './task-dashboard/task-dashboard.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    ProjectsModule,
-  ],
+  imports: [AuthModule, ProjectsModule],
   controllers: [
     TasksController,
     SprintsController,

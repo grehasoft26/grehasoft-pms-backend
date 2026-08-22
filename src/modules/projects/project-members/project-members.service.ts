@@ -8,7 +8,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ProjectMembersService {
   constructor(
     private readonly repository: ProjectMembersRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async assign(dto: AssignProjectMemberDto, context: RequestContext) {
@@ -29,12 +29,18 @@ export class ProjectMembersService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Assign Project Member', 'projectMember', member, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: member,
-    });
+    this.logger.audit(
+      context.userId,
+      'Assign Project Member',
+      'projectMember',
+      member,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: member,
+      },
+    );
 
     return member;
   }
@@ -62,11 +68,17 @@ export class ProjectMembersService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Remove Project Member', 'projectMember', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before: member,
-    });
+    this.logger.audit(
+      context.userId,
+      'Remove Project Member',
+      'projectMember',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before: member,
+      },
+    );
   }
 }

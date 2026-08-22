@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import { ProjectType } from '@prisma/client';
 
 export class CreateProjectTemplateDto {
@@ -24,13 +31,19 @@ export class CreateProjectTemplateDto {
   @Min(0)
   estimatedHours: number;
 
-  @ApiProperty({ description: 'Estimated calendar timeline in days', default: 30 })
+  @ApiProperty({
+    description: 'Estimated calendar timeline in days',
+    default: 30,
+  })
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
   estimatedTimelineDays: number;
 
-  @ApiPropertyOptional({ description: 'Milestones, phases, and roles default configuration structure' })
+  @ApiPropertyOptional({
+    description:
+      'Milestones, phases, and roles default configuration structure',
+  })
   @IsOptional()
   config?: any;
 }

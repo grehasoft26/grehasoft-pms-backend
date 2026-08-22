@@ -1,6 +1,14 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { LeadStatusesRepository } from './lead-statuses.repository';
-import { CreateLeadStatusDto, UpdateLeadStatusDto } from './dto/lead-statuses.dto';
+import {
+  CreateLeadStatusDto,
+  UpdateLeadStatusDto,
+} from './dto/lead-statuses.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,13 +16,15 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class LeadStatusesService {
   constructor(
     private readonly repository: LeadStatusesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateLeadStatusDto, context: RequestContext) {
     const existing = await this.repository.findByCode(dto.code);
     if (existing) {
-      throw new ConflictException(`Lead status with code ${dto.code} already exists`);
+      throw new ConflictException(
+        `Lead status with code ${dto.code} already exists`,
+      );
     }
 
     const status = await this.repository.create({
@@ -22,12 +32,18 @@ export class LeadStatusesService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Create Lead Status', 'leadStatus', status, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: status,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Lead Status',
+      'leadStatus',
+      status,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: status,
+      },
+    );
 
     return status;
   }
@@ -53,7 +69,9 @@ export class LeadStatusesService {
     if (dto.code && dto.code !== before.code) {
       const existing = await this.repository.findByCode(dto.code);
       if (existing) {
-        throw new ConflictException(`Lead status with code ${dto.code} already exists`);
+        throw new ConflictException(
+          `Lead status with code ${dto.code} already exists`,
+        );
       }
     }
 
@@ -62,13 +80,19 @@ export class LeadStatusesService {
       updatedBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Update Lead Status', 'leadStatus', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Lead Status',
+      'leadStatus',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -81,11 +105,17 @@ export class LeadStatusesService {
 
     await this.repository.delete(id, context.userId);
 
-    this.logger.audit(context.userId, 'Delete Lead Status', 'leadStatus', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Lead Status',
+      'leadStatus',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

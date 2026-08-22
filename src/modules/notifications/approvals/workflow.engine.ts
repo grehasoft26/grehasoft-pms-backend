@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { NotificationsRepository } from '../repositories/notifications.repository';
 import { SubmitApprovalDecisionDto } from '../dto/workflow.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -7,13 +11,22 @@ import { RequestContext } from '../../../common/interfaces/request-context.inter
 export class WorkflowEngine {
   constructor(private readonly repository: NotificationsRepository) {}
 
-  async startWorkflow(tenantId: string, workflowDefinitionId: string, entityId: string, entityType: string, context: RequestContext) {
-    const definition = await this.repository.prisma.workflowDefinition.findFirst({
-      where: { tenantId, id: workflowDefinitionId },
-      include: { steps: true },
-    });
-    if (!definition) throw new NotFoundException('Workflow definition not found');
-    if (definition.steps.length === 0) throw new BadRequestException('Workflow must have at least one step');
+  async startWorkflow(
+    tenantId: string,
+    workflowDefinitionId: string,
+    entityId: string,
+    entityType: string,
+    context: RequestContext,
+  ) {
+    const definition =
+      await this.repository.prisma.workflowDefinition.findFirst({
+        where: { tenantId, id: workflowDefinitionId },
+        include: { steps: true },
+      });
+    if (!definition)
+      throw new NotFoundException('Workflow definition not found');
+    if (definition.steps.length === 0)
+      throw new BadRequestException('Workflow must have at least one step');
 
     // Create execution
     const execution = await this.repository.createWorkflowExecution(tenantId, {
@@ -38,26 +51,51 @@ export class WorkflowEngine {
       });
     }
 
-    await this.repository.logAudit(tenantId, 'Start Workflow', `Workflow execution ${execution.id} started for entity ${entityId}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Start Workflow',
+      `Workflow execution ${execution.id} started for entity ${entityId}.`,
+    );
     return execution;
   }
 
-  async submitDecision(tenantId: string, requestId: string, dto: SubmitApprovalDecisionDto, context: RequestContext) {
-    const request = await this.repository.findApprovalRequestById(tenantId, requestId);
+  async submitDecision(
+    tenantId: string,
+    requestId: string,
+    dto: SubmitApprovalDecisionDto,
+    context: RequestContext,
+  ) {
+    const request = await this.repository.findApprovalRequestById(
+      tenantId,
+      requestId,
+    );
     if (!request) throw new NotFoundException('Approval request not found');
-    if (request.decision !== 'PENDING') throw new BadRequestException('Decision already finalized');
+    if (request.decision !== 'PENDING')
+      throw new BadRequestException('Decision already finalized');
 
     // Update approval request
-    await this.repository.updateApprovalDecision(tenantId, requestId, dto.decision, dto.comments);
+    await this.repository.updateApprovalDecision(
+      tenantId,
+      requestId,
+      dto.decision,
+      dto.comments,
+    );
 
-    const execution = await this.repository.findWorkflowExecutionById(tenantId, request.workflowExecutionId);
+    const execution = await this.repository.findWorkflowExecutionById(
+      tenantId,
+      request.workflowExecutionId,
+    );
     if (!execution) throw new NotFoundException('Workflow execution not found');
 
     if (dto.decision === 'REJECTED') {
       await this.repository.updateWorkflowExecution(tenantId, execution.id, {
         status: 'REJECTED',
       });
-      await this.repository.logAudit(tenantId, 'Workflow Rejected', `Workflow execution ${execution.id} rejected.`);
+      await this.repository.logAudit(
+        tenantId,
+        'Workflow Rejected',
+        `Workflow execution ${execution.id} rejected.`,
+      );
       return { status: 'REJECTED' };
     }
 
@@ -66,8 +104,12 @@ export class WorkflowEngine {
     const currentStepOrder = execution.currentStepOrder;
 
     const allRequests = execution.approvalRequests;
-    const currentStepRequests = allRequests.filter((r) => r.stepOrder === currentStepOrder);
-    const allApproved = currentStepRequests.every((r) => r.decision === 'APPROVED' || r.id === requestId);
+    const currentStepRequests = allRequests.filter(
+      (r) => r.stepOrder === currentStepOrder,
+    );
+    const allApproved = currentStepRequests.every(
+      (r) => r.decision === 'APPROVED' || r.id === requestId,
+    );
 
     if (allApproved) {
       const nextStep = steps.find((s) => s.stepOrder === currentStepOrder + 1);
@@ -86,14 +128,22 @@ export class WorkflowEngine {
           decision: 'PENDING',
         });
 
-        await this.repository.logAudit(tenantId, 'Workflow Transition', `Workflow execution ${execution.id} transitioned to step ${currentStepOrder + 1}.`);
+        await this.repository.logAudit(
+          tenantId,
+          'Workflow Transition',
+          `Workflow execution ${execution.id} transitioned to step ${currentStepOrder + 1}.`,
+        );
         return { status: 'TRANSITIONED', nextStepOrder: currentStepOrder + 1 };
       } else {
         // No next step -> APPROVED
         await this.repository.updateWorkflowExecution(tenantId, execution.id, {
           status: 'APPROVED',
         });
-        await this.repository.logAudit(tenantId, 'Workflow Approved', `Workflow execution ${execution.id} fully approved.`);
+        await this.repository.logAudit(
+          tenantId,
+          'Workflow Approved',
+          `Workflow execution ${execution.id} fully approved.`,
+        );
         return { status: 'APPROVED' };
       }
     }

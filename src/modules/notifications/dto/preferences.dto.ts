@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsEnum, IsBoolean, IsOptional, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsEnum,
+  IsBoolean,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { NotificationChannel, DigestFrequency } from '@prisma/client';
 
 export class UpdatePreferenceDto {

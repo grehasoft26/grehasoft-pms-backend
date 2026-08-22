@@ -1,6 +1,11 @@
 import { Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProductivityScoreService } from './productivity-score.service';
 import { UtilizationReportService } from './utilization-report.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
@@ -15,7 +20,7 @@ import { Permissions } from '../../auth/decorators/permissions.decorator';
 export class ProductivityAnalyticsController {
   constructor(
     private readonly scoreService: ProductivityScoreService,
-    private readonly reportService: UtilizationReportService
+    private readonly reportService: UtilizationReportService,
   ) {}
 
   @Post('scores/calculate')
@@ -24,7 +29,7 @@ export class ProductivityAnalyticsController {
   @ApiResponse({ type: SuccessResponseDto })
   async calculateScore(
     @Query('userId') userId: string,
-    @Query('date') dateStr: string
+    @Query('date') dateStr: string,
   ) {
     const date = new Date(dateStr);
     const data = await this.scoreService.calculateDailyScore(userId, date);
@@ -33,7 +38,10 @@ export class ProductivityAnalyticsController {
 
   @Get('utilization/report')
   @Permissions('timetracking.read')
-  @ApiOperation({ summary: 'Generate utilization report across project, employee, team or department' })
+  @ApiOperation({
+    summary:
+      'Generate utilization report across project, employee, team or department',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async generateReport(
     @Query('startDate') startDate: string,
@@ -41,7 +49,7 @@ export class ProductivityAnalyticsController {
     @Query('userId') userId?: string,
     @Query('projectId') projectId?: string,
     @Query('teamId') teamId?: string,
-    @Query('departmentId') departmentId?: string
+    @Query('departmentId') departmentId?: string,
   ) {
     const data = await this.reportService.generateReport({
       userId,

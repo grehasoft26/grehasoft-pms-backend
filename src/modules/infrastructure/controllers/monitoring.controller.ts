@@ -1,6 +1,20 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { MonitoringService } from '../services/monitoring.service';
 import { UpdateMonitoringCheckDto } from '../dto/monitoring.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -28,12 +42,15 @@ export class MonitoringController {
 
   @Post('metrics/:serverId')
   @Permissions('infrastructure.manage')
-  @ApiOperation({ summary: 'Record CPU, RAM, Disk, Load averages, Network load metrics and trigger warnings' })
+  @ApiOperation({
+    summary:
+      'Record CPU, RAM, Disk, Load averages, Network load metrics and trigger warnings',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async record(
     @Param('serverId') serverId: string,
     @Body() dto: UpdateMonitoringCheckDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.recordMetrics(serverId, dto, context);
@@ -44,7 +61,10 @@ export class MonitoringController {
   @Permissions('monitoring.read')
   @ApiOperation({ summary: 'Get list of monitoring checks' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getMany(@Query('serverId') serverId?: string, @Query('domainId') domainId?: string) {
+  async getMany(
+    @Query('serverId') serverId?: string,
+    @Query('domainId') domainId?: string,
+  ) {
     const data = await this.service.getChecks(serverId, domainId);
     return { message: 'Monitoring checks retrieved', data };
   }

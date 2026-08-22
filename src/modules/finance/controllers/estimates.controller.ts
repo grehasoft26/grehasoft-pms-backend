@@ -1,6 +1,20 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { EstimatesService } from '../services/estimates.service';
 import { CreateEstimateDto } from '../dto/estimates.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -39,12 +53,14 @@ export class EstimatesController {
 
   @Patch(':id/status')
   @Permissions('finance.manage')
-  @ApiOperation({ summary: 'Update Estimate status (SENT, ACCEPTED, DECLINED, EXPIRED)' })
+  @ApiOperation({
+    summary: 'Update Estimate status (SENT, ACCEPTED, DECLINED, EXPIRED)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async updateStatus(
     @Param('id') id: string,
     @Body('status') status: EstimateStatus,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.updateStatus(id, status, context);

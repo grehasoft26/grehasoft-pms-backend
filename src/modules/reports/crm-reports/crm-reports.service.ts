@@ -18,9 +18,10 @@ export class CrmReportsService {
       filters: { ...filters, NOT: { leadId: null } },
     });
 
-    const conversionRate = totalLeads.length > 0 
-      ? (convertedLeads.length / totalLeads.length) * 100 
-      : 0;
+    const conversionRate =
+      totalLeads.length > 0
+        ? (convertedLeads.length / totalLeads.length) * 100
+        : 0;
 
     return {
       totalLeads: totalLeads.length,
@@ -47,7 +48,10 @@ export class CrmReportsService {
     }
 
     return {
-      stages: Object.entries(funnel).map(([stage, count]) => ({ stage, count })),
+      stages: Object.entries(funnel).map(([stage, count]) => ({
+        stage,
+        count,
+      })),
       totalOpportunities: opps.length,
       totalPipelineValue: totalValue,
     };
@@ -61,15 +65,15 @@ export class CrmReportsService {
     });
 
     // Assume win if stage name/code includes 'won' or probability = 100
-    const wonOpps = totalOpps.filter((o) => 
-      o.probability === 100 || 
-      o.stage?.name?.toLowerCase().includes('won') ||
-      o.stage?.name?.toLowerCase().includes('close-won')
+    const wonOpps = totalOpps.filter(
+      (o) =>
+        o.probability === 100 ||
+        o.stage?.name?.toLowerCase().includes('won') ||
+        o.stage?.name?.toLowerCase().includes('close-won'),
     );
 
-    const winRate = totalOpps.length > 0 
-      ? (wonOpps.length / totalOpps.length) * 100 
-      : 0;
+    const winRate =
+      totalOpps.length > 0 ? (wonOpps.length / totalOpps.length) * 100 : 0;
 
     return {
       totalOpportunities: totalOpps.length,

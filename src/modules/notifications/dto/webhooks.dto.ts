@@ -12,7 +12,9 @@ export class RegisterWebhookDto {
   @IsUrl()
   targetUrl: string;
 
-  @ApiProperty({ description: 'Comma-separated events e.g. task.completed,invoice.paid' })
+  @ApiProperty({
+    description: 'Comma-separated events e.g. task.completed,invoice.paid',
+  })
   @IsNotEmpty()
   @IsString()
   eventTypes: string;

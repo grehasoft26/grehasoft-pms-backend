@@ -76,7 +76,7 @@ describe('TeamsService', () => {
       repository.findByCode.mockResolvedValue(mockTeam);
 
       await expect(
-        service.create({ name: 'Backend Devs', code: 'BKD' }, mockContext)
+        service.create({ name: 'Backend Devs', code: 'BKD' }, mockContext),
       ).rejects.toThrow(ConflictException);
     });
   });

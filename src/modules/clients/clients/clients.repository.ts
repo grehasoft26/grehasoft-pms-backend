@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { CreateClientDto, UpdateClientDto, ClientFilterDto } from './dto/clients.dto';
+import {
+  CreateClientDto,
+  UpdateClientDto,
+  ClientFilterDto,
+} from './dto/clients.dto';
 import { ClientStatus } from '@prisma/client';
 
 @Injectable()
@@ -26,14 +30,15 @@ export class ClientsRepository {
 
   async create(dto: CreateClientDto & { code: string; createdBy?: string }) {
     const { tags, ...clientData } = dto;
-    const tagConnectOrCreate = tags && tags.length > 0
-      ? {
-          connectOrCreate: tags.map((name) => ({
-            where: { name },
-            create: { name },
-          })),
-        }
-      : undefined;
+    const tagConnectOrCreate =
+      tags && tags.length > 0
+        ? {
+            connectOrCreate: tags.map((name) => ({
+              where: { name },
+              create: { name },
+            })),
+          }
+        : undefined;
 
     return this.prisma.client.create({
       data: {
@@ -50,7 +55,17 @@ export class ClientsRepository {
   }
 
   async findMany(filters: ClientFilterDto) {
-    const { page = 1, limit = 10, search, status, categoryId, industry, companyType, sortBy = 'createdAt', sortOrder = 'desc' } = filters;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      status,
+      categoryId,
+      industry,
+      companyType,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = filters;
     const skip = (page - 1) * limit;
 
     const where: any = { deletedAt: null };
@@ -90,8 +105,16 @@ export class ClientsRepository {
     }
 
     // Direct mapping to ensure correct ordering property
-    const validSortFields = ['createdAt', 'updatedAt', 'name', 'code', 'status'];
-    const orderByField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const validSortFields = [
+      'createdAt',
+      'updatedAt',
+      'name',
+      'code',
+      'status',
+    ];
+    const orderByField = validSortFields.includes(sortBy)
+      ? sortBy
+      : 'createdAt';
 
     const [data, totalCount] = await Promise.all([
       this.prisma.client.findMany({

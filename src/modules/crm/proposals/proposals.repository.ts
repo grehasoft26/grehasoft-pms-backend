@@ -48,9 +48,19 @@ export class ProposalsRepository {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          opportunity: true,
+          opportunity: {
+            include: {
+              lead: true,
+              client: {
+                include: {
+                  primaryContact: true,
+                },
+              },
+            },
+          },
           template: true,
           items: true,
+          projects: true,
         },
       }),
       this.prisma.proposal.count({ where }),
@@ -68,7 +78,11 @@ export class ProposalsRepository {
             stage: true,
             owner: true,
             lead: true,
-            client: true,
+            client: {
+              include: {
+                primaryContact: true,
+              },
+            },
           },
         },
         template: true,
@@ -82,7 +96,14 @@ export class ProposalsRepository {
         approvals: {
           orderBy: { level: 'asc' },
           include: {
-            approver: { select: { id: true, firstName: true, lastName: true, email: true } },
+            approver: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         },
       },
@@ -189,7 +210,9 @@ export class ProposalsRepository {
     return this.prisma.proposalApproval.findMany({
       where: { proposalId },
       orderBy: { level: 'asc' },
-      include: { approver: { select: { id: true, firstName: true, lastName: true } } },
+      include: {
+        approver: { select: { id: true, firstName: true, lastName: true } },
+      },
     });
   }
 
@@ -199,7 +222,10 @@ export class ProposalsRepository {
     });
   }
 
-  async updateApproval(id: string, data: Prisma.ProposalApprovalUncheckedUpdateInput) {
+  async updateApproval(
+    id: string,
+    data: Prisma.ProposalApprovalUncheckedUpdateInput,
+  ) {
     return this.prisma.proposalApproval.update({
       where: { id },
       data,

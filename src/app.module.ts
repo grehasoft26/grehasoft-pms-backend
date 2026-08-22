@@ -34,6 +34,8 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SeoModule } from './modules/seo/seo.module';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { FilesModule } from './modules/files/files.module';
+import { CompaniesModule } from './modules/companies/companies.module';
 
 // Middleware
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
@@ -80,6 +82,8 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     NotificationsModule,
     SeoModule,
     IntegrationsModule,
+    FilesModule,
+    CompaniesModule,
   ],
 })
 export class AppModule implements NestModule {

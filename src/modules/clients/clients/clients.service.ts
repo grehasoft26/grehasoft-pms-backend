@@ -2,7 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ClientsRepository } from './clients.repository';
 import { ClientTimelinesRepository } from '../client-timelines/client-timelines.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { CreateClientDto, UpdateClientDto, ClientFilterDto } from './dto/clients.dto';
+import {
+  CreateClientDto,
+  UpdateClientDto,
+  ClientFilterDto,
+} from './dto/clients.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { ClientStatus } from '@prisma/client';
 
@@ -11,7 +15,7 @@ export class ClientsService {
   constructor(
     private readonly repository: ClientsRepository,
     private readonly timelineRepository: ClientTimelinesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateClientDto, context: RequestContext) {
@@ -87,12 +91,18 @@ export class ClientsService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Delete Client', 'client', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Client',
+      'client',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 
   async restore(id: string, context: RequestContext) {
@@ -130,13 +140,19 @@ export class ClientsService {
       metadata: { oldStatus: before.status, newStatus: status },
     });
 
-    this.logger.audit(context.userId, `Set Client Status: ${status}`, 'client', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      `Set Client Status: ${status}`,
+      'client',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }

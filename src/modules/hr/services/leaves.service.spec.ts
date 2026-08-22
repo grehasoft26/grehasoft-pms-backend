@@ -53,16 +53,42 @@ describe('LeavesService', () => {
   describe('createRequest', () => {
     it('should throw BadRequestException if end date is prior to start date', async () => {
       await expect(
-        service.createRequest('profile-uuid', { leaveTypeId: 'type-uuid', startDate: '2026-08-06', endDate: '2026-08-05' }, mockContext)
+        service.createRequest(
+          'profile-uuid',
+          {
+            leaveTypeId: 'type-uuid',
+            startDate: '2026-08-06',
+            endDate: '2026-08-05',
+          },
+          mockContext,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should create leave request successfully', async () => {
-      repository.findLeaveTypeById.mockResolvedValue({ id: 'type-uuid', name: 'Casual Leave', allowHalfDay: true, allowHourly: false } as any);
-      repository.findLeaveBalance.mockResolvedValue({ id: 'bal-uuid', remaining: 10 } as any);
-      repository.createLeaveRequest.mockResolvedValue({ id: 'req-uuid' } as any);
+      repository.findLeaveTypeById.mockResolvedValue({
+        id: 'type-uuid',
+        name: 'Casual Leave',
+        allowHalfDay: true,
+        allowHourly: false,
+      } as any);
+      repository.findLeaveBalance.mockResolvedValue({
+        id: 'bal-uuid',
+        remaining: 10,
+      } as any);
+      repository.createLeaveRequest.mockResolvedValue({
+        id: 'req-uuid',
+      } as any);
 
-      const result = await service.createRequest('profile-uuid', { leaveTypeId: 'type-uuid', startDate: '2026-08-06', endDate: '2026-08-06' }, mockContext);
+      const result = await service.createRequest(
+        'profile-uuid',
+        {
+          leaveTypeId: 'type-uuid',
+          startDate: '2026-08-06',
+          endDate: '2026-08-06',
+        },
+        mockContext,
+      );
       expect(result.id).toEqual('req-uuid');
       expect(repository.createLeaveRequest).toHaveBeenCalled();
     });

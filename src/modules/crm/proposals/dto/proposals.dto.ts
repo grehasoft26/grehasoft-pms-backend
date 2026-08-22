@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsDateString, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Max, Min, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProposalStatus, ApprovalStatus } from '@prisma/client';
 
@@ -21,14 +32,17 @@ export class CreateProposalItemDto {
   @Type(() => Number)
   price: number;
 
-  @ApiPropertyOptional({ default: 0.00, description: 'Flat discount value' })
+  @ApiPropertyOptional({ default: 0.0, description: 'Flat discount value' })
   @IsNumber()
   @Min(0)
   @IsOptional()
   @Type(() => Number)
   discount?: number;
 
-  @ApiPropertyOptional({ default: 0.00, description: 'Tax percentage (e.g. 18.00)' })
+  @ApiPropertyOptional({
+    default: 0.0,
+    description: 'Tax percentage (e.g. 18.00)',
+  })
   @IsNumber()
   @Min(0)
   @Max(100)
@@ -65,6 +79,10 @@ export class CreateProposalDto {
   @ValidateNested({ each: true })
   @Type(() => CreateProposalItemDto)
   items: CreateProposalItemDto[];
+
+  @ApiPropertyOptional({ description: 'Visual Builder JSON configuration' })
+  @IsOptional()
+  builderConfig?: any;
 }
 
 export class UpdateProposalDto {
@@ -99,6 +117,10 @@ export class UpdateProposalDto {
   @Type(() => CreateProposalItemDto)
   @IsOptional()
   items?: CreateProposalItemDto[];
+
+  @ApiPropertyOptional({ description: 'Visual Builder JSON configuration' })
+  @IsOptional()
+  builderConfig?: any;
 }
 
 export class CreateProposalTemplateDto {
@@ -137,7 +159,10 @@ export class SubmitProposalApprovalDto {
   @IsUUID()
   approverId: string;
 
-  @ApiPropertyOptional({ default: 1, description: 'Approval level (1, 2, 3, etc.)' })
+  @ApiPropertyOptional({
+    default: 1,
+    description: 'Approval level (1, 2, 3, etc.)',
+  })
   @IsNumber()
   @Min(1)
   @IsOptional()

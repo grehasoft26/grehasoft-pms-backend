@@ -8,7 +8,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class SslService {
   constructor(
     private readonly repository: InfrastructureRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   private calculateSslMetrics(expiryDate: Date) {
@@ -24,7 +24,10 @@ export class SslService {
     return { daysRemaining, renewalStatus };
   }
 
-  async createCertificate(dto: CreateSSLCertificateDto, context: RequestContext) {
+  async createCertificate(
+    dto: CreateSSLCertificateDto,
+    context: RequestContext,
+  ) {
     const expiry = new Date(dto.expiryDate);
     const { daysRemaining, renewalStatus } = this.calculateSslMetrics(expiry);
 
@@ -45,11 +48,17 @@ export class SslService {
         dto.domainId,
         'Domain',
         'SSL Certificate Installed',
-        `SSL Certificate issued by ${dto.issuer} has been installed`
+        `SSL Certificate issued by ${dto.issuer} has been installed`,
       );
     }
 
-    this.logger.audit(context.userId, 'Install SSL Certificate', 'sslCertificate', certificate, { after: certificate });
+    this.logger.audit(
+      context.userId,
+      'Install SSL Certificate',
+      'sslCertificate',
+      certificate,
+      { after: certificate },
+    );
     return certificate;
   }
 

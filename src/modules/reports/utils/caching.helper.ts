@@ -11,7 +11,11 @@ export class CachingHelper {
     return crypto.createHash('sha256').update(raw).digest('hex');
   }
 
-  async getCache(tenantId: string, reportId: string, filterHash: string): Promise<any | null> {
+  async getCache(
+    tenantId: string,
+    reportId: string,
+    filterHash: string,
+  ): Promise<any | null> {
     const cached = await this.prisma.analyticsCache.findUnique({
       where: {
         tenantId_reportId_filterHash: { tenantId, reportId, filterHash },
@@ -19,20 +23,28 @@ export class CachingHelper {
     });
 
     if (!cached) {
-      console.log(`[CACHE MISS] Tenant: ${tenantId} | Report: ${reportId} | Hash: ${filterHash}`);
+      console.log(
+        `[CACHE MISS] Tenant: ${tenantId} | Report: ${reportId} | Hash: ${filterHash}`,
+      );
       return null;
     }
 
     // Expiry check
     if (new Date(cached.expiresAt).getTime() < Date.now()) {
-      console.log(`[CACHE EXPIRED] Tenant: ${tenantId} | Report: ${reportId} | Hash: ${filterHash}`);
-      await this.prisma.analyticsCache.delete({
-        where: { id: cached.id },
-      }).catch(() => {});
+      console.log(
+        `[CACHE EXPIRED] Tenant: ${tenantId} | Report: ${reportId} | Hash: ${filterHash}`,
+      );
+      await this.prisma.analyticsCache
+        .delete({
+          where: { id: cached.id },
+        })
+        .catch(() => {});
       return null;
     }
 
-    console.log(`[CACHE HIT] Tenant: ${tenantId} | Report: ${reportId} | Hash: ${filterHash}`);
+    console.log(
+      `[CACHE HIT] Tenant: ${tenantId} | Report: ${reportId} | Hash: ${filterHash}`,
+    );
     try {
       return JSON.parse(cached.payload);
     } catch (e) {
@@ -45,7 +57,7 @@ export class CachingHelper {
     reportId: string,
     filterHash: string,
     payload: any,
-    ttlSeconds = 300
+    ttlSeconds = 300,
   ): Promise<void> {
     const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
     const payloadStr = JSON.stringify(payload);

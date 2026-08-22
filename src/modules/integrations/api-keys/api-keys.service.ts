@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { IntegrationsRepository } from '../repositories/integrations.repository';
 import { CreateApiKeyDto } from '../dto/api-keys.dto';
 import { generateRawApiKey, hashApiKey } from '../utils/api-key.helper';
@@ -21,8 +25,12 @@ export class ApiKeysService {
       expiresAt: expiresAtDate,
     });
 
-    await this.repository.logAudit(tenantId, 'Create API Key', `API Key "${dto.name}" created for user ${userId}.`);
-    
+    await this.repository.logAudit(
+      tenantId,
+      'Create API Key',
+      `API Key "${dto.name}" created for user ${userId}.`,
+    );
+
     // Return rawKey to the user only ONCE upon creation!
     return {
       id: apiKey.id,
@@ -41,12 +49,16 @@ export class ApiKeysService {
     if (keyRecord.status !== 'ACTIVE') return null;
 
     if (keyRecord.expiresAt && keyRecord.expiresAt.getTime() < Date.now()) {
-      await this.repository.updateApiKey(tenantId, keyRecord.id, { status: 'EXPIRED' });
+      await this.repository.updateApiKey(tenantId, keyRecord.id, {
+        status: 'EXPIRED',
+      });
       return null;
     }
 
     // Update usage stats
-    await this.repository.updateApiKey(tenantId, keyRecord.id, { lastUsedAt: new Date() });
+    await this.repository.updateApiKey(tenantId, keyRecord.id, {
+      lastUsedAt: new Date(),
+    });
     await this.repository.logApiKeyUsage(tenantId, keyRecord.id);
 
     return keyRecord;
@@ -66,13 +78,21 @@ export class ApiKeysService {
       lastUsedAt: null,
     });
 
-    await this.repository.logAudit(tenantId, 'Rotate API Key', `API Key rotated.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Rotate API Key',
+      `API Key rotated.`,
+    );
     return { rawKey };
   }
 
   async revoke(tenantId: string, id: string) {
     await this.repository.updateApiKey(tenantId, id, { status: 'REVOKED' });
-    await this.repository.logAudit(tenantId, 'Revoke API Key', `API Key revoked.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Revoke API Key',
+      `API Key revoked.`,
+    );
     return { message: 'API Key revoked successfully' };
   }
 }

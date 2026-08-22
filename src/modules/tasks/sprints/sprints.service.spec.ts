@@ -74,7 +74,7 @@ describe('SprintsService', () => {
           status: SprintStatus.PLANNING,
           goals: ['Complete initial MVP features', 'Achieve 80% coverage'],
         },
-        mockContext
+        mockContext,
       );
 
       expect(result).toEqual(mockSprint);

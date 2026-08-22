@@ -1,8 +1,26 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TrainingService } from '../services/training.service';
-import { CreateCourseDto, EnrollEmployeeDto, CompleteTrainingDto } from '../dto/training.dto';
+import {
+  CreateCourseDto,
+  EnrollEmployeeDto,
+  CompleteTrainingDto,
+} from '../dto/training.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -28,7 +46,10 @@ export class TrainingController {
 
   @Post('courses')
   @Permissions('training.manage')
-  @ApiOperation({ summary: 'Create corporate training course (Mandatory vs Optional, Internal vs External)' })
+  @ApiOperation({
+    summary:
+      'Create corporate training course (Mandatory vs Optional, Internal vs External)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async createCourse(@Body() dto: CreateCourseDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -43,7 +64,7 @@ export class TrainingController {
   async enroll(
     @Param('profileId') profileId: string,
     @Body() dto: EnrollEmployeeDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.enrollEmployee(profileId, dto, context);
@@ -57,7 +78,7 @@ export class TrainingController {
   async complete(
     @Param('id') id: string,
     @Body() dto: CompleteTrainingDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.completeTraining(id, dto, context);

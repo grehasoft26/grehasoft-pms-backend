@@ -1,20 +1,34 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ProjectsRepository } from './projects.repository';
-import { CreateProjectDto, UpdateProjectDto, ProjectFilterDto, CloneProjectDto } from './dto/projects.dto';
+import {
+  CreateProjectDto,
+  UpdateProjectDto,
+  ProjectFilterDto,
+  CloneProjectDto,
+} from './dto/projects.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { ProjectHealth, ProjectStatus, ProjectType, ProjectPriority } from '@prisma/client';
+import {
+  ProjectHealth,
+  ProjectStatus,
+  ProjectType,
+  ProjectPriority,
+} from '@prisma/client';
 
 @Injectable()
 export class ProjectsService {
   constructor(
     private readonly repository: ProjectsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateProjectDto, context: RequestContext) {
     const code = await this.repository.generateProjectCode();
-    
+
     const estimatedCost = dto.estimatedCost;
     const actualCost = 0;
     const remainingBudget = estimatedCost;
@@ -68,7 +82,12 @@ export class ProjectsService {
     return this.getById(project.id);
   }
 
-  async createFromProposal(proposalId: string, categoryId: string, managerId: string, context: RequestContext) {
+  async createFromProposal(
+    proposalId: string,
+    categoryId: string,
+    managerId: string,
+    context: RequestContext,
+  ) {
     // 1. Fetch Proposal directly from DB
     const proposal = await this.repository.prisma.proposal.findUnique({
       where: { id: proposalId, deletedAt: null },
@@ -79,8 +98,16 @@ export class ProjectsService {
       throw new NotFoundException(`Proposal with ID ${proposalId} not found`);
     }
 
+    if (proposal.isConverted) {
+      throw new BadRequestException(
+        'This proposal has already been converted to a project.',
+      );
+    }
+
     if (proposal.status !== 'ACCEPTED') {
-      throw new BadRequestException('Project can only be created from an ACCEPTED proposal');
+      throw new BadRequestException(
+        'Project can only be created from an ACCEPTED proposal',
+      );
     }
 
     // 2. Map Proposal details to CreateProjectDto
@@ -140,7 +167,13 @@ export class ProjectsService {
       });
     }
 
-    // 4. Log conversion events
+    // 4. Update Proposal conversion status
+    await this.repository.prisma.proposal.update({
+      where: { id: proposalId },
+      data: { isConverted: true },
+    });
+
+    // 5. Log conversion events
     await this.repository.createTimeline({
       projectId: project.id,
       event: 'PROPOSAL_CONVERTED_TO_PROJECT',
@@ -150,12 +183,18 @@ export class ProjectsService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Convert Proposal to Project', 'project', project, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: project,
-    });
+    this.logger.audit(
+      context.userId,
+      'Convert Proposal to Project',
+      'project',
+      project,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: project,
+      },
+    );
 
     return this.getById(project.id);
   }
@@ -175,15 +214,27 @@ export class ProjectsService {
   async update(id: string, dto: UpdateProjectDto, context: RequestContext) {
     const before = await this.getById(id);
 
-    const estimatedCost = dto.estimatedCost !== undefined ? dto.estimatedCost : Number(before.estimatedCost);
-    const actualCost = dto.actualCost !== undefined ? dto.actualCost : Number(before.actualCost);
+    const estimatedCost =
+      dto.estimatedCost !== undefined
+        ? dto.estimatedCost
+        : Number(before.estimatedCost);
+    const actualCost =
+      dto.actualCost !== undefined ? dto.actualCost : Number(before.actualCost);
     const remainingBudget = estimatedCost - actualCost;
     const budgetVariance = estimatedCost - actualCost;
 
-    const completionPercentage = dto.completionPercentage !== undefined ? dto.completionPercentage : before.completionPercentage;
+    const completionPercentage =
+      dto.completionPercentage !== undefined
+        ? dto.completionPercentage
+        : before.completionPercentage;
 
     // Calculate project health status dynamically
-    const healthStatus = await this.calculateHealth(id, estimatedCost, actualCost, completionPercentage);
+    const healthStatus = await this.calculateHealth(
+      id,
+      estimatedCost,
+      actualCost,
+      completionPercentage,
+    );
 
     const updated = await this.repository.update(id, {
       name: dto.name,
@@ -200,8 +251,12 @@ export class ProjectsService {
       estimatedHours: dto.estimatedHours,
       startDate: dto.startDate ? new Date(dto.startDate) : undefined,
       endDate: dto.endDate ? new Date(dto.endDate) : undefined,
-      actualStartDate: dto.actualStartDate ? new Date(dto.actualStartDate) : undefined,
-      actualEndDate: dto.actualEndDate ? new Date(dto.actualEndDate) : undefined,
+      actualStartDate: dto.actualStartDate
+        ? new Date(dto.actualStartDate)
+        : undefined,
+      actualEndDate: dto.actualEndDate
+        ? new Date(dto.actualEndDate)
+        : undefined,
       completionPercentage,
       colorLabel: dto.colorLabel,
       categoryId: dto.categoryId,
@@ -298,20 +353,30 @@ export class ProjectsService {
 
   async permanentDelete(id: string, context: RequestContext) {
     const before = await this.getById(id);
-    
+
     // Clear relations that aren't set to cascade delete
-    await this.repository.prisma.projectMember.deleteMany({ where: { projectId: id } });
-    await this.repository.prisma.projectResource.deleteMany({ where: { projectId: id } });
-    
+    await this.repository.prisma.projectMember.deleteMany({
+      where: { projectId: id },
+    });
+    await this.repository.prisma.projectResource.deleteMany({
+      where: { projectId: id },
+    });
+
     // Perform hard delete
     await this.repository.permanentDelete(id);
 
-    this.logger.audit(context.userId, 'Permanent Delete Project', 'project', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Permanent Delete Project',
+      'project',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 
   async delete(id: string, userId: string) {
@@ -325,9 +390,15 @@ export class ProjectsService {
       createdBy: userId,
     });
 
-    this.logger.audit(userId, 'Delete Project', 'project', { id }, {
-      before,
-    });
+    this.logger.audit(
+      userId,
+      'Delete Project',
+      'project',
+      { id },
+      {
+        before,
+      },
+    );
   }
 
   async clone(id: string, dto: CloneProjectDto, context: RequestContext) {
@@ -368,7 +439,7 @@ export class ProjectsService {
     const phases = await this.repository.prisma.projectPhase.findMany({
       where: { projectId: id, deletedAt: null },
     });
-    
+
     const phaseMap = new Map<string, string>(); // maps old phase id to new phase id
     for (const ph of phases) {
       const newPhase = await this.repository.prisma.projectPhase.create({
@@ -377,8 +448,12 @@ export class ProjectsService {
           name: ph.name,
           code: ph.code,
           sortOrder: ph.sortOrder,
-          startDate: ph.startDate ? new Date(new Date(ph.startDate).getTime() + dateDiffMs) : null,
-          endDate: ph.endDate ? new Date(new Date(ph.endDate).getTime() + dateDiffMs) : null,
+          startDate: ph.startDate
+            ? new Date(new Date(ph.startDate).getTime() + dateDiffMs)
+            : null,
+          endDate: ph.endDate
+            ? new Date(new Date(ph.endDate).getTime() + dateDiffMs)
+            : null,
           createdBy: context.userId,
         },
       });
@@ -387,9 +462,11 @@ export class ProjectsService {
 
     // 2. Clone Milestones
     if (dto.cloneMilestones !== false) {
-      const milestones = await this.repository.prisma.projectMilestone.findMany({
-        where: { projectId: id, deletedAt: null },
-      });
+      const milestones = await this.repository.prisma.projectMilestone.findMany(
+        {
+          where: { projectId: id, deletedAt: null },
+        },
+      );
 
       for (const ms of milestones) {
         const newPhaseId = ms.phaseId ? phaseMap.get(ms.phaseId) : null;
@@ -473,19 +550,20 @@ export class ProjectsService {
     projectId: string,
     estimatedCost: number,
     actualCost: number,
-    completionPercentage: number
+    completionPercentage: number,
   ): Promise<ProjectHealth> {
     const now = new Date();
 
     // 1. Delayed Milestones (incomplete past due date)
-    const delayedMilestonesCount = await this.repository.prisma.projectMilestone.count({
-      where: {
-        projectId,
-        status: { not: 'COMPLETED' },
-        dueDate: { lt: now },
-        deletedAt: null,
-      },
-    });
+    const delayedMilestonesCount =
+      await this.repository.prisma.projectMilestone.count({
+        where: {
+          projectId,
+          status: { not: 'COMPLETED' },
+          dueDate: { lt: now },
+          deletedAt: null,
+        },
+      });
 
     // 2. Budget Variance (actual cost exceeds estimates)
     const budgetVariance = estimatedCost - actualCost;

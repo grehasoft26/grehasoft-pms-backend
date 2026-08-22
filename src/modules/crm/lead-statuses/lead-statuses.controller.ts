@@ -1,8 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LeadStatusesService } from './lead-statuses.service';
-import { CreateLeadStatusDto, UpdateLeadStatusDto } from './dto/lead-statuses.dto';
+import {
+  CreateLeadStatusDto,
+  UpdateLeadStatusDto,
+} from './dto/lead-statuses.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -58,7 +76,11 @@ export class LeadStatusesController {
   @Permissions('leads.update')
   @ApiOperation({ summary: 'Update custom lead status details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateLeadStatusDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateLeadStatusDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.statusesService.update(id, dto, context);
     return { message: 'Lead status updated successfully', data };

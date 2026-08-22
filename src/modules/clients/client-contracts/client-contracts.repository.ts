@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { CreateClientContractDto, UpdateClientContractDto } from './dto/client-contracts.dto';
+import {
+  CreateClientContractDto,
+  UpdateClientContractDto,
+} from './dto/client-contracts.dto';
 
 @Injectable()
 export class ClientContractsRepository {
@@ -39,7 +42,10 @@ export class ClientContractsRepository {
     });
   }
 
-  async update(id: string, dto: UpdateClientContractDto & { updatedBy?: string }) {
+  async update(
+    id: string,
+    dto: UpdateClientContractDto & { updatedBy?: string },
+  ) {
     const { startDate, endDate, renewalDate, ...contractData } = dto;
     const updateData: any = {
       ...contractData,
@@ -47,7 +53,8 @@ export class ClientContractsRepository {
     };
     if (startDate) updateData.startDate = new Date(startDate);
     if (endDate) updateData.endDate = new Date(endDate);
-    if (renewalDate !== undefined) updateData.renewalDate = renewalDate ? new Date(renewalDate) : null;
+    if (renewalDate !== undefined)
+      updateData.renewalDate = renewalDate ? new Date(renewalDate) : null;
 
     return this.prisma.clientContract.update({
       where: { id },

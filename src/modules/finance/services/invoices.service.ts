@@ -1,8 +1,16 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { FinanceRepository } from '../repositories/finance.repository';
 import { LedgerAccountingService } from './ledger-accounting.service';
 import { BillableRatesService } from './billable-rates.service';
-import { CreateInvoiceDto, GenerateTimeEntryInvoiceDto, AddPaymentDto } from '../dto/invoices.dto';
+import {
+  CreateInvoiceDto,
+  GenerateTimeEntryInvoiceDto,
+  AddPaymentDto,
+} from '../dto/invoices.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { InvoiceStatus, InvoiceItemType } from '@prisma/client';
@@ -13,7 +21,7 @@ export class InvoicesService {
     private readonly repository: FinanceRepository,
     private readonly accountingService: LedgerAccountingService,
     private readonly ratesService: BillableRatesService,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   private async getNextInvoiceNumber(): Promise<string> {
@@ -34,7 +42,7 @@ export class InvoicesService {
 
     let subtotal = 0;
     const items = dto.items.map((it) => {
-      const total = (it.quantity * it.rate) - (it.discount || 0) + (it.tax || 0);
+      const total = it.quantity * it.rate - (it.discount || 0) + (it.tax || 0);
       subtotal += total;
       return {
         type: it.type,
@@ -75,7 +83,9 @@ export class InvoicesService {
       description: `Invoice ${invoiceNumber} created as Draft`,
     });
 
-    this.logger.audit(context.userId, 'Create Invoice', 'invoice', invoice, { after: invoice });
+    this.logger.audit(context.userId, 'Create Invoice', 'invoice', invoice, {
+      after: invoice,
+    });
     return invoice;
   }
 
@@ -87,7 +97,9 @@ export class InvoicesService {
       throw new BadRequestException('Invoice is already finalized/sent');
     }
 
-    const updated = await this.repository.updateInvoice(id, { status: InvoiceStatus.SENT });
+    const updated = await this.repository.updateInvoice(id, {
+      status: InvoiceStatus.SENT,
+    });
 
     // Timeline
     await this.repository.createInvoiceTimeline({
@@ -101,15 +113,24 @@ export class InvoicesService {
     await this.accountingService.postJournalEntry(
       `Finalized invoice ${invoice.invoiceNumber}`,
       [{ accountCode: '1200', amount }], // Debit Accounts Receivable
-      [{ accountCode: '4000', amount }]  // Credit Revenue
+      [{ accountCode: '4000', amount }], // Credit Revenue
     );
 
-    this.logger.audit(context.userId, 'Finalize Invoice (Sent)', 'invoice', updated, { before: invoice, after: updated });
+    this.logger.audit(
+      context.userId,
+      'Finalize Invoice (Sent)',
+      'invoice',
+      updated,
+      { before: invoice, after: updated },
+    );
     return updated;
   }
 
   // Generate Invoices from approved Time Entries
-  async generateFromTimeEntries(dto: GenerateTimeEntryInvoiceDto, context: RequestContext) {
+  async generateFromTimeEntries(
+    dto: GenerateTimeEntryInvoiceDto,
+    context: RequestContext,
+  ) {
     const invoiceNumber = await this.getNextInvoiceNumber();
 
     // 1. Fetch and validate time entries
@@ -123,7 +144,9 @@ export class InvoicesService {
     });
 
     if (entries.length === 0) {
-      throw new BadRequestException('No unbilled approved time entries selected');
+      throw new BadRequestException(
+        'No unbilled approved time entries selected',
+      );
     }
 
     let subtotal = 0;
@@ -140,7 +163,7 @@ export class InvoicesService {
       });
 
       const hours = entry.duration / 3600;
-      const rate = resolved.rate || 50.00; // fallback default
+      const rate = resolved.rate || 50.0; // fallback default
       const total = hours * rate;
       subtotal += total;
 
@@ -151,8 +174,8 @@ export class InvoicesService {
         description: `Time Entry: ${entry.description || 'Consulting'} (${hours.toFixed(2)} hours at ${resolved.currencyCode} ${rate.toFixed(2)}/hr)`,
         quantity: hours,
         rate,
-        discount: 0.00,
-        tax: 0.00,
+        discount: 0.0,
+        tax: 0.0,
         total,
       });
     }
@@ -166,8 +189,8 @@ export class InvoicesService {
       issueDate: new Date(),
       dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // Net 14
       subtotal,
-      discount: 0.00,
-      tax: 0.00,
+      discount: 0.0,
+      tax: 0.0,
       total: subtotal,
       balanceDue: subtotal,
       currencyId: dto.currencyId,
@@ -186,7 +209,7 @@ export class InvoicesService {
     await this.accountingService.postJournalEntry(
       `Billed time entries via ${invoice.invoiceNumber}`,
       [{ accountCode: '1200', amount: subtotal }],
-      [{ accountCode: '4000', amount: subtotal }]
+      [{ accountCode: '4000', amount: subtotal }],
     );
 
     await this.repository.createInvoiceTimeline({
@@ -195,7 +218,13 @@ export class InvoicesService {
       description: `Invoice ${invoiceNumber} generated directly from approved TimeEntries`,
     });
 
-    this.logger.audit(context.userId, 'Generate Invoice from TimeEntries', 'invoice', invoice, { after: invoice });
+    this.logger.audit(
+      context.userId,
+      'Generate Invoice from TimeEntries',
+      'invoice',
+      invoice,
+      { after: invoice },
+    );
     return invoice;
   }
 
@@ -215,10 +244,18 @@ export class InvoicesService {
     // 2. Process allocations
     for (const alloc of dto.allocations) {
       const invoice = await this.repository.findInvoiceById(alloc.invoiceId);
-      if (!invoice) throw new NotFoundException(`Invoice with ID ${alloc.invoiceId} not found`);
+      if (!invoice)
+        throw new NotFoundException(
+          `Invoice with ID ${alloc.invoiceId} not found`,
+        );
 
-      if (invoice.status === InvoiceStatus.DRAFT || invoice.status === InvoiceStatus.PAID) {
-        throw new BadRequestException(`Cannot apply payment to invoice in status ${invoice.status}`);
+      if (
+        invoice.status === InvoiceStatus.DRAFT ||
+        invoice.status === InvoiceStatus.PAID
+      ) {
+        throw new BadRequestException(
+          `Cannot apply payment to invoice in status ${invoice.status}`,
+        );
       }
 
       const balance = Number(invoice.balanceDue);
@@ -257,10 +294,12 @@ export class InvoicesService {
     await this.accountingService.postJournalEntry(
       `Received client payment allocations via ${payment.transactionId || payment.id}`,
       [{ accountCode: '1020', amount: totalAllocated }], // Debit Bank Account
-      [{ accountCode: '1200', amount: totalAllocated }]  // Credit Accounts Receivable
+      [{ accountCode: '1200', amount: totalAllocated }], // Credit Accounts Receivable
     );
 
-    this.logger.audit(context.userId, 'Allocate Payment', 'payment', payment, { after: payment });
+    this.logger.audit(context.userId, 'Allocate Payment', 'payment', payment, {
+      after: payment,
+    });
     return payment;
   }
 
@@ -268,7 +307,23 @@ export class InvoicesService {
     return this.repository.findInvoiceById(id);
   }
 
-  async getInvoices(filters: { clientId?: string; projectId?: string; status?: InvoiceStatus }) {
+  async getInvoices(filters: {
+    clientId?: string;
+    projectId?: string;
+    status?: InvoiceStatus;
+  }) {
     return this.repository.findInvoices(filters);
+  }
+
+  async getCurrencies() {
+    return this.repository.findCurrencies();
+  }
+
+  async getPaymentMethods() {
+    return this.repository.prisma.paymentMethod.findMany();
+  }
+
+  async getTaxes() {
+    return this.repository.findTaxes();
   }
 }

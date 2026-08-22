@@ -74,7 +74,11 @@ export class ProjectMilestonesRepository {
     });
   }
 
-  async addDependency(milestoneId: string, dependsOnMilestoneId: string, type: DependencyType = DependencyType.FS) {
+  async addDependency(
+    milestoneId: string,
+    dependsOnMilestoneId: string,
+    type: DependencyType = DependencyType.FS,
+  ) {
     return this.prisma.projectDependency.create({
       data: {
         milestoneId,

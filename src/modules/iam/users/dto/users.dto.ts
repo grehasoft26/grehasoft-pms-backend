@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsNumber,
+  Min,
+  IsDateString,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 import { UserStatus } from '@prisma/client';
 
 export class UserPreferenceDto {
@@ -29,6 +40,16 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
+  @ApiProperty({ example: 'jishacharly', required: false })
+  @IsOptional()
+  @IsString()
+  username?: string;
+
+  @ApiProperty({ example: '+919876543210', required: false })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
   @ApiProperty({ example: 'Jisha' })
   @IsNotEmpty()
   @IsString()
@@ -44,7 +65,11 @@ export class CreateUserDto {
   @IsString()
   password?: string;
 
-  @ApiProperty({ enum: UserStatus, example: UserStatus.PENDING, required: false })
+  @ApiProperty({
+    enum: UserStatus,
+    example: UserStatus.PENDING,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
@@ -63,6 +88,23 @@ export class CreateUserDto {
   @IsOptional()
   @IsUUID()
   designationId?: string;
+
+  @ApiProperty({ example: '123 Main St, Kochi', required: false })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ApiProperty({ example: 45000.0, required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  salaryMonthly?: number;
+
+  @ApiProperty({ example: '2026-08-17', required: false })
+  @IsOptional()
+  @IsDateString()
+  joiningDate?: string;
 
   @ApiProperty({ type: UserPreferenceDto, required: false })
   @IsOptional()
@@ -75,12 +117,26 @@ export class UpdateUserDto {
   @IsString()
   firstName?: string;
 
+  @ApiProperty({ example: 'jishacharly', required: false })
+  @IsOptional()
+  @IsString()
+  username?: string;
+
+  @ApiProperty({ example: '+919876543210', required: false })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
   @ApiProperty({ example: 'Charly', required: false })
   @IsOptional()
   @IsString()
   lastName?: string;
 
-  @ApiProperty({ enum: UserStatus, example: UserStatus.ACTIVE, required: false })
+  @ApiProperty({
+    enum: UserStatus,
+    example: UserStatus.ACTIVE,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
@@ -99,6 +155,23 @@ export class UpdateUserDto {
   @IsOptional()
   @IsUUID()
   designationId?: string;
+
+  @ApiProperty({ example: '123 Main St, Kochi', required: false })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ApiProperty({ example: 45000.0, required: false })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  salaryMonthly?: number;
+
+  @ApiProperty({ example: '2026-08-17', required: false })
+  @IsOptional()
+  @IsDateString()
+  joiningDate?: string;
 
   @ApiProperty({ type: UserPreferenceDto, required: false })
   @IsOptional()

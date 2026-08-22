@@ -1,18 +1,40 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LeavesService } from '../services/leaves.service';
-import { CreateLeaveRequestDto, CreateLeaveApprovalDto, CreateLeaveTypeDto } from '../dto/leaves.dto';
+import {
+  CreateLeaveRequestDto,
+  CreateLeaveApprovalDto,
+  CreateLeaveTypeDto,
+} from '../dto/leaves.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../auth/guards/permissions.guard';
 import { Permissions } from '../../auth/decorators/permissions.decorator';
+import { FeatureGuard } from '../../auth/guards/feature.guard';
+import { FeatureRequired } from '../../auth/decorators/feature.decorator';
 import { LeaveStatus } from '@prisma/client';
 
 @ApiTags('HR Leaves')
 @ApiBearerAuth('JWT')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard, FeatureGuard)
+@FeatureRequired('HR_LEAVE')
 @Controller('hr/leaves')
 export class LeavesController {
   constructor(private readonly service: LeavesService) {}
@@ -48,12 +70,15 @@ export class LeavesController {
 
   @Post('requests/:profileId')
   @Permissions('hr.manage')
-  @ApiOperation({ summary: 'Submit leave request (validates balance, blackout dates, half day and hourly limits)' })
+  @ApiOperation({
+    summary:
+      'Submit leave request (validates balance, blackout dates, half day and hourly limits)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async createRequest(
     @Param('profileId') profileId: string,
     @Body() dto: CreateLeaveRequestDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.createRequest(profileId, dto, context);
@@ -62,12 +87,15 @@ export class LeavesController {
 
   @Patch('requests/:id/approve')
   @Permissions('leave.approve')
-  @ApiOperation({ summary: 'Approve or Reject leave request (Submits to workflow balance updates)' })
+  @ApiOperation({
+    summary:
+      'Approve or Reject leave request (Submits to workflow balance updates)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async approveRequest(
     @Param('id') id: string,
     @Body() dto: CreateLeaveApprovalDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.approveRequest(id, dto, context);
@@ -82,7 +110,7 @@ export class LeavesController {
     @Body('name') name: string,
     @Body('startDate') start: string,
     @Body('endDate') end: string,
-    @Body('description') desc?: string
+    @Body('description') desc?: string,
   ) {
     const data = await this.service.createBlackoutDate(name, start, end, desc);
     return { message: 'Leave blackout date configured', data };
@@ -92,14 +120,22 @@ export class LeavesController {
   @Permissions('hr.read')
   @ApiOperation({ summary: 'Get leave requests list with filters' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getRequests(@Query('status') status?: LeaveStatus, @Query('profileId') profileId?: string) {
-    const data = await this.service.getLeaveRequests({ status, employeeProfileId: profileId });
+  async getRequests(
+    @Query('status') status?: LeaveStatus,
+    @Query('profileId') profileId?: string,
+  ) {
+    const data = await this.service.getLeaveRequests({
+      status,
+      employeeProfileId: profileId,
+    });
     return { message: 'Leave requests list retrieved', data };
   }
 
   @Get('requests/:id')
   @Permissions('hr.read')
-  @ApiOperation({ summary: 'Get specific leave request details and approvals timeline' })
+  @ApiOperation({
+    summary: 'Get specific leave request details and approvals timeline',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getRequestById(@Param('id') id: string) {
     const data = await this.service.getLeaveRequestById(id);

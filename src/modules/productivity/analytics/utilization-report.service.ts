@@ -51,8 +51,10 @@ export class UtilizationReportService {
       }
     }
 
-    const billablePercentage = totalSeconds > 0 ? Math.round((billableSeconds / totalSeconds) * 100) : 0;
-    const nonBillablePercentage = totalSeconds > 0 ? 100 - billablePercentage : 0;
+    const billablePercentage =
+      totalSeconds > 0 ? Math.round((billableSeconds / totalSeconds) * 100) : 0;
+    const nonBillablePercentage =
+      totalSeconds > 0 ? 100 - billablePercentage : 0;
 
     // Save report in db
     const report = await this.prisma.utilizationReport.create({

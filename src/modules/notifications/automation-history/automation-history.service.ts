@@ -15,4 +15,12 @@ export class AutomationHistoryService {
       orderBy: { executionStartedAt: 'desc' },
     });
   }
+
+  async getRules(tenantId: string) {
+    return this.repository.findAutomationRules(tenantId);
+  }
+
+  async createRule(tenantId: string, data: any) {
+    return this.repository.createAutomationRule(tenantId, data);
+  }
 }

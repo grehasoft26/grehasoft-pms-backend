@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { Status } from '@prisma/client';
 
 export class CreateDesignationDto {
@@ -13,7 +20,10 @@ export class CreateDesignationDto {
   @IsString()
   code: string;
 
-  @ApiProperty({ example: 'Writes system software code and unit tests', required: false })
+  @ApiProperty({
+    example: 'Writes system software code and unit tests',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -45,7 +55,10 @@ export class UpdateDesignationDto {
   @IsString()
   code?: string;
 
-  @ApiProperty({ example: 'Designs architectures and codes core services', required: false })
+  @ApiProperty({
+    example: 'Designs architectures and codes core services',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;

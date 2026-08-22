@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -9,7 +14,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -60,29 +65,56 @@ export class JwtAuthGuard implements CanActivate {
         },
       });
 
-      if (!session || !session.user || session.user.deletedAt !== null || session.user.status !== 'ACTIVE') {
-        throw new UnauthorizedException('Session is invalid, expired, or user account is inactive');
+      if (
+        !session ||
+        !session.user ||
+        session.user.deletedAt !== null ||
+        session.user.status !== 'ACTIVE'
+      ) {
+        throw new UnauthorizedException(
+          'Session is invalid, expired, or user account is inactive',
+        );
       }
 
       // Update session last activity timestamp asynchronously
-      this.prisma.userSession.update({
-        where: { id: session.id },
-        data: { lastActivityAt: new Date() },
-      }).catch(() => {});
+      this.prisma.userSession
+        .update({
+          where: { id: session.id },
+          data: { lastActivityAt: new Date() },
+        })
+        .catch(() => {});
 
       // Build user details payload for guards & controllers
+      const userRole = session.user.role?.name || '';
+      const userCompanyId =
+        session.user.companyId || '00000000-0000-0000-0000-000000000000';
+
+      // Super Admin can override tenant/company ID via header
+      let effectiveCompanyId = userCompanyId;
+      if (userRole === 'Super Admin') {
+        const headerTenantId =
+          request.headers['x-tenant-id'] || request.headers['x-company-id'];
+        if (headerTenantId) {
+          effectiveCompanyId = String(headerTenantId);
+        }
+      }
+
       request.user = {
         id: session.user.id,
         email: session.user.email,
         roleId: session.user.roleId,
-        roleName: session.user.role?.name || '',
+        roleName: userRole,
+        companyId: userCompanyId,
+        effectiveCompanyId: effectiveCompanyId,
         sessionId: session.id,
         permissions: session.user.role?.permissions.map((p) => p.code) || [],
       };
 
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Session is invalid, expired, or token verification failed');
+      throw new UnauthorizedException(
+        'Session is invalid, expired, or token verification failed',
+      );
     }
   }
 }

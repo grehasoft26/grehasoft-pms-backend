@@ -1,6 +1,11 @@
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TaskDashboardService } from './task-dashboard.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -16,15 +21,21 @@ export class TaskDashboardController {
 
   @Get()
   @Permissions('tasks.read')
-  @ApiOperation({ summary: 'Get Task Dashboard statistics, sprint burndown, and team velocity metrics' })
+  @ApiOperation({
+    summary:
+      'Get Task Dashboard statistics, sprint burndown, and team velocity metrics',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async getStats(
-    @Query('projectId') projectId?: string,
-    @Req() req?: Request
-  ) {
+  async getStats(@Query('projectId') projectId?: string, @Req() req?: Request) {
     const user = req ? (req as any).user : null;
     const userId = user?.id;
-    const data = await this.dashboardService.getDashboardStats(userId, projectId);
-    return { message: 'Task Dashboard statistics retrieved successfully', data };
+    const data = await this.dashboardService.getDashboardStats(
+      userId,
+      projectId,
+    );
+    return {
+      message: 'Task Dashboard statistics retrieved successfully',
+      data,
+    };
   }
 }

@@ -9,7 +9,7 @@ import { SuccessResponseDto } from '../../common/dto/api-response.dto';
 export class HealthController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cache: CacheService
+    private readonly cache: CacheService,
   ) {}
 
   @Get('health')

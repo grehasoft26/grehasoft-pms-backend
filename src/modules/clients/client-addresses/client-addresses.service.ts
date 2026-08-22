@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ClientAddressesRepository } from './client-addresses.repository';
 import { ClientTimelinesRepository } from '../client-timelines/client-timelines.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { CreateClientAddressDto, UpdateClientAddressDto } from './dto/client-addresses.dto';
+import {
+  CreateClientAddressDto,
+  UpdateClientAddressDto,
+} from './dto/client-addresses.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 
 @Injectable()
@@ -10,7 +13,7 @@ export class ClientAddressesService {
   constructor(
     private readonly repository: ClientAddressesRepository,
     private readonly timelineRepository: ClientTimelinesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateClientAddressDto, context: RequestContext) {
@@ -35,12 +38,18 @@ export class ClientAddressesService {
       metadata: { address },
     });
 
-    this.logger.audit(context.userId, 'Create Client Address', 'clientAddress', address, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: address,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Client Address',
+      'clientAddress',
+      address,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: address,
+      },
+    );
 
     return address;
   }
@@ -55,7 +64,11 @@ export class ClientAddressesService {
     return address;
   }
 
-  async update(id: string, dto: UpdateClientAddressDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateClientAddressDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
 
     if (dto.isPrimary) {
@@ -68,7 +81,10 @@ export class ClientAddressesService {
     });
 
     if (dto.isPrimary) {
-      await this.repository.setClientPrimaryAddress(before.clientId, updated.id);
+      await this.repository.setClientPrimaryAddress(
+        before.clientId,
+        updated.id,
+      );
     } else if (dto.isPrimary === false && before.isPrimary) {
       await this.repository.setClientPrimaryAddress(before.clientId, null);
     }
@@ -81,13 +97,19 @@ export class ClientAddressesService {
       metadata: { before, after: updated },
     });
 
-    this.logger.audit(context.userId, 'Update Client Address', 'clientAddress', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Client Address',
+      'clientAddress',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -107,11 +129,17 @@ export class ClientAddressesService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Delete Client Address', 'clientAddress', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Client Address',
+      'clientAddress',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

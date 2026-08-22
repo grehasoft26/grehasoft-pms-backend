@@ -1,6 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TimeEntriesService } from './time-entries.service';
 import { CreateTimeEntryDto, UpdateTimeEntryDto } from './dto/time-entries.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -28,7 +44,9 @@ export class TimeEntriesController {
 
   @Post()
   @Permissions('timetracking.manage')
-  @ApiOperation({ summary: 'Create manual TimeEntry record (Single Source of Truth)' })
+  @ApiOperation({
+    summary: 'Create manual TimeEntry record (Single Source of Truth)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async create(@Body() dto: CreateTimeEntryDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -44,9 +62,14 @@ export class TimeEntriesController {
     @Query('userId') userId?: string,
     @Query('projectId') projectId?: string,
     @Query('taskId') taskId?: string,
-    @Query('approved') approved?: boolean
+    @Query('approved') approved?: boolean,
   ) {
-    const data = await this.service.getMany({ userId, projectId, taskId, approved });
+    const data = await this.service.getMany({
+      userId,
+      projectId,
+      taskId,
+      approved,
+    });
     return { message: 'TimeEntries retrieved successfully', data };
   }
 
@@ -63,7 +86,11 @@ export class TimeEntriesController {
   @Permissions('timetracking.manage')
   @ApiOperation({ summary: 'Update TimeEntry details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateTimeEntryDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTimeEntryDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.update(id, dto, context);
     return { message: 'TimeEntry updated successfully', data };

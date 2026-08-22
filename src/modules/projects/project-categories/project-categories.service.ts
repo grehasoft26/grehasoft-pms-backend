@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectCategoriesRepository } from './project-categories.repository';
-import { CreateProjectCategoryDto, UpdateProjectCategoryDto } from './dto/project-categories.dto';
+import {
+  CreateProjectCategoryDto,
+  UpdateProjectCategoryDto,
+} from './dto/project-categories.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +11,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ProjectCategoriesService {
   constructor(
     private readonly repository: ProjectCategoriesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateProjectCategoryDto, context: RequestContext) {
@@ -17,12 +20,18 @@ export class ProjectCategoriesService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Create Project Category', 'projectCategory', category, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: category,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Project Category',
+      'projectCategory',
+      category,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: category,
+      },
+    );
 
     return category;
   }
@@ -39,20 +48,30 @@ export class ProjectCategoriesService {
     return category;
   }
 
-  async update(id: string, dto: UpdateProjectCategoryDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateProjectCategoryDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
     const updated = await this.repository.update(id, {
       ...dto,
       updatedBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Update Project Category', 'projectCategory', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Project Category',
+      'projectCategory',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -61,11 +80,17 @@ export class ProjectCategoriesService {
     const before = await this.getById(id);
     await this.repository.delete(id, context.userId);
 
-    this.logger.audit(context.userId, 'Delete Project Category', 'projectCategory', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Project Category',
+      'projectCategory',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

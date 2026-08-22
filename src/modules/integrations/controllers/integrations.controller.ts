@@ -1,6 +1,23 @@
-import { Body, Controller, Get, Param, Post, Delete, Req, UseGuards, Query, HttpStatus, HttpCode } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Delete,
+  Req,
+  UseGuards,
+  Query,
+  HttpStatus,
+  HttpCode,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../auth/guards/permissions.guard';
@@ -34,11 +51,13 @@ export class IntegrationsController {
     private readonly integrationsService: IntegrationsService,
     private readonly developerPortalService: DeveloperPortalService,
     private readonly rateLimiterService: RateLimiterService,
-    private readonly analyticsService: AnalyticsService
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   private getContext(req: Request) {
-    const tenantId = (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    const tenantId =
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000';
     const user = (req as any).user;
     const userId = user?.id || (req.headers['x-user-id'] as string) || 'system';
     return { tenantId, userId };
@@ -82,18 +101,31 @@ export class IntegrationsController {
   @ApiResponse({ type: SuccessResponseDto })
   async createOAuthApp(@Body() dto: CreateOAuthAppDto, @Req() req: Request) {
     const { tenantId, userId } = this.getContext(req);
-    const data = await this.oauthService.createApplication(tenantId, userId, dto);
+    const data = await this.oauthService.createApplication(
+      tenantId,
+      userId,
+      dto,
+    );
     return { message: 'OAuth Application registered successfully', data };
   }
 
   @Post('oauth/token')
   @Permissions('oauth.manage')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Exchange authorization code for access and refresh tokens' })
+  @ApiOperation({
+    summary: 'Exchange authorization code for access and refresh tokens',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async generateOAuthToken(
-    @Body() dto: { clientId: string; clientSecret: string; code: string; redirectUri: string; codeVerifier?: string },
-    @Req() req: Request
+    @Body()
+    dto: {
+      clientId: string;
+      clientSecret: string;
+      code: string;
+      redirectUri: string;
+      codeVerifier?: string;
+    },
+    @Req() req: Request,
   ) {
     const { tenantId } = this.getContext(req);
     const data = await this.oauthService.generateToken(
@@ -102,7 +134,7 @@ export class IntegrationsController {
       dto.clientSecret,
       dto.code,
       dto.redirectUri,
-      dto.codeVerifier
+      dto.codeVerifier,
     );
     return { message: 'OAuth Token exchanged successfully', data };
   }
@@ -110,14 +142,26 @@ export class IntegrationsController {
   // Third-party Integrations Endpoints
   @Post('connect')
   @Permissions('integrations.manage')
-  @ApiOperation({ summary: 'Connect third-party service provider integration keys' })
+  @ApiOperation({
+    summary: 'Connect third-party service provider integration keys',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async connectProvider(
-    @Body() dto: { provider: IntegrationProvider; clientId: string; credentials: Record<string, string> },
-    @Req() req: Request
+    @Body()
+    dto: {
+      provider: IntegrationProvider;
+      clientId: string;
+      credentials: Record<string, string>;
+    },
+    @Req() req: Request,
   ) {
     const { tenantId } = this.getContext(req);
-    const data = await this.integrationsService.connectProvider(tenantId, dto.provider, dto.clientId, dto.credentials);
+    const data = await this.integrationsService.connectProvider(
+      tenantId,
+      dto.provider,
+      dto.clientId,
+      dto.credentials,
+    );
     return { message: 'Provider connected successfully', data };
   }
 
@@ -127,7 +171,8 @@ export class IntegrationsController {
   @ApiResponse({ type: SuccessResponseDto })
   async getConnectedIntegrations(@Req() req: Request) {
     const { tenantId } = this.getContext(req);
-    const data = await this.integrationsService.getConnectedIntegrations(tenantId);
+    const data =
+      await this.integrationsService.getConnectedIntegrations(tenantId);
     return { message: 'Connected integrations retrieved', data };
   }
 
@@ -157,9 +202,17 @@ export class IntegrationsController {
   @Permissions('integrations.manage')
   @ApiOperation({ summary: 'Encrypt and store credential secret in vault' })
   @ApiResponse({ type: SuccessResponseDto })
-  async storeSecret(@Body() dto: { name: string; type: SecretType; plaintext: string }, @Req() req: Request) {
+  async storeSecret(
+    @Body() dto: { name: string; type: SecretType; plaintext: string },
+    @Req() req: Request,
+  ) {
     const { tenantId } = this.getContext(req);
-    const data = await this.vaultService.storeSecret(tenantId, dto.name, dto.type, dto.plaintext);
+    const data = await this.vaultService.storeSecret(
+      tenantId,
+      dto.name,
+      dto.type,
+      dto.plaintext,
+    );
     return { message: 'Secret stored securely in vault', data };
   }
 
@@ -167,7 +220,11 @@ export class IntegrationsController {
   @Permissions('integrations.manage')
   @ApiOperation({ summary: 'Access decrypted credential secret from vault' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getSecret(@Param('name') name: string, @Query('type') type: SecretType, @Req() req: Request) {
+  async getSecret(
+    @Param('name') name: string,
+    @Query('type') type: SecretType,
+    @Req() req: Request,
+  ) {
     const { tenantId } = this.getContext(req);
     const data = await this.vaultService.getSecret(tenantId, name, type);
     return { message: 'Secret retrieved and decrypted', data };
@@ -178,9 +235,16 @@ export class IntegrationsController {
   @Permissions('developer.manage')
   @ApiOperation({ summary: 'Register new application on developer portal' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createDeveloperApp(@Body() dto: CreateDeveloperAppDto, @Req() req: Request) {
+  async createDeveloperApp(
+    @Body() dto: CreateDeveloperAppDto,
+    @Req() req: Request,
+  ) {
     const { tenantId, userId } = this.getContext(req);
-    const data = await this.developerPortalService.createApplication(tenantId, userId, dto);
+    const data = await this.developerPortalService.createApplication(
+      tenantId,
+      userId,
+      dto,
+    );
     return { message: 'Developer application registered', data };
   }
 
@@ -198,19 +262,28 @@ export class IntegrationsController {
   @Post('gateway/rate-limit')
   @Permissions('api.manage')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Simulate API Gateways Rate limiting sliding window check' })
+  @ApiOperation({
+    summary: 'Simulate API Gateways Rate limiting sliding window check',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async checkRateLimit(
-    @Body() dto: { identifier: string; limitCount?: number; windowSeconds?: number },
-    @Req() req: Request
+    @Body()
+    dto: { identifier: string; limitCount?: number; windowSeconds?: number },
+    @Req() req: Request,
   ) {
-    const check = await this.rateLimiterService.enforceLimit(dto.identifier, dto.limitCount, dto.windowSeconds);
+    const check = await this.rateLimiterService.enforceLimit(
+      dto.identifier,
+      dto.limitCount,
+      dto.windowSeconds,
+    );
     return { message: 'API Request rate limit check passed', data: check };
   }
 
   @Get('gateway/analytics')
   @Permissions('analytics.manage')
-  @ApiOperation({ summary: 'Get API Gateway aggregate analytics metrics dashboard' })
+  @ApiOperation({
+    summary: 'Get API Gateway aggregate analytics metrics dashboard',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getDashboardAnalytics(@Req() req: Request) {
     const { tenantId } = this.getContext(req);

@@ -45,13 +45,19 @@ describe('BackupsService', () => {
 
   describe('triggerBackup', () => {
     it('should trigger and completed manual backup successfully', async () => {
-      repository.createBackup.mockResolvedValue({ id: 'backup-uuid', name: 'Database daily backup' } as any);
-
-      const result = await service.triggerBackup({
+      repository.createBackup.mockResolvedValue({
+        id: 'backup-uuid',
         name: 'Database daily backup',
-        backupType: 'DATABASE',
-        isFull: true,
-      }, mockContext);
+      } as any);
+
+      const result = await service.triggerBackup(
+        {
+          name: 'Database daily backup',
+          backupType: 'DATABASE',
+          isFull: true,
+        },
+        mockContext,
+      );
 
       expect(result.id).toEqual('backup-uuid');
       expect(repository.createBackup).toHaveBeenCalled();

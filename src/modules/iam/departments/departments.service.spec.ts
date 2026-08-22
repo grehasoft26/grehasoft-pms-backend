@@ -78,7 +78,7 @@ describe('DepartmentsService', () => {
       repository.findByCode.mockResolvedValue(mockDept);
 
       await expect(
-        service.create({ name: 'Engineering', code: 'ENG' }, mockContext)
+        service.create({ name: 'Engineering', code: 'ENG' }, mockContext),
       ).rejects.toThrow(ConflictException);
     });
   });
@@ -88,7 +88,7 @@ describe('DepartmentsService', () => {
       repository.findById.mockResolvedValue(mockDept as any);
 
       await expect(
-        service.update('dept-uuid', { parentId: 'dept-uuid' }, mockContext)
+        service.update('dept-uuid', { parentId: 'dept-uuid' }, mockContext),
       ).rejects.toThrow(BadRequestException);
     });
   });

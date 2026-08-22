@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { WebhookService } from '../webhooks/webhook.service';
 import { RegisterWebhookDto } from '../dto/webhooks.dto';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
@@ -16,7 +21,10 @@ export class WebhooksController {
   constructor(private readonly service: WebhookService) {}
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post('subscriptions')

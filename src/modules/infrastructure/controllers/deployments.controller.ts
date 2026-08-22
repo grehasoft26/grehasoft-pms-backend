@@ -1,8 +1,27 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { DeploymentsService } from '../services/deployments.service';
-import { CreateRepositoryDto, CreateRepositoryBranchDto, TriggerDeploymentDto, RollbackDeploymentDto } from '../dto/deployments.dto';
+import {
+  CreateRepositoryDto,
+  CreateRepositoryBranchDto,
+  TriggerDeploymentDto,
+  RollbackDeploymentDto,
+} from '../dto/deployments.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -28,9 +47,15 @@ export class DeploymentsController {
 
   @Post('repositories')
   @Permissions('infrastructure.manage')
-  @ApiOperation({ summary: 'Register a Git repository for client project (GitHub, GitLab, Bitbucket)' })
+  @ApiOperation({
+    summary:
+      'Register a Git repository for client project (GitHub, GitLab, Bitbucket)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async createRepository(@Body() dto: CreateRepositoryDto, @Req() req: Request) {
+  async createRepository(
+    @Body() dto: CreateRepositoryDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.createRepository(dto, context);
     return { message: 'Git repository registered successfully', data };
@@ -52,7 +77,7 @@ export class DeploymentsController {
   async addBranch(
     @Param('id') repositoryId: string,
     @Body() dto: CreateRepositoryBranchDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.addBranch(repositoryId, dto, context);
@@ -61,7 +86,9 @@ export class DeploymentsController {
 
   @Post('pipeline')
   @Permissions('deployments.manage')
-  @ApiOperation({ summary: 'Trigger a new project environment deployment pipeline' })
+  @ApiOperation({
+    summary: 'Trigger a new project environment deployment pipeline',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async trigger(@Body() dto: TriggerDeploymentDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -76,7 +103,7 @@ export class DeploymentsController {
   async rollback(
     @Param('id') id: string,
     @Body() dto: RollbackDeploymentDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.rollbackDeployment(id, dto, context);
@@ -94,7 +121,9 @@ export class DeploymentsController {
 
   @Get(':id')
   @Permissions('infrastructure.read')
-  @ApiOperation({ summary: 'Get specific deployment details and histories build logs' })
+  @ApiOperation({
+    summary: 'Get specific deployment details and histories build logs',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getById(@Param('id') id: string) {
     const data = await this.service.getDeployment(id);

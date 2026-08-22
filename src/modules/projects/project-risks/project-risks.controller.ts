@@ -1,8 +1,27 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectRisksService } from './project-risks.service';
-import { CreateProjectRiskDto, UpdateProjectRiskDto } from './dto/project-risks.dto';
+import {
+  CreateProjectRiskDto,
+  UpdateProjectRiskDto,
+} from './dto/project-risks.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -58,7 +77,11 @@ export class ProjectRisksController {
   @Permissions('project-risks.update')
   @ApiOperation({ summary: 'Update project risk details and mitigation plan' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateProjectRiskDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProjectRiskDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.risksService.update(id, dto, context);
     return { message: 'Risk updated successfully', data };

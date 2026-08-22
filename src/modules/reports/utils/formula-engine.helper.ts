@@ -1,10 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
 
-export function evaluateFormula(formula: string, variables: Record<string, number>): number {
+export function evaluateFormula(
+  formula: string,
+  variables: Record<string, number>,
+): number {
   if (!formula) return 0;
 
   // Tokenize: numbers, variables (A-Z, underscores), operators (+, -, *, /), and parentheses
-  const tokens = formula.match(/[A-Z_]+|[0-9]+(?:\.[0-9]+)?|[\+\-\*\/\(\)]/g) || [];
+  const tokens =
+    formula.match(/[A-Z_]+|[0-9]+(?:\.[0-9]+)?|[\+\-\*\/\(\)]/g) || [];
 
   const outputQueue: string[] = [];
   const operatorStack: string[] = [];
@@ -43,7 +47,9 @@ export function evaluateFormula(formula: string, variables: Record<string, numbe
         outputQueue.push(operatorStack.pop()!);
       }
       if (operatorStack.length === 0) {
-        throw new BadRequestException(`Mismatched parentheses in formula: ${formula}`);
+        throw new BadRequestException(
+          `Mismatched parentheses in formula: ${formula}`,
+        );
       }
       operatorStack.pop(); // Pop '('
     }
@@ -52,7 +58,9 @@ export function evaluateFormula(formula: string, variables: Record<string, numbe
   while (operatorStack.length > 0) {
     const op = operatorStack.pop()!;
     if (op === '(' || op === ')') {
-      throw new BadRequestException(`Mismatched parentheses in formula: ${formula}`);
+      throw new BadRequestException(
+        `Mismatched parentheses in formula: ${formula}`,
+      );
     }
     outputQueue.push(op);
   }

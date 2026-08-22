@@ -7,7 +7,10 @@ export class CreatePermissionGroupDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'Customer Relationship Management Module', required: false })
+  @ApiProperty({
+    example: 'Customer Relationship Management Module',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -19,7 +22,10 @@ export class CreatePermissionCategoryDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'Lead administration permission category', required: false })
+  @ApiProperty({
+    example: 'Lead administration permission category',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;

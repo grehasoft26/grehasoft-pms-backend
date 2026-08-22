@@ -1,9 +1,32 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClientDocumentsService } from './client-documents.service';
-import { CreateClientDocumentDto, UpdateClientDocumentDto } from './dto/client-documents.dto';
+import {
+  CreateClientDocumentDto,
+  UpdateClientDocumentDto,
+} from './dto/client-documents.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -36,7 +59,7 @@ export class ClientDocumentsController {
   async upload(
     @UploadedFile() file: any,
     @Body() dto: CreateClientDocumentDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const fileBuffer = file?.buffer || Buffer.alloc(0);
@@ -50,14 +73,17 @@ export class ClientDocumentsController {
       fileName,
       mimeType,
       fileSize,
-      context
+      context,
     );
     return { message: 'Client document uploaded successfully', data };
   }
 
   @Get()
   @Permissions('client-documents.read')
-  @ApiOperation({ summary: 'Get all client documents metadata, optionally filtered by clientId' })
+  @ApiOperation({
+    summary:
+      'Get all client documents metadata, optionally filtered by clientId',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(@Query('clientId') clientId?: string) {
     const data = await this.documentsService.getMany(clientId);
@@ -80,7 +106,10 @@ export class ClientDocumentsController {
     const doc = await this.documentsService.getById(id);
     const fileStream = await this.documentsService.getFileStream(id);
     res.setHeader('Content-Type', doc.mimeType || 'application/octet-stream');
-    res.setHeader('Content-Disposition', `attachment; filename="${doc.fileName}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${doc.fileName}"`,
+    );
     fileStream.pipe(res);
   }
 
@@ -88,7 +117,11 @@ export class ClientDocumentsController {
   @Permissions('client-documents.update')
   @ApiOperation({ summary: 'Update client document metadata' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateClientDocumentDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateClientDocumentDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.documentsService.update(id, dto, context);
     return { message: 'Client document metadata updated successfully', data };
@@ -96,7 +129,9 @@ export class ClientDocumentsController {
 
   @Delete(':id')
   @Permissions('client-documents.delete')
-  @ApiOperation({ summary: 'Soft delete a client document and purge physical storage file' })
+  @ApiOperation({
+    summary: 'Soft delete a client document and purge physical storage file',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async delete(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);

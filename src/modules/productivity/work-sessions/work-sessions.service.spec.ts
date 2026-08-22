@@ -82,7 +82,9 @@ describe('WorkSessionsService', () => {
 
     it('should throw BadRequestException if session is already active', async () => {
       repository.findActiveSession.mockResolvedValue(mockSession);
-      await expect(service.startSession({}, mockContext)).rejects.toThrow(BadRequestException);
+      await expect(service.startSession({}, mockContext)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -92,7 +94,10 @@ describe('WorkSessionsService', () => {
       repository.findActiveBreak.mockResolvedValue(null);
       repository.createBreak.mockResolvedValue({ id: 'break-uuid' } as any);
 
-      const result = await service.startBreak({ type: BreakType.LUNCH, reason: 'Lunch Break' }, mockContext);
+      const result = await service.startBreak(
+        { type: BreakType.LUNCH, reason: 'Lunch Break' },
+        mockContext,
+      );
       expect(result.id).toEqual('break-uuid');
     });
   });

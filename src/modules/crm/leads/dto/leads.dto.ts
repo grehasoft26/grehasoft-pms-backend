@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNumber, IsOptional, IsString, IsUUID, Min, IsDateString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  IsDateString,
+} from 'class-validator';
 import { LeadPriority, LeadTemperature } from '@prisma/client';
 import { Type } from 'class-transformer';
 
@@ -69,6 +78,83 @@ export class CreateLeadDto {
   @ApiProperty({ description: 'Owner User ID' })
   @IsUUID()
   ownerId: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  enquiryFrom?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  howContacted?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  contactedPerson?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  referencePerson?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  serviceRequired?: any;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  clientRequirements?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  detailsGiven?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  competitorWebsites?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  documentsGiven?: any;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  loginCredentials?: any;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  addressLine1?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  addressLine2?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  state?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  postalCode?: string;
 }
 
 export class UpdateLeadDto {
@@ -143,10 +229,89 @@ export class UpdateLeadDto {
   @IsUUID()
   @IsOptional()
   ownerId?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  enquiryFrom?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  howContacted?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  contactedPerson?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  referencePerson?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  serviceRequired?: any;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  clientRequirements?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  detailsGiven?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  competitorWebsites?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  documentsGiven?: any;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  loginCredentials?: any;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  addressLine1?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  addressLine2?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  state?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  country?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  postalCode?: string;
 }
 
 export class LeadFilterDto {
-  @ApiPropertyOptional({ description: 'Search term for company, contact name, email, phone, gst' })
+  @ApiPropertyOptional({
+    description: 'Search term for company, contact name, email, phone, gst',
+  })
   @IsString()
   @IsOptional()
   search?: string;
@@ -207,11 +372,15 @@ export class AssignLeadDto {
 }
 
 export class MergeLeadsDto {
-  @ApiProperty({ description: 'ID of the lead that will absorb the secondary lead' })
+  @ApiProperty({
+    description: 'ID of the lead that will absorb the secondary lead',
+  })
   @IsUUID()
   primaryLeadId: string;
 
-  @ApiProperty({ description: 'ID of the lead that will be merged and soft-deleted' })
+  @ApiProperty({
+    description: 'ID of the lead that will be merged and soft-deleted',
+  })
   @IsUUID()
   secondaryLeadId: string;
 }

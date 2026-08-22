@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsNumber, IsBoolean, Min, IsIP } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsBoolean,
+  Min,
+  IsIP,
+  IsUUID,
+} from 'class-validator';
 import { BreakType, IdleType } from '@prisma/client';
 
 export class StartWorkSessionDto {
@@ -130,4 +140,124 @@ export class LogScreenshotDto {
   @IsOptional()
   @IsString()
   checksum?: string;
+}
+
+export class TrackerHeartbeatDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  appName?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  currentApp?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  windowTitle?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  currentWindow?: string;
+
+  @ApiPropertyOptional({ default: 60 })
+  @IsOptional()
+  @IsNumber()
+  durationSeconds?: number;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  isIdle?: boolean;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsNumber()
+  mouseMoves?: number;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsNumber()
+  keyPresses?: number;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsNumber()
+  clicks?: number;
+}
+
+export class TrackerOfflineActivityDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsUUID()
+  eventId: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  appName: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  windowTitle?: string;
+
+  @ApiProperty({ description: 'Duration in seconds' })
+  @IsNotEmpty()
+  @IsNumber()
+  durationSeconds: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  timestamp: string;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsNumber()
+  mouseMoves?: number;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsNumber()
+  keyPresses?: number;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsNumber()
+  clicks?: number;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  isIdle?: boolean;
+}
+
+export class TrackerBatchSyncDto {
+  @ApiProperty({ type: [TrackerOfflineActivityDto] })
+  @IsNotEmpty()
+  activities: TrackerOfflineActivityDto[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  device_id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  installation_uuid?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  tracker_id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  machine_fingerprint?: string;
 }

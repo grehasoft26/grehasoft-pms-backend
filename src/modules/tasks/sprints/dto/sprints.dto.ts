@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsArray, IsBoolean, IsDateString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsArray,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 import { SprintStatus } from '@prisma/client';
 
 export class CreateSprintDto {
@@ -28,7 +37,10 @@ export class CreateSprintDto {
   @IsEnum(SprintStatus)
   status?: SprintStatus;
 
-  @ApiPropertyOptional({ type: [String], description: 'Optional Sprint goals list' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Optional Sprint goals list',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

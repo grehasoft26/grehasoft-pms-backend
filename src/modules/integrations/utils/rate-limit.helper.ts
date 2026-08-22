@@ -3,7 +3,7 @@ const clientRequestLogs = new Map<string, number[]>();
 export function checkSlidingWindowRateLimit(
   identifier: string,
   limitCount: number,
-  windowSeconds: number
+  windowSeconds: number,
 ): { isAllowed: boolean; remainingRequests: number; resetTimeSeconds: number } {
   const currentTimeMs = Date.now();
   const currentTimeSecs = Math.floor(currentTimeMs / 1000);
@@ -12,7 +12,9 @@ export function checkSlidingWindowRateLimit(
   let requestTimestamps = clientRequestLogs.get(identifier) || [];
 
   // Filter out timestamps older than current window
-  requestTimestamps = requestTimestamps.filter((t) => currentTimeMs - t < windowMs);
+  requestTimestamps = requestTimestamps.filter(
+    (t) => currentTimeMs - t < windowMs,
+  );
 
   if (requestTimestamps.length >= limitCount) {
     const oldestTimestamp = requestTimestamps[0];

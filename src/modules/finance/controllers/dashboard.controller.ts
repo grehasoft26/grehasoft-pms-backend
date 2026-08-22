@@ -1,5 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { FinancialDashboardService } from '../services/dashboard.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -15,7 +20,10 @@ export class FinancialDashboardController {
 
   @Get('stats')
   @Permissions('finance.read')
-  @ApiOperation({ summary: 'Get summary metrics: today/monthly revenue, outstanding collections, overdue, profit, receivables/payables accounts' })
+  @ApiOperation({
+    summary:
+      'Get summary metrics: today/monthly revenue, outstanding collections, overdue, profit, receivables/payables accounts',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getStats() {
     const data = await this.service.getDashboardStats();
@@ -24,7 +32,10 @@ export class FinancialDashboardController {
 
   @Get('project-profitability')
   @Permissions('finance.read')
-  @ApiOperation({ summary: 'Get project profitability report comparing total invoices vs total paid expenses' })
+  @ApiOperation({
+    summary:
+      'Get project profitability report comparing total invoices vs total paid expenses',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getProjectProfitability(@Query('projectId') projectId: string) {
     const data = await this.service.getProjectProfitability(projectId);

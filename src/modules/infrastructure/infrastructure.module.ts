@@ -22,9 +22,7 @@ import { IncidentsController } from './controllers/incidents.controller';
 import { InfrastructureDashboardController } from './controllers/dashboard.controller';
 
 @Module({
-  imports: [
-    AuthModule,
-  ],
+  imports: [AuthModule],
   controllers: [
     DomainsController,
     HostingController,

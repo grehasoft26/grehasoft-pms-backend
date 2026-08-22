@@ -1,6 +1,10 @@
 import * as crypto from 'crypto';
 
-export function generateWebhookSignature(secretToken: string, payloadJson: string, timestamp: number): string {
+export function generateWebhookSignature(
+  secretToken: string,
+  payloadJson: string,
+  timestamp: number,
+): string {
   const data = `${timestamp}.${payloadJson}`;
   return crypto.createHmac('sha256', secretToken).update(data).digest('hex');
 }
@@ -10,7 +14,7 @@ export function verifyWebhookSignature(
   payloadJson: string,
   signature: string,
   timestamp: number,
-  toleranceSeconds = 300
+  toleranceSeconds = 300,
 ): boolean {
   // Replay Protection: check if timestamp is within tolerance (e.g. 5 minutes)
   const currentTime = Math.floor(Date.now() / 1000);
@@ -18,6 +22,13 @@ export function verifyWebhookSignature(
     return false;
   }
 
-  const expectedSignature = generateWebhookSignature(secretToken, payloadJson, timestamp);
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+  const expectedSignature = generateWebhookSignature(
+    secretToken,
+    payloadJson,
+    timestamp,
+  );
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature),
+  );
 }

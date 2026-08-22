@@ -19,7 +19,10 @@ describe('FormulaEngineHelper', () => {
 
   it('should replace context variables correctly', () => {
     const variables = { REVENUE: 1000, EXPENSES: 400 };
-    const res = evaluateFormula('((REVENUE - EXPENSES) / REVENUE) * 100', variables);
+    const res = evaluateFormula(
+      '((REVENUE - EXPENSES) / REVENUE) * 100',
+      variables,
+    );
     expect(res).toBe(60);
   });
 

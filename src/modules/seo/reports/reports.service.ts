@@ -5,7 +5,12 @@ import { SeoRepository } from '../repositories/seo.repository';
 export class ReportsService {
   constructor(private readonly repository: SeoRepository) {}
 
-  async createReport(tenantId: string, seoProjectId: string, title: string, userId: string) {
+  async createReport(
+    tenantId: string,
+    seoProjectId: string,
+    title: string,
+    userId: string,
+  ) {
     const report = await this.repository.createReport(tenantId, {
       seoProjectId,
       title,
@@ -13,7 +18,11 @@ export class ReportsService {
       createdById: userId,
     });
 
-    await this.repository.logAudit(tenantId, 'Create SEO Report', `Report ${title} generated.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Create SEO Report',
+      `Report ${title} generated.`,
+    );
     return report;
   }
 

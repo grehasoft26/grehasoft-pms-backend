@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SslService } from '../services/ssl.service';
 import { CreateSSLCertificateDto } from '../dto/monitoring.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -28,7 +33,10 @@ export class SslController {
 
   @Post()
   @Permissions('infrastructure.manage')
-  @ApiOperation({ summary: 'Register an SSL certificate (Let’s Encrypt, Cloudflare, Sectigo, wildcard, auto-renew)' })
+  @ApiOperation({
+    summary:
+      'Register an SSL certificate (Let’s Encrypt, Cloudflare, Sectigo, wildcard, auto-renew)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async install(@Body() dto: CreateSSLCertificateDto, @Req() req: Request) {
     const context = this.getContext(req);

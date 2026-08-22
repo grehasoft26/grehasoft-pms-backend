@@ -5,7 +5,12 @@ import { SeoRepository } from '../repositories/seo.repository';
 export class RankingsService {
   constructor(private readonly repository: SeoRepository) {}
 
-  async logRanking(tenantId: string, keywordId: string, position: number, engine: 'GOOGLE' | 'BING' = 'GOOGLE') {
+  async logRanking(
+    tenantId: string,
+    keywordId: string,
+    position: number,
+    engine: 'GOOGLE' | 'BING' = 'GOOGLE',
+  ) {
     return this.repository.logKeywordRanking(tenantId, {
       keywordId,
       position,

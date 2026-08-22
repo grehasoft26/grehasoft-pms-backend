@@ -36,27 +36,30 @@ describe('LedgerAccountingService', () => {
         service.postJournalEntry(
           'Unbalanced entry',
           [{ accountCode: '1010', amount: 100 }],
-          [{ accountCode: '4000', amount: 150 }]
-        )
+          [{ accountCode: '4000', amount: 150 }],
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should post entry successfully if balanced', async () => {
       repository.getLastJournalEntryNumber.mockResolvedValue(null);
-      repository.findLedgerAccountByCode.mockImplementation(async (code) => ({
-        id: `acc-${code}`,
-        code,
-        name: 'Account',
-        type: code === '1010' ? 'ASSET' : 'REVENUE',
-        balance: 1000.00,
-      } as any));
+      repository.findLedgerAccountByCode.mockImplementation(
+        async (code) =>
+          ({
+            id: `acc-${code}`,
+            code,
+            name: 'Account',
+            type: code === '1010' ? 'ASSET' : 'REVENUE',
+            balance: 1000.0,
+          }) as any,
+      );
 
       repository.createJournalEntry.mockResolvedValue({ id: 'je-uuid' } as any);
 
       const result = await service.postJournalEntry(
         'Balanced entry',
         [{ accountCode: '1010', amount: 100 }],
-        [{ accountCode: '4000', amount: 100 }]
+        [{ accountCode: '4000', amount: 100 }],
       );
 
       expect(result.id).toEqual('je-uuid');

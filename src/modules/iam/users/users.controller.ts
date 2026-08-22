@@ -1,7 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
@@ -40,7 +56,9 @@ export class UsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get specific user profile with preferences and relationships' })
+  @ApiOperation({
+    summary: 'Get specific user profile with preferences and relationships',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getById(@Param('id') id: string) {
     const data = await this.usersService.getById(id);
@@ -50,7 +68,11 @@ export class UsersController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update user profile details and preferences' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateUserDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.usersService.update(id, dto, context);
     return { message: 'User updated successfully', data };
@@ -79,7 +101,11 @@ export class UsersController {
   @ApiResponse({ type: SuccessResponseDto })
   async activate(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
-    const data = await this.usersService.setStatus(id, UserStatus.ACTIVE, context);
+    const data = await this.usersService.setStatus(
+      id,
+      UserStatus.ACTIVE,
+      context,
+    );
     return { message: 'User activated successfully', data };
   }
 
@@ -88,7 +114,11 @@ export class UsersController {
   @ApiResponse({ type: SuccessResponseDto })
   async deactivate(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
-    const data = await this.usersService.setStatus(id, UserStatus.INACTIVE, context);
+    const data = await this.usersService.setStatus(
+      id,
+      UserStatus.INACTIVE,
+      context,
+    );
     return { message: 'User deactivated successfully', data };
   }
 
@@ -97,7 +127,11 @@ export class UsersController {
   @ApiResponse({ type: SuccessResponseDto })
   async lock(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
-    const data = await this.usersService.setStatus(id, UserStatus.LOCKED, context);
+    const data = await this.usersService.setStatus(
+      id,
+      UserStatus.LOCKED,
+      context,
+    );
     return { message: 'User profile locked successfully', data };
   }
 
@@ -106,7 +140,11 @@ export class UsersController {
   @ApiResponse({ type: SuccessResponseDto })
   async suspend(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
-    const data = await this.usersService.setStatus(id, UserStatus.SUSPENDED, context);
+    const data = await this.usersService.setStatus(
+      id,
+      UserStatus.SUSPENDED,
+      context,
+    );
     return { message: 'User profile suspended successfully', data };
   }
 
@@ -115,7 +153,11 @@ export class UsersController {
   @ApiResponse({ type: SuccessResponseDto })
   async archive(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
-    const data = await this.usersService.setStatus(id, UserStatus.ARCHIVED, context);
+    const data = await this.usersService.setStatus(
+      id,
+      UserStatus.ARCHIVED,
+      context,
+    );
     return { message: 'User profile archived successfully', data };
   }
 
@@ -127,12 +169,17 @@ export class UsersController {
   async uploadAvatar(
     @Param('id') id: string,
     @UploadedFile() file: any,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const fileBuffer = file?.buffer || Buffer.alloc(0);
     const fileName = file?.originalname || 'avatar.png';
-    const data = await this.usersService.uploadAvatar(id, fileBuffer, fileName, context);
+    const data = await this.usersService.uploadAvatar(
+      id,
+      fileBuffer,
+      fileName,
+      context,
+    );
     return { message: 'Avatar uploaded successfully', data };
   }
 }

@@ -13,11 +13,14 @@ export class HrReportsService {
     });
 
     const activeCount = profiles.filter((p) => !p.exitDate).length;
-    const exitedCount = profiles.filter((p) => p.exitDate && new Date(p.exitDate) <= new Date()).length;
+    const exitedCount = profiles.filter(
+      (p) => p.exitDate && new Date(p.exitDate) <= new Date(),
+    ).length;
 
-    const turnover = activeCount + exitedCount > 0 
-      ? (exitedCount / (activeCount + exitedCount)) * 100 
-      : 0;
+    const turnover =
+      activeCount + exitedCount > 0
+        ? (exitedCount / (activeCount + exitedCount)) * 100
+        : 0;
 
     return {
       activeEmployees: activeCount,
@@ -32,12 +35,15 @@ export class HrReportsService {
       filters,
     });
 
-    const completed = enrollments.filter((e) => e.status === 'COMPLETED').length;
-    const pending = enrollments.filter((e) => e.status === 'ENROLLED' || e.status === 'IN_PROGRESS').length;
+    const completed = enrollments.filter(
+      (e) => e.status === 'COMPLETED',
+    ).length;
+    const pending = enrollments.filter(
+      (e) => e.status === 'ENROLLED' || e.status === 'IN_PROGRESS',
+    ).length;
 
-    const completionRate = enrollments.length > 0 
-      ? (completed / enrollments.length) * 100 
-      : 0;
+    const completionRate =
+      enrollments.length > 0 ? (completed / enrollments.length) * 100 : 0;
 
     return {
       totalEnrollments: enrollments.length,

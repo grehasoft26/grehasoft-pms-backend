@@ -1,8 +1,30 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PerformanceService } from '../services/performance.service';
-import { CreateGoalDto, UpdateGoalProgressDto, CreateReviewCycleDto, CreatePerformanceReviewDto, UpdatePerformanceReviewDto, CreatePipDto } from '../dto/performance.dto';
+import {
+  CreateGoalDto,
+  UpdateGoalProgressDto,
+  CreateReviewCycleDto,
+  CreatePerformanceReviewDto,
+  UpdatePerformanceReviewDto,
+  CreatePipDto,
+} from '../dto/performance.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -28,12 +50,14 @@ export class PerformanceController {
 
   @Post('goals/:profileId')
   @Permissions('performance.manage')
-  @ApiOperation({ summary: 'Setup employee performance target goal (KPIs, Competencies)' })
+  @ApiOperation({
+    summary: 'Setup employee performance target goal (KPIs, Competencies)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async createGoal(
     @Param('profileId') profileId: string,
     @Body() dto: CreateGoalDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.createGoal(profileId, dto, context);
@@ -47,7 +71,7 @@ export class PerformanceController {
   async updateGoalProgress(
     @Param('id') id: string,
     @Body() dto: UpdateGoalProgressDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.updateGoalProgress(id, dto, context);
@@ -68,7 +92,10 @@ export class PerformanceController {
   @Permissions('hr.read')
   @ApiOperation({ summary: 'Submit employee self appraisal review' })
   @ApiResponse({ type: SuccessResponseDto })
-  async submitSelfReview(@Body() dto: CreatePerformanceReviewDto, @Req() req: Request) {
+  async submitSelfReview(
+    @Body() dto: CreatePerformanceReviewDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.submitSelfReview(dto, context);
     return { message: 'Self review submitted', data };
@@ -76,12 +103,14 @@ export class PerformanceController {
 
   @Patch('reviews/:id/manager')
   @Permissions('performance.manage')
-  @ApiOperation({ summary: 'Submit manager review and final score ratings (1 to 5)' })
+  @ApiOperation({
+    summary: 'Submit manager review and final score ratings (1 to 5)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async submitManagerReview(
     @Param('id') id: string,
     @Body() dto: UpdatePerformanceReviewDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.submitManagerReview(id, dto, context);
@@ -90,12 +119,14 @@ export class PerformanceController {
 
   @Post('reviews/:id/pip')
   @Permissions('performance.manage')
-  @ApiOperation({ summary: 'Place employee on Performance Improvement Plan (PIP)' })
+  @ApiOperation({
+    summary: 'Place employee on Performance Improvement Plan (PIP)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async createPip(
     @Param('id') id: string,
     @Body() dto: CreatePipDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.createPip(id, dto, context);
@@ -108,7 +139,7 @@ export class PerformanceController {
   @ApiResponse({ type: SuccessResponseDto })
   async getReviews(
     @Query('employeeProfileId') employeeProfileId?: string,
-    @Query('cycleId') cycleId?: string
+    @Query('cycleId') cycleId?: string,
   ) {
     const data = await this.service.getReviews({ employeeProfileId, cycleId });
     return { message: 'Reviews retrieved', data };

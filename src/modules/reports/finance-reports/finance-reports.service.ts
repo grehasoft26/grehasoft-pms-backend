@@ -30,7 +30,11 @@ export class FinanceReportsService {
 
     const totalExpenses = expenses.reduce((sum, curr) => {
       // approved/paid expenses
-      if (curr.status === 'PAID' || curr.status === 'FINANCE_APPROVED' || curr.status === 'APPROVED') {
+      if (
+        curr.status === 'PAID' ||
+        curr.status === 'FINANCE_APPROVED' ||
+        curr.status === 'APPROVED'
+      ) {
         return sum + Number(curr.amount || 0);
       }
       return sum;

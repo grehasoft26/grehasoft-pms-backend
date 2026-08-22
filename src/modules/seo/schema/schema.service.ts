@@ -12,11 +12,21 @@ export class SchemaService {
     seoProjectId: string,
     urlPath: string,
     type: SchemaType,
-    data: Record<string, any>
+    data: Record<string, any>,
   ) {
     const jsonLdContent = buildSchemaJsonLd(type, data);
-    const schema = await this.repository.upsertSchemaMarkup(tenantId, seoProjectId, urlPath, type, jsonLdContent);
-    await this.repository.logAudit(tenantId, 'Generate Schema Markup', `Schema JSON-LD of type ${type} generated.`);
+    const schema = await this.repository.upsertSchemaMarkup(
+      tenantId,
+      seoProjectId,
+      urlPath,
+      type,
+      jsonLdContent,
+    );
+    await this.repository.logAudit(
+      tenantId,
+      'Generate Schema Markup',
+      `Schema JSON-LD of type ${type} generated.`,
+    );
     return schema;
   }
 

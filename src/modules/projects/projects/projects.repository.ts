@@ -14,7 +14,9 @@ export class ProjectsRepository {
         category: true,
         client: true,
         proposal: true,
-        manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+        manager: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
         tags: true,
       },
     });
@@ -57,7 +59,9 @@ export class ProjectsRepository {
           category: true,
           client: true,
           proposal: true,
-          manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+          manager: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
           tags: true,
         },
       }),
@@ -74,7 +78,9 @@ export class ProjectsRepository {
         category: true,
         client: true,
         proposal: true,
-        manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+        manager: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
         tags: true,
         phases: {
           where: { deletedAt: null },
@@ -89,12 +95,26 @@ export class ProjectsRepository {
         },
         members: {
           include: {
-            user: { select: { id: true, firstName: true, lastName: true, email: true } },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         },
         resources: {
           include: {
-            user: { select: { id: true, firstName: true, lastName: true, email: true } },
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
           },
         },
         risks: {
@@ -106,7 +126,9 @@ export class ProjectsRepository {
         issues: {
           where: { deletedAt: null },
           include: {
-            assignedTo: { select: { id: true, firstName: true, lastName: true } },
+            assignedTo: {
+              select: { id: true, firstName: true, lastName: true },
+            },
           },
         },
         documents: {
@@ -136,7 +158,9 @@ export class ProjectsRepository {
         category: true,
         client: true,
         proposal: true,
-        manager: { select: { id: true, firstName: true, lastName: true, email: true } },
+        manager: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
         tags: true,
       },
     });

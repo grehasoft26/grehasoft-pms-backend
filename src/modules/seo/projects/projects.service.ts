@@ -15,7 +15,11 @@ export class ProjectsService {
       status: 'ACTIVE',
     });
 
-    await this.repository.logAudit(tenantId, 'Create SEO Project', `SEO Project created for domain ${dto.domain}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Create SEO Project',
+      `SEO Project created for domain ${dto.domain}.`,
+    );
     return proj;
   }
 

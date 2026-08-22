@@ -3,12 +3,17 @@ import { calculateContentQualityScore } from '../utils/content-score.helper';
 
 @Injectable()
 export class ContentService {
-  async evaluateContentQuality(text: string, keyword: string, options: { hasH1: boolean; duplicateH1: boolean; altTagsMissing: number }) {
+  async evaluateContentQuality(
+    text: string,
+    keyword: string,
+    options: { hasH1: boolean; duplicateH1: boolean; altTagsMissing: number },
+  ) {
     const words = text.split(/\s+/).filter((w) => w.length > 0);
     const wordCount = words.length;
 
     // keyword matches count
-    const keywordMatches = text.toLowerCase().split(keyword.toLowerCase()).length - 1;
+    const keywordMatches =
+      text.toLowerCase().split(keyword.toLowerCase()).length - 1;
 
     const stats = {
       wordCount,

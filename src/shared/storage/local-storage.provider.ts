@@ -11,19 +11,26 @@ export class LocalStorageProvider implements IStorageProvider {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {
-    this.baseUploadPath = path.resolve(this.configService.get<string>('app.storage.localPath') || './uploads');
-    
+    this.baseUploadPath = path.resolve(
+      this.configService.get<string>('app.storage.localPath') || './uploads',
+    );
+
     // Ensure root uploads path exists
     if (!fs.existsSync(this.baseUploadPath)) {
       fs.mkdirSync(this.baseUploadPath, { recursive: true });
     }
   }
 
-  async uploadFile(fileBuffer: Buffer, fileName: string, mimeType: string, bucket = 'general'): Promise<string> {
+  async uploadFile(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string,
+    bucket = 'general',
+  ): Promise<string> {
     const bucketPath = path.join(this.baseUploadPath, bucket);
-    
+
     if (!fs.existsSync(bucketPath)) {
       await fs.promises.mkdir(bucketPath, { recursive: true });
     }
@@ -35,14 +42,20 @@ export class LocalStorageProvider implements IStorageProvider {
     const filePath = path.join(bucketPath, uniqueFileName);
 
     await fs.promises.writeFile(filePath, fileBuffer);
-    
-    this.logger.log(`Uploaded file to local storage: ${filePath}`, 'LocalStorageProvider');
+
+    this.logger.log(
+      `Uploaded file to local storage: ${filePath}`,
+      'LocalStorageProvider',
+    );
 
     // Return the relative key path (e.g. general/filename.ext)
     return path.join(bucket, uniqueFileName).replace(/\\/g, '/');
   }
 
-  async getFileStream(key: string, bucket = 'general'): Promise<NodeJS.ReadableStream> {
+  async getFileStream(
+    key: string,
+    bucket = 'general',
+  ): Promise<NodeJS.ReadableStream> {
     const filePath = path.join(this.baseUploadPath, key);
     if (!fs.existsSync(filePath)) {
       throw new Error(`File not found: ${key}`);
@@ -55,10 +68,17 @@ export class LocalStorageProvider implements IStorageProvider {
     try {
       if (fs.existsSync(filePath)) {
         await fs.promises.unlink(filePath);
-        this.logger.log(`Deleted local file: ${filePath}`, 'LocalStorageProvider');
+        this.logger.log(
+          `Deleted local file: ${filePath}`,
+          'LocalStorageProvider',
+        );
       }
     } catch (error) {
-      this.logger.error(`Error deleting local file: ${filePath}`, error.stack, 'LocalStorageProvider');
+      this.logger.error(
+        `Error deleting local file: ${filePath}`,
+        error.stack,
+        'LocalStorageProvider',
+      );
       throw error;
     }
   }

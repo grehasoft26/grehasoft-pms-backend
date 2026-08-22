@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUUID, IsNumber, IsDateString, Min, Max } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsNumber,
+  IsDateString,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class CreateProjectResourceDto {
   @ApiProperty({ description: 'Project ID' })
@@ -12,7 +21,10 @@ export class CreateProjectResourceDto {
   @IsUUID()
   userId: string;
 
-  @ApiProperty({ description: 'Allocation percentage (e.g. 50 = half time)', default: 100 })
+  @ApiProperty({
+    description: 'Allocation percentage (e.g. 50 = half time)',
+    default: 100,
+  })
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
@@ -29,7 +41,10 @@ export class CreateProjectResourceDto {
   @IsDateString()
   endDate: string;
 
-  @ApiProperty({ description: 'Assigned role for allocation', default: 'Developer' })
+  @ApiProperty({
+    description: 'Assigned role for allocation',
+    default: 'Developer',
+  })
   @IsNotEmpty()
   @IsString()
   role: string;

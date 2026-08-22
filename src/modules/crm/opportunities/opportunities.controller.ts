@@ -1,8 +1,30 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { OpportunitiesService } from './opportunities.service';
-import { CreateOpportunityDto, UpdateOpportunityDto, OpportunityFilterDto, ConvertLeadDto } from './dto/opportunities.dto';
+import {
+  CreateOpportunityDto,
+  UpdateOpportunityDto,
+  OpportunityFilterDto,
+  ConvertLeadDto,
+} from './dto/opportunities.dto';
 import { CreatePipelineDto, CreatePipelineStageDto } from './dto/pipelines.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
@@ -39,7 +61,10 @@ export class OpportunitiesController {
 
   @Get()
   @Permissions('opportunities.read')
-  @ApiOperation({ summary: 'Get all Opportunities with advanced search, filter, and pagination' })
+  @ApiOperation({
+    summary:
+      'Get all Opportunities with advanced search, filter, and pagination',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(@Query() query: OpportunityFilterDto) {
     const { data, totalCount } = await this.opportunitiesService.getMany(query);
@@ -86,7 +111,11 @@ export class OpportunitiesController {
   @Permissions('opportunities.update')
   @ApiOperation({ summary: 'Update Opportunity details and line items' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateOpportunityDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateOpportunityDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.opportunitiesService.update(id, dto, context);
     return { message: 'Opportunity updated successfully', data };
@@ -118,7 +147,10 @@ export class OpportunitiesController {
   @ApiResponse({ type: SuccessResponseDto })
   async getTimeline(@Param('id') id: string) {
     const data = await this.opportunitiesService.getTimeline(id);
-    return { message: 'Opportunity timeline logs retrieved successfully', data };
+    return {
+      message: 'Opportunity timeline logs retrieved successfully',
+      data,
+    };
   }
 
   // Pipeline Endpoints
@@ -157,11 +189,14 @@ export class OpportunitiesController {
   async createStage(
     @Param('pipelineId') pipelineId: string,
     @Body() dto: CreatePipelineStageDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     dto.pipelineId = pipelineId;
-    const data = await this.opportunitiesService.createPipelineStage(dto, context);
+    const data = await this.opportunitiesService.createPipelineStage(
+      dto,
+      context,
+    );
     return { message: 'Pipeline Stage created successfully', data };
   }
 }

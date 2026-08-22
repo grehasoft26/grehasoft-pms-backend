@@ -1,10 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
-import { CreateRoleDto, UpdateRoleDto, AssignPermissionsDto } from './dto/roles.dto';
+import {
+  CreateRoleDto,
+  UpdateRoleDto,
+  AssignPermissionsDto,
+} from './dto/roles.dto';
 
 @ApiTags('Roles')
 @Controller('roles')
@@ -30,7 +43,9 @@ export class RolesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all roles with hierarchy details and assigned permissions' })
+  @ApiOperation({
+    summary: 'Get all roles with hierarchy details and assigned permissions',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany() {
     const data = await this.rolesService.getMany();
@@ -48,7 +63,11 @@ export class RolesController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update role details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateRoleDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateRoleDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.rolesService.update(id, dto, context);
     return { message: 'Role updated successfully', data };
@@ -73,7 +92,9 @@ export class RolesController {
   }
 
   @Post(':id/clone')
-  @ApiOperation({ summary: 'Clone a role and copy all of its assigned permissions' })
+  @ApiOperation({
+    summary: 'Clone a role and copy all of its assigned permissions',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async clone(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
@@ -84,9 +105,17 @@ export class RolesController {
   @Post(':id/permissions')
   @ApiOperation({ summary: 'Assign a list of permissions to a role' })
   @ApiResponse({ type: SuccessResponseDto })
-  async assignPermissions(@Param('id') id: string, @Body() dto: AssignPermissionsDto, @Req() req: Request) {
+  async assignPermissions(
+    @Param('id') id: string,
+    @Body() dto: AssignPermissionsDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
-    const data = await this.rolesService.assignPermissions(id, dto.permissionIds, context);
+    const data = await this.rolesService.assignPermissions(
+      id,
+      dto.permissionIds,
+      context,
+    );
     return { message: 'Permissions assigned to role successfully', data };
   }
 }

@@ -1,18 +1,47 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { LeadsService } from './leads.service';
-import { CreateLeadDto, UpdateLeadDto, LeadFilterDto, AssignLeadDto, MergeLeadsDto } from './dto/leads.dto';
-import { CreateLeadActivityDto, UpdateLeadActivityDto } from '../lead-activities/dto/lead-activities.dto';
+import {
+  CreateLeadDto,
+  UpdateLeadDto,
+  LeadFilterDto,
+  AssignLeadDto,
+  MergeLeadsDto,
+} from './dto/leads.dto';
+import {
+  CreateLeadActivityDto,
+  UpdateLeadActivityDto,
+} from '../lead-activities/dto/lead-activities.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../auth/guards/permissions.guard';
 import { Permissions } from '../../auth/decorators/permissions.decorator';
+import { FeatureGuard } from '../../auth/guards/feature.guard';
+import { FeatureRequired } from '../../auth/decorators/feature.decorator';
 
 @ApiTags('Leads')
 @ApiBearerAuth('JWT')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard, FeatureGuard)
+@FeatureRequired('CRM_LEADS')
 @Controller('leads')
 export class LeadsController {
   constructor(private readonly leadsService: LeadsService) {}
@@ -39,7 +68,9 @@ export class LeadsController {
 
   @Get()
   @Permissions('leads.read')
-  @ApiOperation({ summary: 'Get all Leads with advanced search, filter, and pagination' })
+  @ApiOperation({
+    summary: 'Get all Leads with advanced search, filter, and pagination',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(@Query() query: LeadFilterDto) {
     const { data, totalCount } = await this.leadsService.getMany(query);
@@ -65,14 +96,17 @@ export class LeadsController {
 
   @Get('check-duplicates')
   @Permissions('leads.read')
-  @ApiOperation({ summary: 'Check for duplicate leads using Email, Phone, Company Name, or GST Number' })
+  @ApiOperation({
+    summary:
+      'Check for duplicate leads using Email, Phone, Company Name, or GST Number',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async checkDuplicates(
     @Query('email') email?: string,
     @Query('phone') phone?: string,
     @Query('companyName') companyName?: string,
     @Query('gstNumber') gstNumber?: string,
-    @Query('excludeId') excludeId?: string
+    @Query('excludeId') excludeId?: string,
   ) {
     const duplicates = await this.leadsService.checkDuplicates({
       email,
@@ -107,7 +141,11 @@ export class LeadsController {
   @Permissions('leads.update')
   @ApiOperation({ summary: 'Update Lead details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateLeadDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateLeadDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.leadsService.update(id, dto, context);
     return { message: 'Lead updated successfully', data };
@@ -137,7 +175,11 @@ export class LeadsController {
   @Permissions('leads.assign')
   @ApiOperation({ summary: 'Assign Lead owner / Transfer lead' })
   @ApiResponse({ type: SuccessResponseDto })
-  async assign(@Param('id') id: string, @Body() dto: AssignLeadDto, @Req() req: Request) {
+  async assign(
+    @Param('id') id: string,
+    @Body() dto: AssignLeadDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.leadsService.assign(id, dto, context);
     return { message: 'Lead ownership assigned successfully', data };
@@ -155,12 +197,14 @@ export class LeadsController {
   // Lead Activities Endpoints
   @Post(':id/activities')
   @Permissions('leads.update')
-  @ApiOperation({ summary: 'Record a Lead activity (Call, Email, WhatsApp, etc.)' })
+  @ApiOperation({
+    summary: 'Record a Lead activity (Call, Email, WhatsApp, etc.)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async createActivity(
     @Param('id') leadId: string,
     @Body() dto: CreateLeadActivityDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     dto.leadId = leadId; // Ensure parameter binds correctly
@@ -184,10 +228,14 @@ export class LeadsController {
   async updateActivity(
     @Param('activityId') activityId: string,
     @Body() dto: UpdateLeadActivityDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
-    const data = await this.leadsService.updateActivity(activityId, dto, context);
+    const data = await this.leadsService.updateActivity(
+      activityId,
+      dto,
+      context,
+    );
     return { message: 'Lead activity updated successfully', data };
   }
 
@@ -195,7 +243,10 @@ export class LeadsController {
   @Permissions('leads.update')
   @ApiOperation({ summary: 'Delete recorded activity' })
   @ApiResponse({ type: SuccessResponseDto })
-  async deleteActivity(@Param('activityId') activityId: string, @Req() req: Request) {
+  async deleteActivity(
+    @Param('activityId') activityId: string,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     await this.leadsService.deleteActivity(activityId, context);
     return { message: 'Lead activity deleted successfully' };

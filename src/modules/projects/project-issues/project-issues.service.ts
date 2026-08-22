@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectIssuesRepository } from './project-issues.repository';
-import { CreateProjectIssueDto, UpdateProjectIssueDto } from './dto/project-issues.dto';
+import {
+  CreateProjectIssueDto,
+  UpdateProjectIssueDto,
+} from './dto/project-issues.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +11,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ProjectIssuesService {
   constructor(
     private readonly repository: ProjectIssuesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateProjectIssueDto, context: RequestContext) {
@@ -36,12 +39,18 @@ export class ProjectIssuesService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Create Project Issue', 'projectIssue', issue, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: issue,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Project Issue',
+      'projectIssue',
+      issue,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: issue,
+      },
+    );
 
     return issue;
   }
@@ -58,7 +67,11 @@ export class ProjectIssuesService {
     return issue;
   }
 
-  async update(id: string, dto: UpdateProjectIssueDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateProjectIssueDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
     const updated = await this.repository.update(id, {
       ...dto,
@@ -78,13 +91,19 @@ export class ProjectIssuesService {
     }
 
     // Audit
-    this.logger.audit(context.userId, 'Update Project Issue', 'projectIssue', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Project Issue',
+      'projectIssue',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -104,11 +123,17 @@ export class ProjectIssuesService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Delete Project Issue', 'projectIssue', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Project Issue',
+      'projectIssue',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

@@ -8,16 +8,22 @@ export class FinancialDashboardService {
 
   async getDashboardStats() {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
 
     // 1. Today's, Weekly, Monthly Revenue (from InvoicePayment)
-    const todayPayments = await this.repository.prisma.invoicePayment.aggregate({
-      where: {
-        paymentDate: { gte: todayStart },
-        status: 'COMPLETED',
+    const todayPayments = await this.repository.prisma.invoicePayment.aggregate(
+      {
+        where: {
+          paymentDate: { gte: todayStart },
+          status: 'COMPLETED',
+        },
+        _sum: { amount: true },
       },
-      _sum: { amount: true },
-    });
+    );
     const todayRevenue = Number(todayPayments._sum.amount || 0);
 
     const startOfWeek = new Date(now);
@@ -26,23 +32,25 @@ export class FinancialDashboardService {
     startOfWeek.setDate(diff);
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const weeklyPayments = await this.repository.prisma.invoicePayment.aggregate({
-      where: {
-        paymentDate: { gte: startOfWeek },
-        status: 'COMPLETED',
-      },
-      _sum: { amount: true },
-    });
+    const weeklyPayments =
+      await this.repository.prisma.invoicePayment.aggregate({
+        where: {
+          paymentDate: { gte: startOfWeek },
+          status: 'COMPLETED',
+        },
+        _sum: { amount: true },
+      });
     const weeklyRevenue = Number(weeklyPayments._sum.amount || 0);
 
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthlyPayments = await this.repository.prisma.invoicePayment.aggregate({
-      where: {
-        paymentDate: { gte: startOfMonth },
-        status: 'COMPLETED',
-      },
-      _sum: { amount: true },
-    });
+    const monthlyPayments =
+      await this.repository.prisma.invoicePayment.aggregate({
+        where: {
+          paymentDate: { gte: startOfMonth },
+          status: 'COMPLETED',
+        },
+        _sum: { amount: true },
+      });
     const monthlyRevenue = Number(monthlyPayments._sum.amount || 0);
 
     // 2. Outstanding & Overdue Invoices
@@ -98,7 +106,13 @@ export class FinancialDashboardService {
     const invoices = await this.repository.prisma.invoice.aggregate({
       where: {
         projectId,
-        status: { in: [InvoiceStatus.SENT, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.PAID] },
+        status: {
+          in: [
+            InvoiceStatus.SENT,
+            InvoiceStatus.PARTIALLY_PAID,
+            InvoiceStatus.PAID,
+          ],
+        },
       },
       _sum: { total: true },
     });
@@ -115,7 +129,8 @@ export class FinancialDashboardService {
     const totalExpenses = Number(expenses._sum.amount || 0);
 
     const profit = totalInvoiced - totalExpenses;
-    const profitabilityRate = totalInvoiced > 0 ? Math.round((profit / totalInvoiced) * 100) : 0;
+    const profitabilityRate =
+      totalInvoiced > 0 ? Math.round((profit / totalInvoiced) * 100) : 0;
 
     return {
       projectId,

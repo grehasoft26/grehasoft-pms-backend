@@ -10,6 +10,7 @@ import { PerformanceService } from './services/performance.service';
 import { TrainingService } from './services/training.service';
 import { AssetsService } from './services/assets.service';
 import { HrDashboardService } from './services/dashboard.service';
+import { HrDocumentsService } from './services/hr-documents.service';
 
 import { EmployeesController } from './controllers/employees.controller';
 import { AttendanceController } from './controllers/attendance.controller';
@@ -20,11 +21,10 @@ import { PerformanceController } from './controllers/performance.controller';
 import { TrainingController } from './controllers/training.controller';
 import { AssetsController } from './controllers/assets.controller';
 import { HrDashboardController } from './controllers/dashboard.controller';
+import { HrDocumentsController } from './controllers/hr-documents.controller';
 
 @Module({
-  imports: [
-    AuthModule,
-  ],
+  imports: [AuthModule],
   controllers: [
     EmployeesController,
     AttendanceController,
@@ -35,6 +35,7 @@ import { HrDashboardController } from './controllers/dashboard.controller';
     TrainingController,
     AssetsController,
     HrDashboardController,
+    HrDocumentsController,
   ],
   providers: [
     HrRepository,
@@ -47,6 +48,7 @@ import { HrDashboardController } from './controllers/dashboard.controller';
     TrainingService,
     AssetsService,
     HrDashboardService,
+    HrDocumentsService,
   ],
   exports: [
     HrRepository,
@@ -59,6 +61,7 @@ import { HrDashboardController } from './controllers/dashboard.controller';
     TrainingService,
     AssetsService,
     HrDashboardService,
+    HrDocumentsService,
   ],
 })
 export class HrModule {}

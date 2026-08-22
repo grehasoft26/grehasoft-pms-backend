@@ -47,11 +47,7 @@ import { ProjectDashboardController } from './project-dashboard/project-dashboar
 import { ProjectDashboardService } from './project-dashboard/project-dashboard.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    ClientsModule,
-    StorageModule,
-  ],
+  imports: [AuthModule, ClientsModule, StorageModule],
   controllers: [
     ProjectsController,
     ProjectTemplatesController,

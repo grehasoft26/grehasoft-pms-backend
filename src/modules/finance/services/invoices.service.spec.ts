@@ -23,8 +23,8 @@ describe('InvoicesService', () => {
     id: 'invoice-uuid',
     invoiceNumber: 'INV-2026-000001',
     status: InvoiceStatus.DRAFT,
-    total: 1000.00,
-    balanceDue: 1000.00,
+    total: 1000.0,
+    balanceDue: 1000.0,
   };
 
   beforeEach(async () => {
@@ -74,7 +74,10 @@ describe('InvoicesService', () => {
   describe('markAsSent', () => {
     it('should finalize draft invoice successfully', async () => {
       repository.findInvoiceById.mockResolvedValue(mockInvoice);
-      repository.updateInvoice.mockResolvedValue({ ...mockInvoice, status: InvoiceStatus.SENT });
+      repository.updateInvoice.mockResolvedValue({
+        ...mockInvoice,
+        status: InvoiceStatus.SENT,
+      });
 
       const result = await service.markAsSent('invoice-uuid', mockContext);
       expect(result.status).toEqual(InvoiceStatus.SENT);
@@ -82,8 +85,13 @@ describe('InvoicesService', () => {
     });
 
     it('should throw BadRequestException if already sent', async () => {
-      repository.findInvoiceById.mockResolvedValue({ ...mockInvoice, status: InvoiceStatus.SENT });
-      await expect(service.markAsSent('invoice-uuid', mockContext)).rejects.toThrow(BadRequestException);
+      repository.findInvoiceById.mockResolvedValue({
+        ...mockInvoice,
+        status: InvoiceStatus.SENT,
+      });
+      await expect(
+        service.markAsSent('invoice-uuid', mockContext),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

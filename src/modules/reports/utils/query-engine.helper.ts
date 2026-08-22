@@ -6,7 +6,10 @@ export interface QueryParams {
   filters?: Record<string, any>;
   sort?: { field: string; order: 'asc' | 'desc' }[];
   groupBy?: string[];
-  aggregations?: { field: string; type: 'SUM' | 'COUNT' | 'AVG' | 'MIN' | 'MAX' }[];
+  aggregations?: {
+    field: string;
+    type: 'SUM' | 'COUNT' | 'AVG' | 'MIN' | 'MAX';
+  }[];
   page?: number;
   limit?: number;
   search?: string;
@@ -74,11 +77,13 @@ const modelsWithDeletedAt = new Set([
 export async function executeQuery(
   prisma: any,
   modelName: string,
-  params: QueryParams
+  params: QueryParams,
 ): Promise<any[]> {
   const delegate = prisma[modelName];
   if (!delegate) {
-    throw new BadRequestException(`Model delegate ${modelName} not found in Prisma client`);
+    throw new BadRequestException(
+      `Model delegate ${modelName} not found in Prisma client`,
+    );
   }
 
   const where: Record<string, any> = {};

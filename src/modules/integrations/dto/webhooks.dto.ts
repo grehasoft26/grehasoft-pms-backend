@@ -12,7 +12,10 @@ export class CreateWebhookDto {
   @IsString()
   targetUrl: string;
 
-  @ApiProperty({ description: 'Comma-separated event types, e.g. "task.created,invoice.paid"' })
+  @ApiProperty({
+    description:
+      'Comma-separated event types, e.g. "task.created,invoice.paid"',
+  })
   @IsNotEmpty()
   @IsString()
   eventTypes: string;

@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
@@ -7,10 +12,10 @@ export class RoleGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
@@ -19,12 +24,16 @@ export class RoleGuard implements CanActivate {
     const user = request.user;
 
     if (!user || !user.roleName) {
-      throw new ForbiddenException('Access denied: User role details not found');
+      throw new ForbiddenException(
+        'Access denied: User role details not found',
+      );
     }
 
     const hasRole = requiredRoles.includes(user.roleName);
     if (!hasRole) {
-      throw new ForbiddenException('Access denied: Insufficient role privileges');
+      throw new ForbiddenException(
+        'Access denied: Insufficient role privileges',
+      );
     }
 
     return true;

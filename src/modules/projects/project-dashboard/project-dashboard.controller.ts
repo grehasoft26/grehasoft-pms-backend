@@ -1,6 +1,11 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectDashboardService } from './project-dashboard.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -22,6 +27,9 @@ export class ProjectDashboardController {
     const user = (req as any).user;
     const userId = user?.id;
     const data = await this.dashboardService.getDashboardStats(userId);
-    return { message: 'Project Dashboard metrics retrieved successfully', data };
+    return {
+      message: 'Project Dashboard metrics retrieved successfully',
+      data,
+    };
   }
 }

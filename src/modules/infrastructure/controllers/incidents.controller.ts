@@ -1,8 +1,26 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { IncidentsService } from '../services/incidents.service';
-import { CreateIncidentDto, CreateMaintenanceWindowDto } from '../dto/incidents.dto';
+import {
+  CreateIncidentDto,
+  CreateMaintenanceWindowDto,
+} from '../dto/incidents.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -28,7 +46,10 @@ export class IncidentsController {
 
   @Post()
   @Permissions('infrastructure.manage')
-  @ApiOperation({ summary: 'Report an infrastructure service incident (severity, priority, affectedServices)' })
+  @ApiOperation({
+    summary:
+      'Report an infrastructure service incident (severity, priority, affectedServices)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async createIncident(@Body() dto: CreateIncidentDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -38,9 +59,15 @@ export class IncidentsController {
 
   @Patch(':id/resolve')
   @Permissions('infrastructure.manage')
-  @ApiOperation({ summary: 'Resolve incident with rootCause and postmortem details' })
+  @ApiOperation({
+    summary: 'Resolve incident with rootCause and postmortem details',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async resolveIncident(@Param('id') id: string, @Body() dto: any, @Req() req: Request) {
+  async resolveIncident(
+    @Param('id') id: string,
+    @Body() dto: any,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.resolveIncident(id, dto, context);
     return { message: 'Incident resolved successfully', data };
@@ -59,7 +86,10 @@ export class IncidentsController {
   @Permissions('infrastructure.manage')
   @ApiOperation({ summary: 'Schedule a maintenance window' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createMaintenance(@Body() dto: CreateMaintenanceWindowDto, @Req() req: Request) {
+  async createMaintenance(
+    @Body() dto: CreateMaintenanceWindowDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.createMaintenanceWindow(dto, context);
     return { message: 'Maintenance window scheduled successfully', data };

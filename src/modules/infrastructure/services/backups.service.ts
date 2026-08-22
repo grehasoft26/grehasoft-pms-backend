@@ -9,7 +9,7 @@ import { BackupStatus } from '@prisma/client';
 export class BackupsService {
   constructor(
     private readonly repository: InfrastructureRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createSchedule(dto: CreateBackupScheduleDto, context: RequestContext) {
@@ -22,7 +22,13 @@ export class BackupsService {
       isActive: dto.isActive ?? true,
     });
 
-    this.logger.audit(context.userId, 'Create Backup Schedule', 'backupSchedule', schedule, { after: schedule });
+    this.logger.audit(
+      context.userId,
+      'Create Backup Schedule',
+      'backupSchedule',
+      schedule,
+      { after: schedule },
+    );
     return schedule;
   }
 
@@ -33,7 +39,7 @@ export class BackupsService {
       scheduleId: dto.scheduleId,
       name: dto.name,
       filePath: dto.filePath || `/backups/archive/${Date.now()}.tar.gz`,
-      fileSizeMb: dto.fileSizeMb || 150.00,
+      fileSizeMb: dto.fileSizeMb || 150.0,
       status: BackupStatus.COMPLETED,
       backupType: dto.backupType || 'DATABASE',
       isFull: dto.isFull ?? true,
@@ -43,7 +49,13 @@ export class BackupsService {
       completedAt: new Date(),
     });
 
-    this.logger.audit(context.userId, 'Trigger Manual Backup Success', 'backup', backup, { after: backup });
+    this.logger.audit(
+      context.userId,
+      'Trigger Manual Backup Success',
+      'backup',
+      backup,
+      { after: backup },
+    );
     return backup;
   }
 

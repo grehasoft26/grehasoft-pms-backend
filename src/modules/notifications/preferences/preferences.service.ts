@@ -7,7 +7,12 @@ import { RequestContext } from '../../../common/interfaces/request-context.inter
 export class PreferencesService {
   constructor(private readonly repository: NotificationsRepository) {}
 
-  async updatePreference(tenantId: string, userId: string, dto: UpdatePreferenceDto, context: RequestContext) {
+  async updatePreference(
+    tenantId: string,
+    userId: string,
+    dto: UpdatePreferenceDto,
+    context: RequestContext,
+  ) {
     const pref = await this.repository.upsertPreference(tenantId, userId, {
       channel: dto.channel,
       enabled: dto.enabled,
@@ -17,7 +22,11 @@ export class PreferencesService {
       timezone: dto.timezone || 'UTC',
     });
 
-    await this.repository.logAudit(tenantId, 'Update Preference', `User preference updated for channel ${dto.channel}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Update Preference',
+      `User preference updated for channel ${dto.channel}.`,
+    );
     return pref;
   }
 

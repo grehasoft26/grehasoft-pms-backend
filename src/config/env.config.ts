@@ -35,18 +35,40 @@ export default registerAs('app', () => ({
   auth: {
     lockoutTimeMs: parseInt(process.env.AUTH_LOCKOUT_TIME_MS || '900000', 10), // 15 mins
     maxLoginAttempts: parseInt(process.env.AUTH_MAX_LOGIN_ATTEMPTS || '5', 10),
-    passwordExpiryDays: parseInt(process.env.AUTH_PASSWORD_EXPIRY_DAYS || '90', 10),
-    passwordHistoryLimit: parseInt(process.env.AUTH_PASSWORD_HISTORY_LIMIT || '5', 10),
-    passwordMinLength: parseInt(process.env.AUTH_PASSWORD_MIN_LENGTH || '8', 10),
-    passwordRequireUppercase: (process.env.AUTH_PASSWORD_REQ_UPPER || 'true') === 'true',
-    passwordRequireLowercase: (process.env.AUTH_PASSWORD_REQ_LOWER || 'true') === 'true',
-    passwordRequireNumber: (process.env.AUTH_PASSWORD_REQ_NUMBER || 'true') === 'true',
-    passwordRequireSpecialChar: (process.env.AUTH_PASSWORD_REQ_SPECIAL || 'true') === 'true',
+    passwordExpiryDays: parseInt(
+      process.env.AUTH_PASSWORD_EXPIRY_DAYS || '90',
+      10,
+    ),
+    passwordHistoryLimit: parseInt(
+      process.env.AUTH_PASSWORD_HISTORY_LIMIT || '5',
+      10,
+    ),
+    passwordMinLength: parseInt(
+      process.env.AUTH_PASSWORD_MIN_LENGTH || '8',
+      10,
+    ),
+    passwordRequireUppercase:
+      (process.env.AUTH_PASSWORD_REQ_UPPER || 'true') === 'true',
+    passwordRequireLowercase:
+      (process.env.AUTH_PASSWORD_REQ_LOWER || 'true') === 'true',
+    passwordRequireNumber:
+      (process.env.AUTH_PASSWORD_REQ_NUMBER || 'true') === 'true',
+    passwordRequireSpecialChar:
+      (process.env.AUTH_PASSWORD_REQ_SPECIAL || 'true') === 'true',
     rateLimitLoginMax: parseInt(process.env.RATE_LIMIT_LOGIN_MAX || '5', 10),
-    rateLimitLoginWindowMs: parseInt(process.env.RATE_LIMIT_LOGIN_WINDOW_MS || '60000', 10), // 1 min
+    rateLimitLoginWindowMs: parseInt(
+      process.env.RATE_LIMIT_LOGIN_WINDOW_MS || '60000',
+      10,
+    ), // 1 min
     rateLimitForgotMax: parseInt(process.env.RATE_LIMIT_FORGOT_MAX || '3', 10),
-    rateLimitForgotWindowMs: parseInt(process.env.RATE_LIMIT_FORGOT_WINDOW_MS || '900000', 10), // 15 mins
+    rateLimitForgotWindowMs: parseInt(
+      process.env.RATE_LIMIT_FORGOT_WINDOW_MS || '900000',
+      10,
+    ), // 15 mins
     rateLimitResetMax: parseInt(process.env.RATE_LIMIT_RESET_MAX || '3', 10),
-    rateLimitResetWindowMs: parseInt(process.env.RATE_LIMIT_RESET_WINDOW_MS || '900000', 10), // 15 mins
+    rateLimitResetWindowMs: parseInt(
+      process.env.RATE_LIMIT_RESET_WINDOW_MS || '900000',
+      10,
+    ), // 15 mins
   },
 }));

@@ -10,7 +10,7 @@ export class SmtpMailProvider implements IMailProvider, OnModuleInit {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   onModuleInit() {
@@ -18,7 +18,8 @@ export class SmtpMailProvider implements IMailProvider, OnModuleInit {
     const port = this.configService.get<number>('app.smtp.port');
     const user = this.configService.get<string>('app.smtp.user');
     const pass = this.configService.get<string>('app.smtp.pass');
-    const isDev = this.configService.get<string>('app.nodeEnv') === 'development';
+    const isDev =
+      this.configService.get<string>('app.nodeEnv') === 'development';
 
     this.transporter = nodemailer.createTransport({
       host,
@@ -36,19 +37,33 @@ export class SmtpMailProvider implements IMailProvider, OnModuleInit {
         if (isDev) {
           this.logger.warn(
             `SMTP Mail Server is unavailable. Emails will not send during development. Error: ${error.message}`,
-            'SMTPMailProvider'
+            'SMTPMailProvider',
           );
         } else {
-          this.logger.error('SMTP Mail Server verification failed', error.stack, 'SMTPMailProvider');
+          this.logger.error(
+            'SMTP Mail Server verification failed',
+            error.stack,
+            'SMTPMailProvider',
+          );
         }
       } else {
-        this.logger.log('SMTP Mail Server initialized and ready to send emails', 'SMTPMailProvider');
+        this.logger.log(
+          'SMTP Mail Server initialized and ready to send emails',
+          'SMTPMailProvider',
+        );
       }
     });
   }
 
-  async sendMail(to: string, subject: string, htmlContent: string, attachments?: any[]): Promise<void> {
-    const fromAddress = this.configService.get<string>('app.smtp.from') || 'noreply@grehasoft.com';
+  async sendMail(
+    to: string,
+    subject: string,
+    htmlContent: string,
+    attachments?: any[],
+  ): Promise<void> {
+    const fromAddress =
+      this.configService.get<string>('app.smtp.from') ||
+      'noreply@grehasoft.com';
 
     try {
       const info = await this.transporter.sendMail({
@@ -59,12 +74,22 @@ export class SmtpMailProvider implements IMailProvider, OnModuleInit {
         attachments,
       });
 
-      this.logger.log(`Email successfully sent to ${to}. MessageId: ${info.messageId}`, 'SMTPMailProvider');
-      
+      this.logger.log(
+        `Email successfully sent to ${to}. MessageId: ${info.messageId}`,
+        'SMTPMailProvider',
+      );
+
       // Log to audit log
-      this.logger.audit('system', 'Send Email', to, { subject, messageId: info.messageId });
+      this.logger.audit('system', 'Send Email', to, {
+        subject,
+        messageId: info.messageId,
+      });
     } catch (error) {
-      this.logger.error(`Error sending email to ${to} for subject "${subject}"`, error.stack, 'SMTPMailProvider');
+      this.logger.error(
+        `Error sending email to ${to} for subject "${subject}"`,
+        error.stack,
+        'SMTPMailProvider',
+      );
       throw error;
     }
   }

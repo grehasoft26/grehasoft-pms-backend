@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { KpisService } from '../kpis/kpis.service';
 import { CreateKpiDefinitionDto } from '../dto/kpis.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -27,7 +40,10 @@ export class KpisController {
   }
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post()
@@ -53,18 +69,29 @@ export class KpisController {
 
   @Post('calculate/:code')
   @Permissions('analytics.read')
-  @ApiOperation({ summary: 'Trigger mathematical formula calculation and log snapshot value' })
+  @ApiOperation({
+    summary: 'Trigger mathematical formula calculation and log snapshot value',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async calculate(@Param('code') code: string, @Req() req: Request) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.service.calculateAndRecordKpi(tenantId, code, context);
-    return { message: 'KPI calculated and snapshot recorded successfully', data };
+    const data = await this.service.calculateAndRecordKpi(
+      tenantId,
+      code,
+      context,
+    );
+    return {
+      message: 'KPI calculated and snapshot recorded successfully',
+      data,
+    };
   }
 
   @Get(':id/history')
   @Permissions('analytics.read')
-  @ApiOperation({ summary: 'Get historical snapshot entries log for KPI definition' })
+  @ApiOperation({
+    summary: 'Get historical snapshot entries log for KPI definition',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getHistory(@Param('id') id: string, @Req() req: Request) {
     const tenantId = this.getTenantId(req);

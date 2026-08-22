@@ -8,11 +8,14 @@ import { AttendanceStatus } from '@prisma/client';
 export class AttendanceService {
   constructor(
     private readonly repository: HrRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   // Session mapping - generates daily Attendance from WorkSession
-  async generateDailyAttendance(workSessionId: string, context: RequestContext) {
+  async generateDailyAttendance(
+    workSessionId: string,
+    context: RequestContext,
+  ) {
     const session = await this.repository.prisma.workSession.findUnique({
       where: { id: workSessionId },
       include: { user: true },
@@ -26,20 +29,24 @@ export class AttendanceService {
     date.setHours(0, 0, 0, 0);
 
     // 1. Resolve active shift assignment
-    const shiftAssign = await this.repository.findShiftAssignment(profile.id, date);
+    const shiftAssign = await this.repository.findShiftAssignment(
+      profile.id,
+      date,
+    );
     let status: AttendanceStatus = AttendanceStatus.PRESENT;
     let notes = '';
 
     if (shiftAssign) {
       const shift = shiftAssign.shift;
       const shiftStartStr = shift.startTime; // e.g. "09:00"
-      
+
       const checkInTime = new Date(session.startTime);
       const shiftStart = new Date(checkInTime);
       const [hrs, mins] = shiftStartStr.split(':').map((x) => parseInt(x, 10));
       shiftStart.setHours(hrs, mins, 0, 0);
 
-      const diffMins = (checkInTime.getTime() - shiftStart.getTime()) / (60 * 1000);
+      const diffMins =
+        (checkInTime.getTime() - shiftStart.getTime()) / (60 * 1000);
       if (diffMins > shift.gracePeriod) {
         status = AttendanceStatus.LATE;
         notes = `Late check-in by ${Math.round(diffMins)} minutes (Grace: ${shift.gracePeriod}m)`;
@@ -47,7 +54,10 @@ export class AttendanceService {
     }
 
     // WFH / Remote detection
-    const isWfh = session.userAgent && (session.userAgent.toLowerCase().includes('remote') || session.userAgent.toLowerCase().includes('wfh'));
+    const isWfh =
+      session.userAgent &&
+      (session.userAgent.toLowerCase().includes('remote') ||
+        session.userAgent.toLowerCase().includes('wfh'));
     if (isWfh) {
       status = AttendanceStatus.WFH;
     }
@@ -71,7 +81,13 @@ export class AttendanceService {
       notes,
     });
 
-    this.logger.audit(context.userId, 'Generate Attendance', 'attendance', attendance, { after: attendance });
+    this.logger.audit(
+      context.userId,
+      'Generate Attendance',
+      'attendance',
+      attendance,
+      { after: attendance },
+    );
     return attendance;
   }
 
@@ -81,7 +97,11 @@ export class AttendanceService {
     return this.repository.findAttendance(profileId, date);
   }
 
-  async getAttendances(filters: { profileId?: string; dateStart?: string; dateEnd?: string }) {
+  async getAttendances(filters: {
+    profileId?: string;
+    dateStart?: string;
+    dateEnd?: string;
+  }) {
     const where: any = {};
     if (filters.profileId) where.employeeProfileId = filters.profileId;
     if (filters.dateStart || filters.dateEnd) {
@@ -92,7 +112,10 @@ export class AttendanceService {
 
     return this.repository.prisma.attendance.findMany({
       where,
-      include: { workSession: true, employeeProfile: { include: { user: true } } },
+      include: {
+        workSession: true,
+        employeeProfile: { include: { user: true } },
+      },
       orderBy: { date: 'desc' },
     });
   }

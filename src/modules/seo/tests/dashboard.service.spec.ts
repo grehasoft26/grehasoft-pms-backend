@@ -8,12 +8,14 @@ describe('DashboardService', () => {
 
   beforeEach(async () => {
     const mockRepository = {
-      findSearchConsole: jest.fn().mockResolvedValue([
-        { clicks: 120, impressions: 1000, position: 2.3 },
-      ]),
+      findSearchConsole: jest
+        .fn()
+        .mockResolvedValue([{ clicks: 120, impressions: 1000, position: 2.3 }]),
       prisma: {
         technicalAudit: {
-          findFirst: jest.fn().mockResolvedValue({ healthScore: 92, pagesCrawled: 45 }),
+          findFirst: jest
+            .fn()
+            .mockResolvedValue({ healthScore: 92, pagesCrawled: 45 }),
         },
         backlink: {
           count: jest.fn().mockResolvedValue(15),

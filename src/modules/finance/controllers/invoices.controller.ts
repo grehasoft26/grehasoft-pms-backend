@@ -1,8 +1,27 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { InvoicesService } from '../services/invoices.service';
-import { CreateInvoiceDto, GenerateTimeEntryInvoiceDto, AddPaymentDto } from '../dto/invoices.dto';
+import {
+  CreateInvoiceDto,
+  GenerateTimeEntryInvoiceDto,
+  AddPaymentDto,
+} from '../dto/invoices.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -18,7 +37,7 @@ export class InvoicesController {
   constructor(private readonly service: InvoicesService) {}
 
   private getContext(req: Request): RequestContext {
-    const user = (req as any).user;
+    const user = (req as Request & { user?: { id: string } }).user;
     return {
       userId: user?.id || (req.headers['x-user-id'] as string) || 'system',
       ip: req.ip || '',
@@ -39,7 +58,10 @@ export class InvoicesController {
 
   @Patch(':id/send')
   @Permissions('finance.manage')
-  @ApiOperation({ summary: 'Finalize invoice and mark as Sent (posts AR & Revenue entries to accounting ledger)' })
+  @ApiOperation({
+    summary:
+      'Finalize invoice and mark as Sent (posts AR & Revenue entries to accounting ledger)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async markAsSent(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
@@ -49,17 +71,29 @@ export class InvoicesController {
 
   @Post('generate-from-time')
   @Permissions('finance.manage')
-  @ApiOperation({ summary: 'Generate Invoice directly from approved TimeEntries (prevents duplicate billing)' })
+  @ApiOperation({
+    summary:
+      'Generate Invoice directly from approved TimeEntries (prevents duplicate billing)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async generateFromTime(@Body() dto: GenerateTimeEntryInvoiceDto, @Req() req: Request) {
+  async generateFromTime(
+    @Body() dto: GenerateTimeEntryInvoiceDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.generateFromTimeEntries(dto, context);
-    return { message: 'Invoice generated from time entries successfully', data };
+    return {
+      message: 'Invoice generated from time entries successfully',
+      data,
+    };
   }
 
   @Post('payments/allocate')
   @Permissions('finance.manage')
-  @ApiOperation({ summary: 'Apply client payments and allocate across one or multiple invoices' })
+  @ApiOperation({
+    summary:
+      'Apply client payments and allocate across one or multiple invoices',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async allocatePayment(@Body() dto: AddPaymentDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -74,15 +108,49 @@ export class InvoicesController {
   async getMany(
     @Query('clientId') clientId?: string,
     @Query('projectId') projectId?: string,
-    @Query('status') status?: InvoiceStatus
+    @Query('status') status?: InvoiceStatus,
   ) {
-    const data = await this.service.getInvoices({ clientId, projectId, status });
+    const data = await this.service.getInvoices({
+      clientId,
+      projectId,
+      status,
+    });
     return { message: 'Invoices retrieved successfully', data };
+  }
+
+  @Get('currencies')
+  @Permissions('finance.read')
+  @ApiOperation({ summary: 'Get list of currencies with database UUIDs' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getCurrencies() {
+    const data = await this.service.getCurrencies();
+    return { message: 'Currencies retrieved successfully', data };
+  }
+
+  @Get('payment-methods')
+  @Permissions('finance.read')
+  @ApiOperation({ summary: 'Get list of payment methods with database UUIDs' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getPaymentMethods() {
+    const data = await this.service.getPaymentMethods();
+    return { message: 'Payment methods retrieved successfully', data };
+  }
+
+  @Get('taxes')
+  @Permissions('finance.read')
+  @ApiOperation({ summary: 'Get list of tax templates' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getTaxes() {
+    const data = await this.service.getTaxes();
+    return { message: 'Taxes retrieved successfully', data };
   }
 
   @Get(':id')
   @Permissions('finance.read')
-  @ApiOperation({ summary: 'Get invoice details including items, payments, timelines, credit/debit notes' })
+  @ApiOperation({
+    summary:
+      'Get invoice details including items, payments, timelines, credit/debit notes',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getById(@Param('id') id: string) {
     const data = await this.service.getInvoiceById(id);

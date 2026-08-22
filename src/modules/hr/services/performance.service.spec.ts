@@ -50,7 +50,11 @@ describe('PerformanceService', () => {
   describe('createGoal', () => {
     it('should assign a goal successfully', async () => {
       repository.createGoal.mockResolvedValue({ id: 'goal-uuid' } as any);
-      const result = await service.createGoal('profile-uuid', { title: 'Reach KPI', targetDate: '2026-12-31' }, mockContext);
+      const result = await service.createGoal(
+        'profile-uuid',
+        { title: 'Reach KPI', targetDate: '2026-12-31' },
+        mockContext,
+      );
       expect(result.id).toEqual('goal-uuid');
       expect(repository.createGoal).toHaveBeenCalled();
     });

@@ -1,5 +1,10 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SettingsService } from './settings.service';
 import { SuccessResponseDto } from '../../common/dto/api-response.dto';
 
@@ -20,7 +25,7 @@ export class SettingsController {
   @Patch('company')
   @ApiOperation({ summary: 'Update company profile settings' })
   @ApiResponse({ type: SuccessResponseDto })
-  async updateCompany(@Body() body: any) {
+  async updateCompany(@Body() body: Record<string, any>) {
     return this.settingsService.updateCompanySettings(body);
   }
 
@@ -35,7 +40,7 @@ export class SettingsController {
   @Patch('smtp')
   @ApiOperation({ summary: 'Update SMTP configuration' })
   @ApiResponse({ type: SuccessResponseDto })
-  async updateSmtp(@Body() body: any) {
+  async updateSmtp(@Body() body: Record<string, any>) {
     return this.settingsService.updateSmtpSettings(body);
   }
 
@@ -50,7 +55,7 @@ export class SettingsController {
   @Patch('storage')
   @ApiOperation({ summary: 'Update file storage configuration' })
   @ApiResponse({ type: SuccessResponseDto })
-  async updateStorage(@Body() body: any) {
+  async updateStorage(@Body() body: Record<string, any>) {
     return this.settingsService.updateStorageSettings(body);
   }
 
@@ -65,7 +70,7 @@ export class SettingsController {
   @Patch('branding')
   @ApiOperation({ summary: 'Update branding configurations' })
   @ApiResponse({ type: SuccessResponseDto })
-  async updateBranding(@Body() body: any) {
+  async updateBranding(@Body() body: Record<string, any>) {
     return this.settingsService.updateBrandingSettings(body);
   }
 
@@ -83,5 +88,32 @@ export class SettingsController {
   async getTimezones() {
     const data = await this.settingsService.getTimezones();
     return { message: 'Timezones retrieved successfully', data };
+  }
+
+  @Get('audit-logs')
+  @ApiOperation({ summary: 'Get paginated audit logs with search' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getAuditLogs(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+  ) {
+    const p = parseInt(page || '1', 10);
+    const l = parseInt(limit || '50', 10);
+    const data = await this.settingsService.getAuditLogs(p, l, search);
+    return { message: 'Audit logs retrieved successfully', data };
+  }
+
+  @Get('security-events')
+  @ApiOperation({ summary: 'Get security events & session logs' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getSecurityEvents(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const p = parseInt(page || '1', 10);
+    const l = parseInt(limit || '50', 10);
+    const data = await this.settingsService.getSecurityEvents(p, l);
+    return { message: 'Security events retrieved successfully', data };
   }
 }

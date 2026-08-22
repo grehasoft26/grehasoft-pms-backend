@@ -10,13 +10,14 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   onModuleInit() {
     const host = this.configService.get<string>('app.redis.host');
     const port = this.configService.get<number>('app.redis.port');
-    const isDev = this.configService.get<string>('app.nodeEnv') === 'development';
+    const isDev =
+      this.configService.get<string>('app.nodeEnv') === 'development';
 
     this.redisClient = new Redis({
       host,
@@ -43,7 +44,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
         if (!hasLoggedWarning) {
           this.logger.warn(
             `Redis Cache Server is offline or unavailable. Operating in fallback cache mode. Error: ${err.message}`,
-            'Cache'
+            'Cache',
           );
           hasLoggedWarning = true;
           this.isOffline = true;
@@ -77,7 +78,11 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       if (!data) return null;
       return JSON.parse(data) as T;
     } catch (error) {
-      this.logger.error(`Error reading key "${key}" from cache`, error.stack, 'Cache');
+      this.logger.error(
+        `Error reading key "${key}" from cache`,
+        error.stack,
+        'Cache',
+      );
       return null;
     }
   }
@@ -94,7 +99,11 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
         await this.redisClient.set(key, stringifiedValue);
       }
     } catch (error) {
-      this.logger.error(`Error setting key "${key}" in cache`, error.stack, 'Cache');
+      this.logger.error(
+        `Error setting key "${key}" in cache`,
+        error.stack,
+        'Cache',
+      );
     }
   }
 
@@ -105,7 +114,11 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
     try {
       await this.redisClient.del(key);
     } catch (error) {
-      this.logger.error(`Error deleting key "${key}" from cache`, error.stack, 'Cache');
+      this.logger.error(
+        `Error deleting key "${key}" from cache`,
+        error.stack,
+        'Cache',
+      );
     }
   }
 

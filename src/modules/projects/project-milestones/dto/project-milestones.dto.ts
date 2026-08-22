@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsNumber, IsDateString, Min, Max, IsArray } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsNumber,
+  IsDateString,
+  Min,
+  Max,
+  IsArray,
+} from 'class-validator';
 import { MilestoneStatus } from '@prisma/client';
 
 export class CreateProjectMilestoneDto {
@@ -28,7 +39,10 @@ export class CreateProjectMilestoneDto {
   @IsDateString()
   dueDate: string;
 
-  @ApiPropertyOptional({ enum: MilestoneStatus, default: MilestoneStatus.PENDING })
+  @ApiPropertyOptional({
+    enum: MilestoneStatus,
+    default: MilestoneStatus.PENDING,
+  })
   @IsOptional()
   @IsEnum(MilestoneStatus)
   status?: MilestoneStatus;
@@ -57,7 +71,10 @@ export class CreateProjectMilestoneDto {
   @Min(0)
   actualHours?: number;
 
-  @ApiPropertyOptional({ type: [String], description: 'List of Milestone IDs this milestone depends on' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'List of Milestone IDs this milestone depends on',
+  })
   @IsOptional()
   @IsArray()
   @IsUUID('all', { each: true })

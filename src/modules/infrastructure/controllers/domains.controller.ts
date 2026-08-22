@@ -1,6 +1,22 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { DomainsService } from '../services/domains.service';
 import { RegisterDomainDto, CreateDnsRecordDto } from '../dto/domains.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -28,7 +44,9 @@ export class DomainsController {
 
   @Post()
   @Permissions('domains.manage')
-  @ApiOperation({ summary: 'Register a new domain name (auto-renew, cost, WHOIS nameservers)' })
+  @ApiOperation({
+    summary: 'Register a new domain name (auto-renew, cost, WHOIS nameservers)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async register(@Body() dto: RegisterDomainDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -47,18 +65,83 @@ export class DomainsController {
 
   @Get(':id')
   @Permissions('infrastructure.read')
-  @ApiOperation({ summary: 'Get domain details with DNS records and SSL certificates' })
+  @ApiOperation({
+    summary: 'Get domain details with DNS records and SSL certificates',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getById(@Param('id') id: string) {
     const data = await this.service.getDomain(id);
     return { message: 'Domain details retrieved', data };
   }
 
+  @Put(':id')
+  @Permissions('domains.manage')
+  @ApiOperation({ summary: 'Update domain registry settings' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async update(
+    @Param('id') id: string,
+    @Body() dto: RegisterDomainDto,
+    @Req() req: Request,
+  ) {
+    const context = this.getContext(req);
+    const data = await this.service.updateDomain(id, dto, context);
+    return { message: 'Domain updated successfully', data };
+  }
+
+  @Delete(':id')
+  @Permissions('domains.manage')
+  @ApiOperation({ summary: 'Delete a registered domain' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async delete(@Param('id') id: string, @Req() req: Request) {
+    const context = this.getContext(req);
+    const data = await this.service.deleteDomain(id, context);
+    return { message: 'Domain deleted successfully', data };
+  }
+
+  @Post(':id/credentials')
+  @Permissions('domains.manage')
+  @ApiOperation({
+    summary: 'Register domain credentials (FTP, cPanel, Admin portal)',
+  })
+  @ApiResponse({ type: SuccessResponseDto })
+  async addCredential(
+    @Param('id') id: string,
+    @Body() dto: any,
+    @Req() req: Request,
+  ) {
+    const context = this.getContext(req);
+    const data = await this.service.addCredential(id, dto, context);
+    return { message: 'Domain credentials configured', data };
+  }
+
+  @Get(':id/credentials')
+  @Permissions('domains.manage')
+  @ApiOperation({ summary: 'View decrypted credentials for domain' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getCredentials(@Param('id') id: string) {
+    const data = await this.service.getCredentials(id);
+    return { message: 'Decrypted credentials retrieved', data };
+  }
+
+  @Delete('credentials/:credId')
+  @Permissions('domains.manage')
+  @ApiOperation({ summary: 'Remove a domain credential' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async deleteCredential(@Param('credId') credId: string, @Req() req: Request) {
+    const context = this.getContext(req);
+    const data = await this.service.deleteCredential(credId, context);
+    return { message: 'Domain credential deleted', data };
+  }
+
   @Post(':id/dns')
   @Permissions('domains.manage')
   @ApiOperation({ summary: 'Add a DNS Record (A, CNAME, TXT, MX)' })
   @ApiResponse({ type: SuccessResponseDto })
-  async addDnsRecord(@Param('id') id: string, @Body() dto: CreateDnsRecordDto, @Req() req: Request) {
+  async addDnsRecord(
+    @Param('id') id: string,
+    @Body() dto: CreateDnsRecordDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.addDnsRecord(id, dto, context);
     return { message: 'DNS record added successfully', data };
@@ -68,7 +151,10 @@ export class DomainsController {
   @Permissions('domains.manage')
   @ApiOperation({ summary: 'Remove a DNS record' })
   @ApiResponse({ type: SuccessResponseDto })
-  async deleteDnsRecord(@Param('recordId') recordId: string, @Req() req: Request) {
+  async deleteDnsRecord(
+    @Param('recordId') recordId: string,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.deleteDnsRecord(recordId, context);
     return { message: 'DNS record deleted successfully', data };

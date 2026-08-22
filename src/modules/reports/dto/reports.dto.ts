@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsEnum, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsUUID,
+} from 'class-validator';
 import { FilterScope, DatePreset } from '@prisma/client';
 
 export class CreateReportDefinitionDto {
@@ -23,7 +29,9 @@ export class CreateReportDefinitionDto {
   @IsString()
   description?: string;
 
-  @ApiProperty({ description: 'CRM, PROJECTS, FINANCE, HR, INFRASTRUCTURE, PRODUCTIVITY' })
+  @ApiProperty({
+    description: 'CRM, PROJECTS, FINANCE, HR, INFRASTRUCTURE, PRODUCTIVITY',
+  })
   @IsNotEmpty()
   @IsString()
   module: string;
@@ -131,7 +139,9 @@ export class CreateScheduledReportDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: 'DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY, MANUAL' })
+  @ApiProperty({
+    description: 'DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY, MANUAL',
+  })
   @IsNotEmpty()
   @IsString()
   frequency: string;
@@ -141,7 +151,9 @@ export class CreateScheduledReportDto {
   @IsString()
   cronExpression?: string;
 
-  @ApiProperty({ description: 'Comma separated delivery methods e.g. EMAIL,IN_APP' })
+  @ApiProperty({
+    description: 'Comma separated delivery methods e.g. EMAIL,IN_APP',
+  })
   @IsNotEmpty()
   @IsString()
   deliveryMethods: string;

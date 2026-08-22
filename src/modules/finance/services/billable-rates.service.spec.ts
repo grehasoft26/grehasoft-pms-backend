@@ -36,21 +36,25 @@ describe('BillableRatesService', () => {
   describe('resolveEffectiveRate', () => {
     it('should return default values if no rate is resolved', async () => {
       repository.findEffectiveRate.mockResolvedValue(null);
-      const result = await service.resolveEffectiveRate({ taskId: 'task-uuid' });
-      expect(result.rate).toEqual(0.00);
+      const result = await service.resolveEffectiveRate({
+        taskId: 'task-uuid',
+      });
+      expect(result.rate).toEqual(0.0);
       expect(result.currencyCode).toEqual('INR');
     });
 
     it('should return resolved rate if found', async () => {
       repository.findEffectiveRate.mockResolvedValue({
         id: 'rate-uuid',
-        rate: 150.00,
+        rate: 150.0,
         currencyId: 'curr-uuid',
         currency: { code: 'USD', exchangeRate: 83.5 },
       } as any);
 
-      const result = await service.resolveEffectiveRate({ taskId: 'task-uuid' });
-      expect(result.rate).toEqual(150.00);
+      const result = await service.resolveEffectiveRate({
+        taskId: 'task-uuid',
+      });
+      expect(result.rate).toEqual(150.0);
       expect(result.currencyCode).toEqual('USD');
     });
   });

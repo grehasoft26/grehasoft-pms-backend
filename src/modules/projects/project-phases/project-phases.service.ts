@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectPhasesRepository } from './project-phases.repository';
-import { CreateProjectPhaseDto, UpdateProjectPhaseDto } from './dto/project-phases.dto';
+import {
+  CreateProjectPhaseDto,
+  UpdateProjectPhaseDto,
+} from './dto/project-phases.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +11,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ProjectPhasesService {
   constructor(
     private readonly repository: ProjectPhasesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateProjectPhaseDto, context: RequestContext) {
@@ -19,12 +22,18 @@ export class ProjectPhasesService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Create Project Phase', 'projectPhase', phase, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: phase,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Project Phase',
+      'projectPhase',
+      phase,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: phase,
+      },
+    );
 
     return phase;
   }
@@ -41,7 +50,11 @@ export class ProjectPhasesService {
     return phase;
   }
 
-  async update(id: string, dto: UpdateProjectPhaseDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateProjectPhaseDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
     const updated = await this.repository.update(id, {
       ...dto,
@@ -50,13 +63,19 @@ export class ProjectPhasesService {
       updatedBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Update Project Phase', 'projectPhase', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Project Phase',
+      'projectPhase',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -65,11 +84,17 @@ export class ProjectPhasesService {
     const before = await this.getById(id);
     await this.repository.delete(id, context.userId);
 
-    this.logger.audit(context.userId, 'Delete Project Phase', 'projectPhase', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Project Phase',
+      'projectPhase',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

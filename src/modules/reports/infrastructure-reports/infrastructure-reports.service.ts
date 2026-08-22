@@ -18,9 +18,11 @@ export class InfrastructureReportsService {
     const rollbacks = deployments.filter((d) => d.status === 'ROLLBACK').length;
 
     const rate = total > 0 ? (success / total) * 100 : 0;
-    const avgDuration = total > 0 
-      ? deployments.reduce((acc, curr) => acc + (curr.duration || 0), 0) / total 
-      : 0;
+    const avgDuration =
+      total > 0
+        ? deployments.reduce((acc, curr) => acc + (curr.duration || 0), 0) /
+          total
+        : 0;
 
     return {
       totalDeployments: total,

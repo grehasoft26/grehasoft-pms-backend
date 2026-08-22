@@ -1,6 +1,9 @@
 import { SchemaType } from '@prisma/client';
 
-export function buildSchemaJsonLd(type: SchemaType, data: Record<string, any>): string {
+export function buildSchemaJsonLd(
+  type: SchemaType,
+  data: Record<string, any>,
+): string {
   const base: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': type,
@@ -16,10 +19,10 @@ export function buildSchemaJsonLd(type: SchemaType, data: Record<string, any>): 
     case 'FAQ':
       base.mainEntity = (data.questions || []).map((q: any) => ({
         '@type': 'Question',
-        'name': q.question,
-        'acceptedAnswer': {
+        name: q.question,
+        acceptedAnswer: {
           '@type': 'Answer',
-          'text': q.answer,
+          text: q.answer,
         },
       }));
       break;
@@ -29,8 +32,8 @@ export function buildSchemaJsonLd(type: SchemaType, data: Record<string, any>): 
       base.description = data.description || 'SaaS Project management suite';
       base.offers = {
         '@type': 'Offer',
-        'price': data.price || '99.00',
-        'priceCurrency': data.currency || 'USD',
+        price: data.price || '99.00',
+        priceCurrency: data.currency || 'USD',
       };
       break;
 
@@ -38,10 +41,10 @@ export function buildSchemaJsonLd(type: SchemaType, data: Record<string, any>): 
       base.name = data.name || 'Grehasoft Corporate Office';
       base.address = {
         '@type': 'PostalAddress',
-        'streetAddress': data.street || '101 Corporate Way',
-        'addressLocality': data.city || 'Bangalore',
-        'addressRegion': data.state || 'KA',
-        'postalCode': data.zip || '560001',
+        streetAddress: data.street || '101 Corporate Way',
+        addressLocality: data.city || 'Bangalore',
+        addressRegion: data.state || 'KA',
+        postalCode: data.zip || '560001',
       };
       break;
 

@@ -1,6 +1,30 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards, BadRequestException } from '@nestjs/common';
-import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
+import type { Request, Response } from 'express';
+import {
+  generateProductivityPdf,
+  generateProductivityCsv,
+} from '../utils/pdf-generator.helper';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ReportsBuilderService } from '../services/reports.service';
 import { CrmReportsService } from '../crm-reports/crm-reports.service';
 import { ProjectReportsService } from '../project-reports/project-reports.service';
@@ -9,18 +33,28 @@ import { HrReportsService } from '../hr-reports/hr-reports.service';
 import { InfrastructureReportsService } from '../infrastructure-reports/infrastructure-reports.service';
 import { ProductivityReportsService } from '../productivity-reports/productivity-reports.service';
 import { CachingHelper } from '../utils/caching.helper';
+import { WorkSessionsService } from '../../productivity/work-sessions/work-sessions.service';
 import { executeQuery } from '../utils/query-engine.helper';
-import { CreateReportDefinitionDto, PublishVersionDto, RollbackVersionDto, SaveFilterDto, CreateScheduledReportDto } from '../dto/reports.dto';
+import {
+  CreateReportDefinitionDto,
+  PublishVersionDto,
+  RollbackVersionDto,
+  SaveFilterDto,
+  CreateScheduledReportDto,
+} from '../dto/reports.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../auth/guards/permissions.guard';
 import { Permissions } from '../../auth/decorators/permissions.decorator';
 import { PrismaService } from '../../../core/database/prisma.service';
+import { FeatureGuard } from '../../auth/guards/feature.guard';
+import { FeatureRequired } from '../../auth/decorators/feature.decorator';
 
 @ApiTags('BI Reports')
 @ApiBearerAuth('JWT')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard, FeatureGuard)
+@FeatureRequired('REPORTS')
 @Controller('reports')
 export class ReportsController {
   constructor(
@@ -32,7 +66,8 @@ export class ReportsController {
     private readonly infraService: InfrastructureReportsService,
     private readonly productivityService: ProductivityReportsService,
     private readonly cachingHelper: CachingHelper,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly workSessionsService: WorkSessionsService,
   ) {}
 
   private getContext(req: Request): RequestContext {
@@ -46,16 +81,30 @@ export class ReportsController {
   }
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    const user = (req as any).user;
+    if (user && user.effectiveCompanyId) {
+      return user.effectiveCompanyId;
+    }
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post('categories')
   @Permissions('reports.manage')
   @ApiOperation({ summary: 'Create a report category' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createCategory(@Body() body: { name: string; code: string }, @Req() req: Request) {
+  async createCategory(
+    @Body() body: { name: string; code: string },
+    @Req() req: Request,
+  ) {
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.createCategory(tenantId, body.name, body.code);
+    const data = await this.builderService.createCategory(
+      tenantId,
+      body.name,
+      body.code,
+    );
     return { message: 'Category created successfully', data };
   }
 
@@ -71,12 +120,21 @@ export class ReportsController {
 
   @Post('definitions')
   @Permissions('reports.manage')
-  @ApiOperation({ summary: 'Create report definition (dynamic query fields, module schemas)' })
+  @ApiOperation({
+    summary: 'Create report definition (dynamic query fields, module schemas)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async createDefinition(@Body() dto: CreateReportDefinitionDto, @Req() req: Request) {
+  async createDefinition(
+    @Body() dto: CreateReportDefinitionDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.createReportDefinition(tenantId, dto, context);
+    const data = await this.builderService.createReportDefinition(
+      tenantId,
+      dto,
+      context,
+    );
     return { message: 'Report definition created successfully', data };
   }
 
@@ -87,16 +145,22 @@ export class ReportsController {
   async getDefinitions(
     @Req() req: Request,
     @Query('categoryId') categoryId?: string,
-    @Query('search') search?: string
+    @Query('search') search?: string,
   ) {
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.getReportDefinitions(tenantId, categoryId, search);
+    const data = await this.builderService.getReportDefinitions(
+      tenantId,
+      categoryId,
+      search,
+    );
     return { message: 'Report definitions retrieved', data };
   }
 
   @Get('search')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'Global enterprise search across reports and dashboards' })
+  @ApiOperation({
+    summary: 'Global enterprise search across reports and dashboards',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async search(@Query('query') query: string, @Req() req: Request) {
     const context = this.getContext(req);
@@ -112,11 +176,16 @@ export class ReportsController {
   async publishVersion(
     @Param('id') id: string,
     @Body() dto: PublishVersionDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.publishVersion(tenantId, id, dto, context);
+    const data = await this.builderService.publishVersion(
+      tenantId,
+      id,
+      dto,
+      context,
+    );
     return { message: 'New version published successfully', data };
   }
 
@@ -127,11 +196,16 @@ export class ReportsController {
   async rollbackVersion(
     @Param('id') id: string,
     @Body() dto: RollbackVersionDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.rollbackVersion(tenantId, id, dto.version, context);
+    const data = await this.builderService.rollbackVersion(
+      tenantId,
+      id,
+      dto.version,
+      context,
+    );
     return { message: 'Version rolled back successfully', data };
   }
 
@@ -142,7 +216,11 @@ export class ReportsController {
   async toggleFavorite(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.toggleFavorite(tenantId, id, context);
+    const data = await this.builderService.toggleFavorite(
+      tenantId,
+      id,
+      context,
+    );
     return { message: 'Favorite status toggled', data };
   }
 
@@ -175,11 +253,16 @@ export class ReportsController {
   async saveFilter(
     @Param('id') id: string,
     @Body() dto: SaveFilterDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.saveFilter(tenantId, id, dto, context);
+    const data = await this.builderService.saveFilter(
+      tenantId,
+      id,
+      dto,
+      context,
+    );
     return { message: 'Filter preset saved successfully', data };
   }
 
@@ -190,7 +273,11 @@ export class ReportsController {
   async getFilters(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.getSavedFilters(tenantId, id, context);
+    const data = await this.builderService.getSavedFilters(
+      tenantId,
+      id,
+      context,
+    );
     return { message: 'Filter presets retrieved', data };
   }
 
@@ -201,11 +288,16 @@ export class ReportsController {
   async createSchedule(
     @Param('id') id: string,
     @Body() dto: CreateScheduledReportDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.createSchedule(tenantId, id, dto, context);
+    const data = await this.builderService.createSchedule(
+      tenantId,
+      id,
+      dto,
+      context,
+    );
     return { message: 'Report schedule defined successfully', data };
   }
 
@@ -216,25 +308,33 @@ export class ReportsController {
   async runSchedule(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.builderService.triggerScheduledRun(tenantId, id, context);
+    const data = await this.builderService.triggerScheduledRun(
+      tenantId,
+      id,
+      context,
+    );
     return { message: 'Scheduled report ran successfully', data };
   }
 
   // Execute Dynamic Query Engine reports with Caching layer
   @Post('definitions/:id/run')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'Execute dynamic query builder report with cache layer' })
+  @ApiOperation({
+    summary: 'Execute dynamic query builder report with cache layer',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async runReport(
     @Param('id') id: string,
     @Body() body: { filters?: any; page?: number; limit?: number },
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
 
     // Track recently opened report definition
-    await this.builderService.logRecentOpened(tenantId, id, context).catch(() => {});
+    await this.builderService
+      .logRecentOpened(tenantId, id, context)
+      .catch(() => {});
 
     // Hash filters
     const filterHash = this.cachingHelper.generateHash(body.filters);
@@ -242,11 +342,17 @@ export class ReportsController {
     // Cache lookup
     const cached = await this.cachingHelper.getCache(tenantId, id, filterHash);
     if (cached) {
-      return { message: 'Report executed successfully (Cache Hit)', data: cached };
+      return {
+        message: 'Report executed successfully (Cache Hit)',
+        data: cached,
+      };
     }
 
     // DB Fallback query definition details
-    const report = await this.builderService.getReportDefinitions(tenantId, undefined);
+    const report = await this.builderService.getReportDefinitions(
+      tenantId,
+      undefined,
+    );
     const target = report.find((r) => r.id === id);
     if (!target) {
       throw new BadRequestException('Report definition not found');
@@ -275,7 +381,10 @@ export class ReportsController {
   @Permissions('reports.read')
   @ApiOperation({ summary: 'CRM Lead conversion rates report' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getCrmConversion(@Req() req: Request, @Query('statusId') statusId?: string) {
+  async getCrmConversion(
+    @Req() req: Request,
+    @Query('statusId') statusId?: string,
+  ) {
     const tenantId = this.getTenantId(req);
     const filters = statusId ? { statusId } : {};
     const data = await this.crmService.getLeadConversion(tenantId, filters);
@@ -304,7 +413,9 @@ export class ReportsController {
 
   @Get('projects/health')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'Projects health status report (GREEN, RED, YELLOW)' })
+  @ApiOperation({
+    summary: 'Projects health status report (GREEN, RED, YELLOW)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getProjectHealth(@Req() req: Request) {
     const tenantId = this.getTenantId(req);
@@ -334,7 +445,9 @@ export class ReportsController {
 
   @Get('finance/summary')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'Finance revenue vs expenses, outstanding profit margins report' })
+  @ApiOperation({
+    summary: 'Finance revenue vs expenses, outstanding profit margins report',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getFinanceSummary(@Req() req: Request) {
     const tenantId = this.getTenantId(req);
@@ -354,7 +467,9 @@ export class ReportsController {
 
   @Get('hr/attrition')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'HR active headcounts and attrition turnover rates report' })
+  @ApiOperation({
+    summary: 'HR active headcounts and attrition turnover rates report',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getHrAttrition(@Req() req: Request) {
     const tenantId = this.getTenantId(req);
@@ -364,7 +479,9 @@ export class ReportsController {
 
   @Get('hr/training')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'HR corporate training completed vs pending enrollments report' })
+  @ApiOperation({
+    summary: 'HR corporate training completed vs pending enrollments report',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getHrTraining(@Req() req: Request) {
     const tenantId = this.getTenantId(req);
@@ -374,7 +491,9 @@ export class ReportsController {
 
   @Get('infrastructure/deployments')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'Infrastructure deployments speed and success rates report' })
+  @ApiOperation({
+    summary: 'Infrastructure deployments speed and success rates report',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getInfraDeployments(@Req() req: Request) {
     const tenantId = this.getTenantId(req);
@@ -384,7 +503,9 @@ export class ReportsController {
 
   @Get('infrastructure/backups')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'Infrastructure backups success rates metrics report' })
+  @ApiOperation({
+    summary: 'Infrastructure backups success rates metrics report',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getInfraBackups(@Req() req: Request) {
     const tenantId = this.getTenantId(req);
@@ -394,11 +515,329 @@ export class ReportsController {
 
   @Get('productivity/metrics')
   @Permissions('reports.read')
-  @ApiOperation({ summary: 'Productivity billable vs non-billable hours utilization report' })
+  @ApiOperation({
+    summary: 'Productivity billable vs non-billable hours utilization report',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getProductivityMetrics(@Req() req: Request) {
     const tenantId = this.getTenantId(req);
-    const data = await this.productivityService.getProductivityMetrics(tenantId, {});
+    const data = await this.productivityService.getProductivityMetrics(
+      tenantId,
+      {},
+    );
     return { message: 'Productivity hours metrics compiled', data };
+  }
+
+  @Get('productivity/daily')
+  @Permissions('reports.read')
+  @ApiOperation({ summary: 'Get Daily Work Report' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getDailyReport(
+    @Req() req: Request,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('userId') userId?: string,
+    @Query('departmentId') departmentId?: string,
+    @Query('teamId') teamId?: string,
+    @Query('search') search?: string,
+  ) {
+    const user = (req as any).user;
+    const data = await this.productivityService.getDailyReportData(
+      user,
+      startDate,
+      endDate,
+      userId,
+      departmentId,
+      teamId,
+      search,
+    );
+    return { message: 'Daily report compiled', data };
+  }
+
+  @Get('productivity/reconciliation')
+  @Permissions('reports.read')
+  @ApiOperation({ summary: 'Get Reconciliation Report' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getReconciliationReport(
+    @Req() req: Request,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('userId') userId?: string,
+    @Query('departmentId') departmentId?: string,
+    @Query('teamId') teamId?: string,
+    @Query('search') search?: string,
+  ) {
+    const user = (req as any).user;
+    const data = await this.productivityService.getReconciliationReportData(
+      user,
+      startDate,
+      endDate,
+      userId,
+      departmentId,
+      teamId,
+      search,
+    );
+    return { message: 'Reconciliation report compiled', data };
+  }
+
+  @Get('productivity/session-audit')
+  @Permissions('reports.read')
+  @ApiOperation({ summary: 'Get Session Audit Report' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getSessionAudit(
+    @Req() req: Request,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('userId') userId?: string,
+  ) {
+    const user = (req as any).user;
+    const data = await this.productivityService.getSessionAuditData(
+      user,
+      startDate,
+      endDate,
+      userId,
+    );
+    return { message: 'Session audit report compiled', data };
+  }
+
+  @Get('productivity/weekly')
+  @Permissions('reports.read')
+  @ApiOperation({ summary: 'Get Weekly Analytics Report' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getWeeklyReport(
+    @Req() req: Request,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('departmentId') departmentId?: string,
+  ) {
+    const user = (req as any).user;
+    const data = await this.productivityService.getWeeklyReportData(
+      user,
+      startDate,
+      endDate,
+      departmentId,
+    );
+    return { message: 'Weekly report compiled', data };
+  }
+
+  @Get('productivity/monthly')
+  @Permissions('reports.read')
+  @ApiOperation({ summary: 'Get Monthly Ranking Report' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getMonthlyReport(
+    @Req() req: Request,
+    @Query('year') year: number,
+    @Query('month') month: number,
+    @Query('departmentId') departmentId?: string,
+  ) {
+    const user = (req as any).user;
+    const data = await this.productivityService.getMonthlyReportData(
+      user,
+      Number(year),
+      Number(month),
+      departmentId,
+    );
+    return { message: 'Monthly report compiled', data };
+  }
+
+  @Get('productivity/employee-analytics')
+  @Permissions('reports.read')
+  @ApiOperation({ summary: 'Get Employee Analytics Report' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getEmployeeAnalytics(
+    @Req() req: Request,
+    @Query('userId') userId: string,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    const user = (req as any).user;
+    const data = await this.productivityService.getEmployeeAnalyticsData(
+      user,
+      userId,
+      startDate,
+      endDate,
+    );
+    return { message: 'Employee analytics compiled', data };
+  }
+
+  @Get('productivity/work-status')
+  @Permissions('reports.read')
+  @ApiOperation({ summary: 'Get Manager Work Status live overview' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getWorkStatus(
+    @Req() req: Request,
+    @Query('departmentId') departmentId?: string,
+    @Query('teamId') teamId?: string,
+  ) {
+    const user = (req as any).user;
+    const data = await this.productivityService.getManagerTeamStatus(
+      user,
+      departmentId,
+      teamId,
+    );
+    return { message: 'Manager team status compiled', data };
+  }
+
+  @Get('productivity/export')
+  @Permissions('reports.read')
+  @ApiOperation({
+    summary: 'Export productivity reports directly to file stream',
+  })
+  async exportReport(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query('reportType') reportType: string,
+    @Query('format') format: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('userId') userId?: string,
+    @Query('departmentId') departmentId?: string,
+    @Query('teamId') teamId?: string,
+    @Query('search') search?: string,
+    @Query('year') year?: string,
+    @Query('month') month?: string,
+  ) {
+    const user = (req as any).user;
+    let data: any[] = [];
+    let title = 'Productivity Report';
+
+    if (reportType === 'daily') {
+      data = await this.productivityService.getDailyReportData(
+        user,
+        startDate || '',
+        endDate || '',
+        userId,
+        departmentId,
+        teamId,
+        search,
+      );
+      title = `Daily Work Report (${startDate} to ${endDate})`;
+    } else if (reportType === 'reconciliation') {
+      data = await this.productivityService.getReconciliationReportData(
+        user,
+        startDate || '',
+        endDate || '',
+        userId,
+        departmentId,
+        teamId,
+        search,
+      );
+      title = `Reconciliation Report (${startDate} to ${endDate})`;
+    } else if (reportType === 'session-audit') {
+      data = await this.productivityService.getSessionAuditData(
+        user,
+        startDate || '',
+        endDate || '',
+        userId,
+      );
+      title = `Session Audit Report (${startDate} to ${endDate})`;
+    } else if (reportType === 'weekly') {
+      const weekly = await this.productivityService.getWeeklyReportData(
+        user,
+        startDate || '',
+        endDate || '',
+        departmentId,
+      );
+      data = weekly.weekly_work_hours || [];
+      title = `Weekly Analytics (${startDate} to ${endDate})`;
+    } else if (reportType === 'monthly') {
+      const monthly = await this.productivityService.getMonthlyReportData(
+        user,
+        Number(year || new Date().getFullYear()),
+        Number(month || new Date().getMonth() + 1),
+        departmentId,
+      );
+      data = monthly.employee_ranking || [];
+      title = `Monthly Ranking (${year}-${month})`;
+    } else if (reportType === 'employee-analytics') {
+      const analytics = await this.productivityService.getEmployeeAnalyticsData(
+        user,
+        userId || '',
+        startDate || '',
+        endDate || '',
+      );
+      data = analytics.daily_breakdown || [];
+      title = `Employee Analytics - ${analytics.employee.full_name} (${startDate} to ${endDate})`;
+    } else if (reportType === 'work-status') {
+      data = await this.productivityService.getManagerTeamStatus(
+        user,
+        departmentId,
+        teamId,
+      );
+      title = `Manager Live Status Overview`;
+    }
+
+    const filename = `${reportType}_report_${new Date().toISOString().split('T')[0]}`;
+
+    if (format === 'pdf') {
+      const pdfBuffer = await generateProductivityPdf(reportType, data, title);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}.pdf"`,
+      );
+      return res.status(200).send(pdfBuffer);
+    } else {
+      // csv and excel formats export clean CSV stream
+      const csvContent = generateProductivityCsv(reportType, data);
+      res.setHeader(
+        'Content-Type',
+        format === 'excel' ? 'application/vnd.ms-excel' : 'text/csv',
+      );
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}.${format === 'excel' ? 'xls' : 'csv'}"`,
+      );
+      return res.status(200).send(csvContent);
+    }
+  }
+
+  @Post('productivity/toggle-tracking')
+  @Permissions('timetracking.manage')
+  @ApiOperation({
+    summary: 'Toggle tracking enabled/disabled for a specific employee',
+  })
+  @ApiResponse({ type: SuccessResponseDto })
+  async toggleTracking(
+    @Body() body: { userId: string; enabled: boolean },
+    @Req() req: Request,
+  ) {
+    const user = (req as any).user;
+    const hasPerm = user.permissions.includes('timetracking.manage');
+    const isAdmin =
+      user.roleName === 'Super Admin' || user.roleName === 'Company Admin';
+    if (!hasPerm || !isAdmin) {
+      throw new ForbiddenException(
+        'Only administrators with timetracking.manage permission can modify tracking status',
+      );
+    }
+
+    const context = this.getContext(req);
+
+    // Perform toggle
+    const data = await this.productivityService.toggleTracking(
+      body.userId,
+      body.enabled,
+      context,
+    );
+
+    // If disabled, cleanly close any active work sessions for that user
+    if (!body.enabled) {
+      const activeSession = await this.prisma.workSession.findFirst({
+        where: { userId: body.userId, endTime: null },
+      });
+      if (activeSession) {
+        // Construct dummy RequestContext for the target user to close their session cleanly
+        const targetContext: RequestContext = {
+          userId: body.userId,
+          ip: '127.0.0.1',
+          userAgent: 'System/Toggle-Disabled',
+          correlationId: '',
+        };
+        await this.workSessionsService.endSession(targetContext);
+      }
+    }
+
+    return { message: 'Tracking status updated successfully', data };
   }
 }

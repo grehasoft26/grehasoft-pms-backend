@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsDateString, IsNumber, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsDateString,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { ShiftType } from '@prisma/client';
 
 export class CreateShiftDto {
@@ -29,7 +38,7 @@ export class CreateShiftDto {
   @Min(0)
   gracePeriod?: number;
 
-  @ApiPropertyOptional({ default: 0.00 })
+  @ApiPropertyOptional({ default: 0.0 })
   @IsOptional()
   @IsNumber()
   @Min(0)

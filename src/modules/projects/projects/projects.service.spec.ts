@@ -3,7 +3,12 @@ import { ProjectsService } from './projects.service';
 import { ProjectsRepository } from './projects.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
-import { ProjectType, ProjectPriority, ProjectStatus, ProjectHealth } from '@prisma/client';
+import {
+  ProjectType,
+  ProjectPriority,
+  ProjectStatus,
+  ProjectHealth,
+} from '@prisma/client';
 import { NotFoundException } from '@nestjs/common';
 
 describe('ProjectsService', () => {
@@ -55,10 +60,24 @@ describe('ProjectsService', () => {
       prisma: {
         proposal: { findUnique: jest.fn() },
         projectPhase: { create: jest.fn(), findMany: jest.fn() },
-        projectMilestone: { create: jest.fn(), findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
-        projectMember: { create: jest.fn(), findMany: jest.fn(), deleteMany: jest.fn() },
-        projectResource: { create: jest.fn(), findMany: jest.fn(), deleteMany: jest.fn() },
-        projectRisk: { aggregate: jest.fn().mockResolvedValue({ _max: { riskScore: 0 } }) },
+        projectMilestone: {
+          create: jest.fn(),
+          findMany: jest.fn(),
+          count: jest.fn().mockResolvedValue(0),
+        },
+        projectMember: {
+          create: jest.fn(),
+          findMany: jest.fn(),
+          deleteMany: jest.fn(),
+        },
+        projectResource: {
+          create: jest.fn(),
+          findMany: jest.fn(),
+          deleteMany: jest.fn(),
+        },
+        projectRisk: {
+          aggregate: jest.fn().mockResolvedValue({ _max: { riskScore: 0 } }),
+        },
         projectIssue: { count: jest.fn().mockResolvedValue(0) },
         projectTimeline: { create: jest.fn() },
       },
@@ -104,7 +123,7 @@ describe('ProjectsService', () => {
           categoryId: 'category-uuid',
           managerId: 'manager-user-uuid',
         },
-        mockContext
+        mockContext,
       );
 
       expect(result).toEqual(mockProject);
@@ -123,19 +142,29 @@ describe('ProjectsService', () => {
 
     it('should throw NotFoundException if not found', async () => {
       repository.findById.mockResolvedValue(null);
-      await expect(service.getById('invalid-id')).rejects.toThrow(NotFoundException);
+      await expect(service.getById('invalid-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('update', () => {
     it('should update project budget, calculate health status dynamically and log audit', async () => {
-      const updated = { ...mockProject, name: 'New Project Name', estimatedCost: 120000.0 };
+      const updated = {
+        ...mockProject,
+        name: 'New Project Name',
+        estimatedCost: 120000.0,
+      };
       repository.update.mockResolvedValue(updated);
       repository.findById
         .mockResolvedValueOnce(mockProject) // first call (before)
-        .mockResolvedValueOnce(updated);    // second call (return value)
+        .mockResolvedValueOnce(updated); // second call (return value)
 
-      const result = await service.update('project-uuid', { name: 'New Project Name', estimatedCost: 120000.0 }, mockContext);
+      const result = await service.update(
+        'project-uuid',
+        { name: 'New Project Name', estimatedCost: 120000.0 },
+        mockContext,
+      );
       expect(result.estimatedCost).toEqual(120000.0);
       expect(repository.createTimeline).toHaveBeenCalled();
       expect(logger.audit).toHaveBeenCalled();
@@ -146,24 +175,41 @@ describe('ProjectsService', () => {
     it('should deep clone project phases, milestones, members, resources, adjusting timeline offset dates', async () => {
       const oldStartDate = new Date('2026-08-01');
       const oldEndDate = new Date('2026-11-01');
-      const sourceProject = { ...mockProject, startDate: oldStartDate, endDate: oldEndDate };
+      const sourceProject = {
+        ...mockProject,
+        startDate: oldStartDate,
+        endDate: oldEndDate,
+      };
       repository.findById.mockResolvedValue(sourceProject);
-      
-      const clonedProject = { ...sourceProject, id: 'cloned-uuid', code: 'PRJ-2026-000002', name: 'Cloned Project' };
+
+      const clonedProject = {
+        ...sourceProject,
+        id: 'cloned-uuid',
+        code: 'PRJ-2026-000002',
+        name: 'Cloned Project',
+      };
       repository.create.mockResolvedValue(clonedProject);
-      
+
       repository.findById.mockImplementation((id: string) => {
         if (id === 'cloned-uuid') return Promise.resolve(clonedProject);
         return Promise.resolve(sourceProject);
       });
 
-      repository.prisma.projectPhase.findMany.mockResolvedValue([{ id: 'phase-1', code: 'DEV', sortOrder: 1 }]);
-      repository.prisma.projectPhase.create.mockResolvedValue({ id: 'new-phase-1' });
+      repository.prisma.projectPhase.findMany.mockResolvedValue([
+        { id: 'phase-1', code: 'DEV', sortOrder: 1 },
+      ]);
+      repository.prisma.projectPhase.create.mockResolvedValue({
+        id: 'new-phase-1',
+      });
       repository.prisma.projectMilestone.findMany.mockResolvedValue([]);
       repository.prisma.projectMember.findMany.mockResolvedValue([]);
       repository.prisma.projectResource.findMany.mockResolvedValue([]);
 
-      const result = await service.clone('project-uuid', { name: 'Cloned Project', startDate: '2026-09-01' }, mockContext);
+      const result = await service.clone(
+        'project-uuid',
+        { name: 'Cloned Project', startDate: '2026-09-01' },
+        mockContext,
+      );
       expect(result.id).toEqual('cloned-uuid');
       expect(repository.createTimeline).toHaveBeenCalled();
     });

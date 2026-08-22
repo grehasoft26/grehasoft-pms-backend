@@ -1,6 +1,19 @@
-import { Body, Controller, Delete, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TaskTimersService } from './task-timers.service';
 import { StartTimerDto, HeartbeatTimerDto } from './dto/task-timers.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -17,13 +30,23 @@ export class TaskTimersController {
   constructor(private readonly service: TaskTimersService) {}
 
   private getContext(req: Request): RequestContext {
-    const user = (req as any).user;
+    const user = (req as Request & { user?: { id: string } }).user;
     return {
       userId: user?.id || (req.headers['x-user-id'] as string) || 'system',
       ip: req.ip || '',
       userAgent: req.get('user-agent') || '',
       correlationId: (req.headers['x-correlation-id'] as string) || '',
     };
+  }
+
+  @Get('active')
+  @Permissions('timetracking.read')
+  @ApiOperation({ summary: 'Get active running timer for current user' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async getActive(@Req() req: Request) {
+    const context = this.getContext(req);
+    const data = await this.service.getActive(context.userId);
+    return { message: 'Active task timer retrieved', data };
   }
 
   @Post('start')
@@ -58,19 +81,31 @@ export class TaskTimersController {
 
   @Post(':id/stop')
   @Permissions('timetracking.manage')
-  @ApiOperation({ summary: 'Stop timer & convert to TimeEntry (single source of truth)' })
+  @ApiOperation({
+    summary: 'Stop timer & convert to TimeEntry (single source of truth)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async stopTimer(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
     const data = await this.service.stopTimer(id, context);
-    return { message: 'Task timer stopped. TimeEntry generated successfully', data };
+    return {
+      message: 'Task timer stopped. TimeEntry generated successfully',
+      data,
+    };
   }
 
   @Post(':id/heartbeat')
   @Permissions('timetracking.manage')
-  @ApiOperation({ summary: 'Sync client heartbeat elapsed seconds to protect against crashes/abandonment' })
+  @ApiOperation({
+    summary:
+      'Sync client heartbeat elapsed seconds to protect against crashes/abandonment',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async sendHeartbeat(@Param('id') id: string, @Body() dto: HeartbeatTimerDto, @Req() req: Request) {
+  async sendHeartbeat(
+    @Param('id') id: string,
+    @Body() dto: HeartbeatTimerDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.sendHeartbeat(id, dto, context);
     return { message: 'Heartbeat received', data };

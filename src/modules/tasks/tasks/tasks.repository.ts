@@ -15,7 +15,9 @@ export class TasksRepository {
         status: true,
         priority: true,
         labels: true,
-        assignees: { select: { id: true, firstName: true, lastName: true, email: true } },
+        assignees: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
   }
@@ -58,10 +60,7 @@ export class TasksRepository {
         where,
         skip,
         take: limit,
-        orderBy: [
-          { statusId: 'asc' },
-          { position: 'asc' },
-        ],
+        orderBy: [{ statusId: 'asc' }, { position: 'asc' }],
         include: {
           type: true,
           status: true,
@@ -85,7 +84,9 @@ export class TasksRepository {
         status: true,
         priority: true,
         labels: true,
-        assignees: { select: { id: true, firstName: true, lastName: true, email: true } },
+        assignees: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
         parentTask: { select: { id: true, code: true, title: true } },
         childTasks: {
           where: { deletedAt: null },
@@ -107,7 +108,11 @@ export class TasksRepository {
             author: { select: { id: true, firstName: true, lastName: true } },
             replies: {
               where: { deletedAt: null },
-              include: { author: { select: { id: true, firstName: true, lastName: true } } },
+              include: {
+                author: {
+                  select: { id: true, firstName: true, lastName: true },
+                },
+              },
             },
           },
         },
@@ -147,7 +152,9 @@ export class TasksRepository {
         status: true,
         priority: true,
         labels: true,
-        assignees: { select: { id: true, firstName: true, lastName: true, email: true } },
+        assignees: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
   }

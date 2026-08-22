@@ -1,6 +1,20 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AttendanceService } from '../services/attendance.service';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
@@ -27,12 +41,20 @@ export class AttendanceController {
 
   @Post('sync-session/:sessionId')
   @Permissions('attendance.manage')
-  @ApiOperation({ summary: 'Link daily attendance record from an active WorkSession' })
+  @ApiOperation({
+    summary: 'Link daily attendance record from an active WorkSession',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async syncSession(@Param('sessionId') sessionId: string, @Req() req: Request) {
+  async syncSession(
+    @Param('sessionId') sessionId: string,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.generateDailyAttendance(sessionId, context);
-    return { message: 'Attendance synced from work session successfully', data };
+    return {
+      message: 'Attendance synced from work session successfully',
+      data,
+    };
   }
 
   @Get()
@@ -42,9 +64,13 @@ export class AttendanceController {
   async getMany(
     @Query('profileId') profileId?: string,
     @Query('dateStart') dateStart?: string,
-    @Query('dateEnd') dateEnd?: string
+    @Query('dateEnd') dateEnd?: string,
   ) {
-    const data = await this.service.getAttendances({ profileId, dateStart, dateEnd });
+    const data = await this.service.getAttendances({
+      profileId,
+      dateStart,
+      dateEnd,
+    });
     return { message: 'Attendance records retrieved', data };
   }
 
@@ -52,7 +78,10 @@ export class AttendanceController {
   @Permissions('attendance.read')
   @ApiOperation({ summary: 'Get specific daily attendance details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getRecord(@Param('profileId') profileId: string, @Param('date') date: string) {
+  async getRecord(
+    @Param('profileId') profileId: string,
+    @Param('date') date: string,
+  ) {
     const data = await this.service.getAttendanceRecord(profileId, date);
     return { message: 'Daily attendance record details', data };
   }

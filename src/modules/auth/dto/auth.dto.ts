@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({ example: 'superadmin@grehasoft.com' })
@@ -32,6 +38,11 @@ export class LoginDto {
   @IsOptional()
   @IsString()
   operatingSystem?: string;
+
+  @ApiProperty({ example: '123456', required: false })
+  @IsOptional()
+  @IsString()
+  mfaCode?: string;
 }
 
 export class TokenRefreshDto {

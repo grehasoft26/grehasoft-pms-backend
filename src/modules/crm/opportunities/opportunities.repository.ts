@@ -68,7 +68,9 @@ export class OpportunitiesRepository {
       where: { id },
       include: {
         stage: { include: { pipeline: true } },
-        owner: { select: { id: true, firstName: true, lastName: true, email: true } },
+        owner: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
         lead: true,
         client: true,
         items: true,
@@ -126,7 +128,9 @@ export class OpportunitiesRepository {
     });
   }
 
-  async createOpportunityItem(data: Prisma.OpportunityItemUncheckedCreateInput) {
+  async createOpportunityItem(
+    data: Prisma.OpportunityItemUncheckedCreateInput,
+  ) {
     return this.prisma.opportunityItem.create({ data });
   }
 
@@ -151,13 +155,18 @@ export class OpportunitiesRepository {
     return this.prisma.pipeline.findMany({
       where: { deletedAt: null },
       orderBy: { name: 'asc' },
+      include: {
+        stages: { where: { deletedAt: null }, orderBy: { sortOrder: 'asc' } },
+      },
     });
   }
 
   async getPipelineById(id: string) {
     return this.prisma.pipeline.findFirst({
       where: { id, deletedAt: null },
-      include: { stages: { where: { deletedAt: null }, orderBy: { sortOrder: 'asc' } } },
+      include: {
+        stages: { where: { deletedAt: null }, orderBy: { sortOrder: 'asc' } },
+      },
     });
   }
 
@@ -205,7 +214,10 @@ export class OpportunitiesRepository {
     });
   }
 
-  async updatePipelineStage(id: string, data: Prisma.PipelineStageUncheckedUpdateInput) {
+  async updatePipelineStage(
+    id: string,
+    data: Prisma.PipelineStageUncheckedUpdateInput,
+  ) {
     return this.prisma.pipelineStage.update({
       where: { id },
       data: {

@@ -12,14 +12,18 @@ describe('Sprint 13 Notifications & Templates Unit Tests', () => {
 
   describe('Template Engine Parser', () => {
     it('should replace simple placeholder variables', () => {
-      const template = 'Hello {{userName}}, your task {{taskName}} has been assigned.';
+      const template =
+        'Hello {{userName}}, your task {{taskName}} has been assigned.';
       const variables = { userName: 'Jisha', taskName: 'Implementation' };
       const res = templateService.render(template, variables);
-      expect(res).toBe('Hello Jisha, your task Implementation has been assigned.');
+      expect(res).toBe(
+        'Hello Jisha, your task Implementation has been assigned.',
+      );
     });
 
     it('should replace dynamic amount and invoice values', () => {
-      const template = 'Invoice {{invoiceNumber}} of amount {{amount}} is paid.';
+      const template =
+        'Invoice {{invoiceNumber}} of amount {{amount}} is paid.';
       const variables = { invoiceNumber: 'INV-001', amount: '$5,000' };
       const res = templateService.render(template, variables);
       expect(res).toBe('Invoice INV-001 of amount $5,000 is paid.');

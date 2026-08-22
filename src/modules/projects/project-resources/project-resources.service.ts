@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectResourcesRepository } from './project-resources.repository';
-import { CreateProjectResourceDto, UpdateProjectResourceDto } from './dto/project-resources.dto';
+import {
+  CreateProjectResourceDto,
+  UpdateProjectResourceDto,
+} from './dto/project-resources.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +11,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ProjectResourcesService {
   constructor(
     private readonly repository: ProjectResourcesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateProjectResourceDto, context: RequestContext) {
@@ -35,12 +38,18 @@ export class ProjectResourcesService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Create Project Resource', 'projectResource', resource, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: resource,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Project Resource',
+      'projectResource',
+      resource,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: resource,
+      },
+    );
 
     return resource;
   }
@@ -57,9 +66,13 @@ export class ProjectResourcesService {
     return resource;
   }
 
-  async update(id: string, dto: UpdateProjectResourceDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateProjectResourceDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
-    
+
     const startDate = dto.startDate ? new Date(dto.startDate) : undefined;
     const endDate = dto.endDate ? new Date(dto.endDate) : undefined;
 
@@ -71,13 +84,19 @@ export class ProjectResourcesService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Update Project Resource', 'projectResource', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Project Resource',
+      'projectResource',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -97,11 +116,17 @@ export class ProjectResourcesService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Remove Project Resource', 'projectResource', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before: resource,
-    });
+    this.logger.audit(
+      context.userId,
+      'Remove Project Resource',
+      'projectResource',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before: resource,
+      },
+    );
   }
 }

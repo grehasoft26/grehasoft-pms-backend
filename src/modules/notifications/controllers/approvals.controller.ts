@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { WorkflowEngine } from '../approvals/workflow.engine';
 import { NotificationsRepository } from '../repositories/notifications.repository';
 import { SubmitApprovalDecisionDto } from '../dto/workflow.dto';
@@ -17,7 +30,7 @@ import { RequestContext } from '../../../common/interfaces/request-context.inter
 export class ApprovalsController {
   constructor(
     private readonly engine: WorkflowEngine,
-    private readonly repository: NotificationsRepository
+    private readonly repository: NotificationsRepository,
   ) {}
 
   private getContext(req: Request): RequestContext {
@@ -31,7 +44,10 @@ export class ApprovalsController {
   }
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post('start/:workflowDefinitionId')
@@ -41,22 +57,33 @@ export class ApprovalsController {
   async startWorkflow(
     @Param('workflowDefinitionId') definitionId: string,
     @Body() body: { entityId: string; entityType: string },
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.engine.startWorkflow(tenantId, definitionId, body.entityId, body.entityType, context);
+    const data = await this.engine.startWorkflow(
+      tenantId,
+      definitionId,
+      body.entityId,
+      body.entityType,
+      context,
+    );
     return { message: 'Workflow execution initiated successfully', data };
   }
 
   @Get('requests')
   @Permissions('workflow.read')
-  @ApiOperation({ summary: 'Get list of pending approval requests for active user' })
+  @ApiOperation({
+    summary: 'Get list of pending approval requests for active user',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getPendingRequests(@Req() req: Request) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.repository.findApprovalRequests(tenantId, context.userId);
+    const data = await this.repository.findApprovalRequests(
+      tenantId,
+      context.userId,
+    );
     return { message: 'Pending approval requests retrieved', data };
   }
 
@@ -67,7 +94,7 @@ export class ApprovalsController {
   async submitDecision(
     @Param('id') id: string,
     @Body() dto: SubmitApprovalDecisionDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);

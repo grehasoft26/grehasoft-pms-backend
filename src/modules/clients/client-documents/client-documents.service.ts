@@ -2,7 +2,10 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ClientDocumentsRepository } from './client-documents.repository';
 import { ClientTimelinesRepository } from '../client-timelines/client-timelines.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { CreateClientDocumentDto, UpdateClientDocumentDto } from './dto/client-documents.dto';
+import {
+  CreateClientDocumentDto,
+  UpdateClientDocumentDto,
+} from './dto/client-documents.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { STORAGE_PROVIDER_TOKEN } from '../../../shared/storage/storage.interface';
 import type { IStorageProvider } from '../../../shared/storage/storage.interface';
@@ -14,7 +17,7 @@ export class ClientDocumentsService {
     private readonly timelineRepository: ClientTimelinesRepository,
     private readonly logger: LoggerService,
     @Inject(STORAGE_PROVIDER_TOKEN)
-    private readonly storageProvider: IStorageProvider
+    private readonly storageProvider: IStorageProvider,
   ) {}
 
   async uploadDocument(
@@ -23,12 +26,19 @@ export class ClientDocumentsService {
     fileName: string,
     mimeType: string,
     fileSize: number,
-    context: RequestContext
+    context: RequestContext,
   ) {
-    const fileKey = await this.storageProvider.uploadFile(fileBuffer, fileName, mimeType, `clients/${dto.clientId}`);
+    const fileKey = await this.storageProvider.uploadFile(
+      fileBuffer,
+      fileName,
+      mimeType,
+      `clients/${dto.clientId}`,
+    );
 
     const expiryDate = dto.expiryDate ? new Date(dto.expiryDate) : undefined;
-    const reminderDate = dto.reminderDate ? new Date(dto.reminderDate) : undefined;
+    const reminderDate = dto.reminderDate
+      ? new Date(dto.reminderDate)
+      : undefined;
 
     const doc = await this.repository.create({
       clientId: dto.clientId,
@@ -52,12 +62,18 @@ export class ClientDocumentsService {
       metadata: { document: doc },
     });
 
-    this.logger.audit(context.userId, 'Document Upload', 'clientDocument', doc, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: doc,
-    });
+    this.logger.audit(
+      context.userId,
+      'Document Upload',
+      'clientDocument',
+      doc,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: doc,
+      },
+    );
 
     return doc;
   }
@@ -77,7 +93,11 @@ export class ClientDocumentsService {
     return this.storageProvider.getFileStream(doc.fileKey);
   }
 
-  async update(id: string, dto: UpdateClientDocumentDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateClientDocumentDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
 
     const updateData: any = {
@@ -97,13 +117,19 @@ export class ClientDocumentsService {
       metadata: { before, after: updated },
     });
 
-    this.logger.audit(context.userId, 'Update Client Document', 'clientDocument', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Client Document',
+      'clientDocument',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -115,7 +141,11 @@ export class ClientDocumentsService {
     try {
       await this.storageProvider.deleteFile(before.fileKey);
     } catch (err) {
-      this.logger.error(`Failed to delete local document file: ${before.fileKey}`, err.stack, 'ClientDocumentsService');
+      this.logger.error(
+        `Failed to delete local document file: ${before.fileKey}`,
+        err.stack,
+        'ClientDocumentsService',
+      );
     }
 
     await this.timelineRepository.create({
@@ -125,11 +155,17 @@ export class ClientDocumentsService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Delete Client Document', 'clientDocument', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Client Document',
+      'clientDocument',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

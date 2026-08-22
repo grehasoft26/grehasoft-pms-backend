@@ -1,3 +1,4 @@
+process.env.TZ = 'UTC';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -47,7 +48,7 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
-    })
+    }),
   );
 
   // Global Exception Filter
@@ -59,7 +60,9 @@ async function bootstrap() {
   // Configure Swagger OpenAPI Documentation
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Grehasoft Enterprise Portal API')
-    .setDescription('Technical foundation API schema registry for Project Management, CRM, HR, Finance, and SEO.')
+    .setDescription(
+      'Technical foundation API schema registry for Project Management, CRM, HR, Finance, and SEO.',
+    )
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -70,7 +73,7 @@ async function bootstrap() {
         description: 'Enter JWT access token',
         in: 'header',
       },
-      'JWT'
+      'JWT',
     )
     .build();
 
@@ -78,12 +81,18 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   const port = configService.get<number>('app.port') || 3000;
-  
+
   await app.listen(port);
-  
+
   logger.log(`==================================================`, 'Bootstrap');
-  logger.log(`🚀 Grehasoft backend is running on: http://localhost:${port}/api/v1`, 'Bootstrap');
-  logger.log(`📑 Swagger Documentation is available on: http://localhost:${port}/docs`, 'Bootstrap');
+  logger.log(
+    `🚀 Grehasoft backend is running on: http://localhost:${port}/api/v1`,
+    'Bootstrap',
+  );
+  logger.log(
+    `📑 Swagger Documentation is available on: http://localhost:${port}/docs`,
+    'Bootstrap',
+  );
   logger.log(`==================================================`, 'Bootstrap');
 }
 bootstrap();

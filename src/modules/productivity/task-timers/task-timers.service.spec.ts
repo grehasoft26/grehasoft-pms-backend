@@ -70,14 +70,19 @@ describe('TaskTimersService', () => {
       repository.findActiveTimer.mockResolvedValue(null);
       repository.create.mockResolvedValue(mockTimer);
 
-      const result = await service.startTimer({ taskId: 'task-uuid' }, mockContext);
+      const result = await service.startTimer(
+        { taskId: 'task-uuid' },
+        mockContext,
+      );
       expect(result).toEqual(mockTimer);
       expect(repository.create).toHaveBeenCalled();
     });
 
     it('should throw BadRequestException if active timer exists', async () => {
       repository.findActiveTimer.mockResolvedValue(mockTimer);
-      await expect(service.startTimer({ taskId: 'task-uuid' }, mockContext)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.startTimer({ taskId: 'task-uuid' }, mockContext),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

@@ -25,9 +25,7 @@ import { TimeTrackingDashboardController } from './dashboard/dashboard.controlle
 import { TimeTrackingDashboardService } from './dashboard/dashboard.service';
 
 @Module({
-  imports: [
-    AuthModule,
-  ],
+  imports: [AuthModule],
   controllers: [
     WorkSessionsController,
     TaskTimersController,

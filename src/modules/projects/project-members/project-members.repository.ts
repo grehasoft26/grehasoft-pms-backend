@@ -20,7 +20,9 @@ export class ProjectMembersRepository {
       },
       create: data,
       include: {
-        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
   }
@@ -29,7 +31,9 @@ export class ProjectMembersRepository {
     return this.prisma.projectMember.findMany({
       where: { projectId },
       include: {
-        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
   }
@@ -38,7 +42,9 @@ export class ProjectMembersRepository {
     return this.prisma.projectMember.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
   }

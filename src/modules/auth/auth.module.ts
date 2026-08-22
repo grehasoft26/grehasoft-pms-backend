@@ -7,6 +7,7 @@ import { RateLimiterService } from './services/rate-limiter.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RoleGuard } from './guards/roles.guard';
 import { PermissionGuard } from './guards/permissions.guard';
+import { FeatureGuard } from './guards/feature.guard';
 
 @Module({
   imports: [
@@ -26,12 +27,14 @@ import { PermissionGuard } from './guards/permissions.guard';
     JwtAuthGuard,
     RoleGuard,
     PermissionGuard,
+    FeatureGuard,
   ],
   exports: [
     AuthService,
     JwtAuthGuard,
     RoleGuard,
     PermissionGuard,
+    FeatureGuard,
     JwtModule,
   ],
 })

@@ -8,7 +8,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class VendorsService {
   constructor(
     private readonly repository: FinanceRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createVendor(dto: CreateVendorDto, context: RequestContext) {
@@ -23,11 +23,13 @@ export class VendorsService {
       bankDetails: dto.bankDetails || '',
       upi: dto.upi || '',
       paymentTerms: dto.paymentTerms || 'Due on Receipt',
-      outstandingBalance: dto.outstandingBalance || 0.00,
+      outstandingBalance: dto.outstandingBalance || 0.0,
       status: 'ACTIVE',
     });
 
-    this.logger.audit(context.userId, 'Create Vendor', 'vendor', vendor, { after: vendor });
+    this.logger.audit(context.userId, 'Create Vendor', 'vendor', vendor, {
+      after: vendor,
+    });
     return vendor;
   }
 

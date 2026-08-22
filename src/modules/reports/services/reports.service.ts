@@ -1,6 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ReportsRepository } from '../repositories/reports.repository';
-import { CreateReportDefinitionDto, PublishVersionDto, SaveFilterDto, CreateScheduledReportDto } from '../dto/reports.dto';
+import {
+  CreateReportDefinitionDto,
+  PublishVersionDto,
+  SaveFilterDto,
+  CreateScheduledReportDto,
+} from '../dto/reports.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { executeQuery } from '../utils/query-engine.helper';
@@ -9,7 +18,7 @@ import { executeQuery } from '../utils/query-engine.helper';
 export class ReportsBuilderService {
   constructor(
     private readonly repository: ReportsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   // 1. Categories
@@ -22,9 +31,20 @@ export class ReportsBuilderService {
   }
 
   // 2. Report Definitions
-  async createReportDefinition(tenantId: string, dto: CreateReportDefinitionDto, context: RequestContext) {
+  async createReportDefinition(
+    tenantId: string,
+    dto: CreateReportDefinitionDto,
+    context: RequestContext,
+  ) {
     // Validate module
-    const allowedModules = ['CRM', 'PROJECTS', 'FINANCE', 'HR', 'INFRASTRUCTURE', 'PRODUCTIVITY'];
+    const allowedModules = [
+      'CRM',
+      'PROJECTS',
+      'FINANCE',
+      'HR',
+      'INFRASTRUCTURE',
+      'PRODUCTIVITY',
+    ];
     if (!allowedModules.includes(dto.module.toUpperCase())) {
       throw new BadRequestException(`Module ${dto.module} is not supported`);
     }
@@ -36,7 +56,9 @@ export class ReportsBuilderService {
       if (dto.groupByJson) JSON.parse(dto.groupByJson);
       if (dto.aggregationsJson) JSON.parse(dto.aggregationsJson);
     } catch (e) {
-      throw new BadRequestException('Validation failed: Malformed JSON parameters');
+      throw new BadRequestException(
+        'Validation failed: Malformed JSON parameters',
+      );
     }
 
     const report = await this.repository.createDefinition(tenantId, {
@@ -54,16 +76,31 @@ export class ReportsBuilderService {
       exportConfigJson: dto.exportConfigJson || null,
     });
 
-    this.logger.audit(context.userId, 'Create Report Definition', 'reportDefinition', report, { after: report });
+    this.logger.audit(
+      context.userId,
+      'Create Report Definition',
+      'reportDefinition',
+      report,
+      { after: report },
+    );
     return report;
   }
 
-  async getReportDefinitions(tenantId: string, categoryId?: string, search?: string) {
+  async getReportDefinitions(
+    tenantId: string,
+    categoryId?: string,
+    search?: string,
+  ) {
     return this.repository.findDefinitions(tenantId, categoryId, search);
   }
 
   // 3. Report Versioning
-  async publishVersion(tenantId: string, reportId: string, dto: PublishVersionDto, context: RequestContext) {
+  async publishVersion(
+    tenantId: string,
+    reportId: string,
+    dto: PublishVersionDto,
+    context: RequestContext,
+  ) {
     const report = await this.repository.findDefinitionById(tenantId, reportId);
     if (!report) throw new NotFoundException('Report definition not found');
 
@@ -86,16 +123,32 @@ export class ReportsBuilderService {
       chartConfigJson: dto.chartConfigJson || null,
     });
 
-    this.logger.audit(context.userId, 'Publish Report Version', 'reportVersion', versionRecord, { after: versionRecord });
+    this.logger.audit(
+      context.userId,
+      'Publish Report Version',
+      'reportVersion',
+      versionRecord,
+      { after: versionRecord },
+    );
     return versionRecord;
   }
 
-  async rollbackVersion(tenantId: string, reportId: string, version: string, context: RequestContext) {
+  async rollbackVersion(
+    tenantId: string,
+    reportId: string,
+    version: string,
+    context: RequestContext,
+  ) {
     const report = await this.repository.findDefinitionById(tenantId, reportId);
     if (!report) throw new NotFoundException('Report definition not found');
 
-    const versionRecord = await this.repository.findVersionBySemver(tenantId, reportId, version);
-    if (!versionRecord) throw new NotFoundException(`Report version ${version} not found`);
+    const versionRecord = await this.repository.findVersionBySemver(
+      tenantId,
+      reportId,
+      version,
+    );
+    if (!versionRecord)
+      throw new NotFoundException(`Report version ${version} not found`);
 
     await this.repository.updateDefinition(tenantId, reportId, {
       currentVersion: version,
@@ -104,12 +157,26 @@ export class ReportsBuilderService {
       chartConfigJson: versionRecord.chartConfigJson,
     });
 
-    this.logger.audit(context.userId, 'Rollback Report Version', 'reportDefinition', report, { after: report });
-    return { message: `Report definition rolled back to version ${version}`, currentVersion: version };
+    this.logger.audit(
+      context.userId,
+      'Rollback Report Version',
+      'reportDefinition',
+      report,
+      { after: report },
+    );
+    return {
+      message: `Report definition rolled back to version ${version}`,
+      currentVersion: version,
+    };
   }
 
   // 4. Saved Filters
-  async saveFilter(tenantId: string, reportId: string, dto: SaveFilterDto, context: RequestContext) {
+  async saveFilter(
+    tenantId: string,
+    reportId: string,
+    dto: SaveFilterDto,
+    context: RequestContext,
+  ) {
     const filter = await this.repository.createSavedFilter(tenantId, {
       reportDefinitionId: reportId,
       userId: context.userId,
@@ -123,12 +190,20 @@ export class ReportsBuilderService {
     return filter;
   }
 
-  async getSavedFilters(tenantId: string, reportId: string, context: RequestContext) {
+  async getSavedFilters(
+    tenantId: string,
+    reportId: string,
+    context: RequestContext,
+  ) {
     return this.repository.findSavedFilters(tenantId, reportId, context.userId);
   }
 
   // 5. Favorites & Recents
-  async toggleFavorite(tenantId: string, reportId: string, context: RequestContext) {
+  async toggleFavorite(
+    tenantId: string,
+    reportId: string,
+    context: RequestContext,
+  ) {
     return this.repository.toggleFavorite(tenantId, context.userId, reportId);
   }
 
@@ -136,7 +211,11 @@ export class ReportsBuilderService {
     return this.repository.findFavorites(tenantId, context.userId);
   }
 
-  async logRecentOpened(tenantId: string, reportId: string, context: RequestContext) {
+  async logRecentOpened(
+    tenantId: string,
+    reportId: string,
+    context: RequestContext,
+  ) {
     return this.repository.logRecentOpen(tenantId, context.userId, reportId);
   }
 
@@ -145,7 +224,12 @@ export class ReportsBuilderService {
   }
 
   // 6. Scheduled Reports
-  async createSchedule(tenantId: string, reportId: string, dto: CreateScheduledReportDto, context: RequestContext) {
+  async createSchedule(
+    tenantId: string,
+    reportId: string,
+    dto: CreateScheduledReportDto,
+    context: RequestContext,
+  ) {
     const schedule = await this.repository.createScheduledReport(tenantId, {
       reportDefinitionId: reportId,
       userId: context.userId,
@@ -159,9 +243,17 @@ export class ReportsBuilderService {
     return schedule;
   }
 
-  async triggerScheduledRun(tenantId: string, scheduleId: string, context: RequestContext) {
-    const schedule = await this.repository.findScheduledReportById(tenantId, scheduleId);
-    if (!schedule) throw new NotFoundException('Scheduled report configuration not found');
+  async triggerScheduledRun(
+    tenantId: string,
+    scheduleId: string,
+    context: RequestContext,
+  ) {
+    const schedule = await this.repository.findScheduledReportById(
+      tenantId,
+      scheduleId,
+    );
+    if (!schedule)
+      throw new NotFoundException('Scheduled report configuration not found');
 
     const startedAt = new Date();
     const execution = await this.repository.createExecution(tenantId, {
@@ -176,7 +268,9 @@ export class ReportsBuilderService {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     const completedAt = new Date();
-    const duration = Math.ceil((completedAt.getTime() - startedAt.getTime()) / 1000);
+    const duration = Math.ceil(
+      (completedAt.getTime() - startedAt.getTime()) / 1000,
+    );
 
     const updated = await this.repository.prisma.reportExecution.update({
       where: { id: execution.id },
@@ -192,7 +286,11 @@ export class ReportsBuilderService {
 
   // 7. Global Enterprise Search
   async searchBI(tenantId: string, query: string, context: RequestContext) {
-    const reports = await this.repository.findDefinitions(tenantId, undefined, query);
+    const reports = await this.repository.findDefinitions(
+      tenantId,
+      undefined,
+      query,
+    );
     const dashboards = await this.repository.prisma.dashboard.findMany({
       where: {
         tenantId,
@@ -205,8 +303,17 @@ export class ReportsBuilderService {
     });
 
     return {
-      reports: reports.map((r) => ({ id: r.id, name: r.name, code: r.code, type: 'report' })),
-      dashboards: dashboards.map((d) => ({ id: d.id, name: d.name, type: 'dashboard' })),
+      reports: reports.map((r) => ({
+        id: r.id,
+        name: r.name,
+        code: r.code,
+        type: 'report',
+      })),
+      dashboards: dashboards.map((d) => ({
+        id: d.id,
+        name: d.name,
+        type: 'dashboard',
+      })),
     };
   }
 }

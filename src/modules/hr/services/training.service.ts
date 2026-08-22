@@ -1,6 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { HrRepository } from '../repositories/hr.repository';
-import { CreateCourseDto, EnrollEmployeeDto, CompleteTrainingDto } from '../dto/training.dto';
+import {
+  CreateCourseDto,
+  EnrollEmployeeDto,
+  CompleteTrainingDto,
+} from '../dto/training.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { TimelineEventType } from '@prisma/client';
@@ -9,7 +17,7 @@ import { TimelineEventType } from '@prisma/client';
 export class TrainingService {
   constructor(
     private readonly repository: HrRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createCourse(dto: CreateCourseDto, context: RequestContext) {
@@ -20,11 +28,21 @@ export class TrainingService {
       isMandatory: dto.isMandatory ?? false,
       isExternal: dto.isExternal ?? false,
     });
-    this.logger.audit(context.userId, 'Create Training Course', 'trainingCourse', course, { after: course });
+    this.logger.audit(
+      context.userId,
+      'Create Training Course',
+      'trainingCourse',
+      course,
+      { after: course },
+    );
     return course;
   }
 
-  async enrollEmployee(employeeProfileId: string, dto: EnrollEmployeeDto, context: RequestContext) {
+  async enrollEmployee(
+    employeeProfileId: string,
+    dto: EnrollEmployeeDto,
+    context: RequestContext,
+  ) {
     const profile = await this.repository.findProfileById(employeeProfileId);
     if (!profile) throw new NotFoundException('Employee profile not found');
 
@@ -37,13 +55,21 @@ export class TrainingService {
       status: 'ENROLLED',
     });
 
-
-
-    this.logger.audit(context.userId, 'Enroll Employee in Training', 'trainingEnrollment', enrollment, { after: enrollment });
+    this.logger.audit(
+      context.userId,
+      'Enroll Employee in Training',
+      'trainingEnrollment',
+      enrollment,
+      { after: enrollment },
+    );
     return enrollment;
   }
 
-  async completeTraining(enrollmentId: string, dto: CompleteTrainingDto, context: RequestContext) {
+  async completeTraining(
+    enrollmentId: string,
+    dto: CompleteTrainingDto,
+    context: RequestContext,
+  ) {
     const enrollment = await this.repository.findEnrollmentById(enrollmentId);
     if (!enrollment) throw new NotFoundException('Enrollment not found');
 
@@ -51,7 +77,11 @@ export class TrainingService {
       throw new BadRequestException('Training is already completed');
     }
 
-    const updated = await this.repository.updateEnrollment(enrollmentId, 'COMPLETED', new Date(dto.completionDate));
+    const updated = await this.repository.updateEnrollment(
+      enrollmentId,
+      'COMPLETED',
+      new Date(dto.completionDate),
+    );
 
     // Save Training Certificate
     const certificate = await this.repository.createCertificate({
@@ -66,10 +96,16 @@ export class TrainingService {
     await this.repository.createTimelineEvent(
       enrollment.employeeProfileId,
       TimelineEventType.AWARD,
-      `Earned certificate: ${dto.certificateNumber} for course: ${enrollment.course.title}`
+      `Earned certificate: ${dto.certificateNumber} for course: ${enrollment.course.title}`,
     );
 
-    this.logger.audit(context.userId, 'Complete Training & Issue Certificate', 'trainingCertificate', certificate, { after: certificate });
+    this.logger.audit(
+      context.userId,
+      'Complete Training & Issue Certificate',
+      'trainingCertificate',
+      certificate,
+      { after: certificate },
+    );
     return { enrollment: updated, certificate };
   }
 
@@ -81,7 +117,14 @@ export class TrainingService {
         expiryDate: { lt: now },
         renewalReminded: false,
       },
-      include: { enrollment: { include: { course: true, employeeProfile: { include: { user: true } } } } },
+      include: {
+        enrollment: {
+          include: {
+            course: true,
+            employeeProfile: { include: { user: true } },
+          },
+        },
+      },
     });
   }
 

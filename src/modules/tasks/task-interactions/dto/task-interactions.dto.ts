@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsNumber, IsBoolean, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsNumber,
+  IsBoolean,
+  Min,
+} from 'class-validator';
 import { DependencyType } from '@prisma/client';
 
 export class CreateTaskChecklistDto {
@@ -61,7 +70,9 @@ export class CreateTaskCommentDto {
   @IsString()
   content: string;
 
-  @ApiPropertyOptional({ description: 'Parent Comment ID for nested threaded replies' })
+  @ApiPropertyOptional({
+    description: 'Parent Comment ID for nested threaded replies',
+  })
   @IsOptional()
   @IsUUID()
   parentCommentId?: string;

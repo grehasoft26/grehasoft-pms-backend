@@ -1,8 +1,28 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SprintsService } from './sprints.service';
-import { CreateSprintDto, UpdateSprintDto, CreateSprintGoalDto } from './dto/sprints.dto';
+import {
+  CreateSprintDto,
+  UpdateSprintDto,
+  CreateSprintGoalDto,
+} from './dto/sprints.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -58,7 +78,11 @@ export class SprintsController {
   @Permissions('sprints.update')
   @ApiOperation({ summary: 'Update sprint name, dates, or active status' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateSprintDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateSprintDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.sprintsService.update(id, dto, context);
     return { message: 'Sprint updated successfully', data };
@@ -79,7 +103,10 @@ export class SprintsController {
   @Permissions('sprints.update')
   @ApiOperation({ summary: 'Add sprint goal' })
   @ApiResponse({ type: SuccessResponseDto })
-  async addGoal(@Param('sprintId') sprintId: string, @Body('goal') goal: string) {
+  async addGoal(
+    @Param('sprintId') sprintId: string,
+    @Body('goal') goal: string,
+  ) {
     const data = await this.sprintsService.addGoal(sprintId, goal);
     return { message: 'Sprint goal added successfully', data };
   }
@@ -88,7 +115,10 @@ export class SprintsController {
   @Permissions('sprints.update')
   @ApiOperation({ summary: 'Update sprint goal achievement status' })
   @ApiResponse({ type: SuccessResponseDto })
-  async updateGoal(@Param('goalId') goalId: string, @Body('isAchieved') isAchieved: boolean) {
+  async updateGoal(
+    @Param('goalId') goalId: string,
+    @Body('isAchieved') isAchieved: boolean,
+  ) {
     const data = await this.sprintsService.updateGoal(goalId, isAchieved);
     return { message: 'Sprint goal updated', data };
   }

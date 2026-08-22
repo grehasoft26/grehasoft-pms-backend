@@ -1,6 +1,11 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { DashboardService } from '../dashboard/dashboard.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -20,7 +25,10 @@ export class DashboardController {
   }
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Get('statistics')
@@ -31,6 +39,9 @@ export class DashboardController {
     const tenantId = this.getTenantId(req);
     const userId = this.getUserId(req);
     const data = await this.service.getStatistics(tenantId, userId);
-    return { message: 'Notifications dashboard statistics retrieved successfully', data };
+    return {
+      message: 'Notifications dashboard statistics retrieved successfully',
+      data,
+    };
   }
 }

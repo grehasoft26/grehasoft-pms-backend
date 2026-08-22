@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { AddressType } from '@prisma/client';
 
 export class CreateClientAddressDto {
@@ -48,7 +56,7 @@ export class CreateClientAddressDto {
   @IsBoolean()
   isPrimary?: boolean;
 
-  @ApiProperty({ example: 19.0760, required: false })
+  @ApiProperty({ example: 19.076, required: false })
   @IsOptional()
   @IsNumber()
   latitude?: number;
@@ -58,14 +66,21 @@ export class CreateClientAddressDto {
   @IsNumber()
   longitude?: number;
 
-  @ApiProperty({ example: 'https://maps.google.com/?q=19.0760,72.8777', required: false })
+  @ApiProperty({
+    example: 'https://maps.google.com/?q=19.0760,72.8777',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   googleMapsUrl?: string;
 }
 
 export class UpdateClientAddressDto {
-  @ApiProperty({ enum: AddressType, example: AddressType.BILLING, required: false })
+  @ApiProperty({
+    enum: AddressType,
+    example: AddressType.BILLING,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(AddressType)
   type?: AddressType;
@@ -105,7 +120,7 @@ export class UpdateClientAddressDto {
   @IsBoolean()
   isPrimary?: boolean;
 
-  @ApiProperty({ example: 19.0760, required: false })
+  @ApiProperty({ example: 19.076, required: false })
   @IsOptional()
   @IsNumber()
   latitude?: number;
@@ -115,7 +130,10 @@ export class UpdateClientAddressDto {
   @IsNumber()
   longitude?: number;
 
-  @ApiProperty({ example: 'https://maps.google.com/?q=19.0760,72.8777', required: false })
+  @ApiProperty({
+    example: 'https://maps.google.com/?q=19.0760,72.8777',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   googleMapsUrl?: string;

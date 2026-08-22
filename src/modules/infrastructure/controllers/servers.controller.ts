@@ -1,8 +1,27 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ServersService } from '../services/servers.service';
-import { CreateServerDto, CreateServerEnvironmentDto } from '../dto/servers.dto';
+import {
+  CreateServerDto,
+  CreateServerEnvironmentDto,
+} from '../dto/servers.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -47,18 +66,51 @@ export class ServersController {
 
   @Get(':id')
   @Permissions('infrastructure.read')
-  @ApiOperation({ summary: 'Get server details with backups and monitoring alerts' })
+  @ApiOperation({
+    summary: 'Get server details with backups and monitoring alerts',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getById(@Param('id') id: string) {
     const data = await this.service.getServer(id);
     return { message: 'Server details retrieved', data };
   }
 
+  @Put(':id')
+  @Permissions('infrastructure.manage')
+  @ApiOperation({ summary: 'Update server configuration spec' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async update(
+    @Param('id') id: string,
+    @Body() dto: CreateServerDto,
+    @Req() req: Request,
+  ) {
+    const context = this.getContext(req);
+    const data = await this.service.updateServer(id, dto, context);
+    return { message: 'Server updated successfully', data };
+  }
+
+  @Delete(':id')
+  @Permissions('infrastructure.manage')
+  @ApiOperation({ summary: 'Deprovision a server' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async delete(@Param('id') id: string, @Req() req: Request) {
+    const context = this.getContext(req);
+    const data = await this.service.deleteServer(id, context);
+    return { message: 'Server deprovisioned successfully', data };
+  }
+
   @Post(':id/credentials')
   @Permissions('infrastructure.manage')
-  @ApiOperation({ summary: 'Register secure server credentials (SSH private keys, passwords, encrypted)' })
+  @ApiOperation({
+    summary:
+      'Register secure server credentials (SSH private keys, passwords, encrypted)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async addCredential(@Param('id') id: string, @Body() dto: any, @Req() req: Request) {
+  async addCredential(
+    @Param('id') id: string,
+    @Body() dto: any,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.addCredential(id, dto, context);
     return { message: 'Server credentials configured', data };
@@ -77,7 +129,10 @@ export class ServersController {
   @Permissions('infrastructure.manage')
   @ApiOperation({ summary: 'Create a deployment environment on a server' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createEnvironment(@Body() dto: CreateServerEnvironmentDto, @Req() req: Request) {
+  async createEnvironment(
+    @Body() dto: CreateServerEnvironmentDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.createServerEnvironment(dto, context);
     return { message: 'Server environment defined successfully', data };

@@ -1,8 +1,27 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClientAddressesService } from './client-addresses.service';
-import { CreateClientAddressDto, UpdateClientAddressDto } from './dto/client-addresses.dto';
+import {
+  CreateClientAddressDto,
+  UpdateClientAddressDto,
+} from './dto/client-addresses.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -38,7 +57,9 @@ export class ClientAddressesController {
 
   @Get()
   @Permissions('client-addresses.read')
-  @ApiOperation({ summary: 'Get all client addresses, optionally filtered by clientId' })
+  @ApiOperation({
+    summary: 'Get all client addresses, optionally filtered by clientId',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(@Query('clientId') clientId?: string) {
     const data = await this.addressesService.getMany(clientId);
@@ -58,7 +79,11 @@ export class ClientAddressesController {
   @Permissions('client-addresses.update')
   @ApiOperation({ summary: 'Update client address details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateClientAddressDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateClientAddressDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.addressesService.update(id, dto, context);
     return { message: 'Client address updated successfully', data };

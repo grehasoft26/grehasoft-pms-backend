@@ -32,7 +32,9 @@ export class WebhookService {
 
     // 2. Fetch subscriptions matching event type
     const subscriptions = await this.getSubscriptions(tenantId);
-    const targets = subscriptions.filter((s: EventSubscription) => s.eventTypes.split(',').includes(eventType));
+    const targets = subscriptions.filter((s: EventSubscription) =>
+      s.eventTypes.split(',').includes(eventType),
+    );
 
     const deliveries: any[] = [];
 
@@ -81,6 +83,10 @@ export class WebhookService {
       deliveries.push(delivery);
     }
 
-    return { eventId: eventLog.id, deliveriesCount: deliveries.length, deliveries };
+    return {
+      eventId: eventLog.id,
+      deliveriesCount: deliveries.length,
+      deliveries,
+    };
   }
 }

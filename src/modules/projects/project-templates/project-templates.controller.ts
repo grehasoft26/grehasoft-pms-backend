@@ -1,8 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectTemplatesService } from './project-templates.service';
-import { CreateProjectTemplateDto, UpdateProjectTemplateDto } from './dto/project-templates.dto';
+import {
+  CreateProjectTemplateDto,
+  UpdateProjectTemplateDto,
+} from './dto/project-templates.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -58,7 +76,11 @@ export class ProjectTemplatesController {
   @Permissions('project-templates.update')
   @ApiOperation({ summary: 'Update reusable template' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateProjectTemplateDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProjectTemplateDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.templatesService.update(id, dto, context);
     return { message: 'Template updated successfully', data };

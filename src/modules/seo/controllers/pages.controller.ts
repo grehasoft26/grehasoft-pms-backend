@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PagesService } from '../pages/pages.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -15,7 +28,10 @@ export class PagesController {
   constructor(private readonly service: PagesService) {}
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post()
@@ -25,10 +41,15 @@ export class PagesController {
   async upsertPage(
     @Param('seoProjectId') seoProjectId: string,
     @Body() body: any,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const tenantId = this.getTenantId(req);
-    const data = await this.service.upsertPageSEO(tenantId, seoProjectId, body.urlPath, body);
+    const data = await this.service.upsertPageSEO(
+      tenantId,
+      seoProjectId,
+      body.urlPath,
+      body,
+    );
     return { message: 'Page SEO metadata updated', data };
   }
 
@@ -36,7 +57,10 @@ export class PagesController {
   @Permissions('seo.read')
   @ApiOperation({ summary: 'Get list of configured Page SEO parameters' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getPages(@Param('seoProjectId') seoProjectId: string, @Req() req: Request) {
+  async getPages(
+    @Param('seoProjectId') seoProjectId: string,
+    @Req() req: Request,
+  ) {
     const tenantId = this.getTenantId(req);
     const data = await this.service.getPages(tenantId, seoProjectId);
     return { message: 'Page SEO profiles retrieved', data };

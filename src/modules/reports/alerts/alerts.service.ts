@@ -8,10 +8,14 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class AlertsService {
   constructor(
     private readonly repository: ReportsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
-  async triggerAlert(tenantId: string, dto: TriggerAlertDto, context: RequestContext) {
+  async triggerAlert(
+    tenantId: string,
+    dto: TriggerAlertDto,
+    context: RequestContext,
+  ) {
     const alert = await this.repository.createAlert(tenantId, {
       title: dto.title,
       description: dto.description,
@@ -22,9 +26,17 @@ export class AlertsService {
     });
 
     // Notify integration: publish internal alerts
-    console.log(`[BUSINESS ALERT EVENT] Alert Code Triggered: ${dto.title} | Severity: ${dto.severity} | Category: ${dto.category}`);
+    console.log(
+      `[BUSINESS ALERT EVENT] Alert Code Triggered: ${dto.title} | Severity: ${dto.severity} | Category: ${dto.category}`,
+    );
 
-    this.logger.audit(context.userId, 'Trigger Business Alert', 'businessAlert', alert, { after: alert });
+    this.logger.audit(
+      context.userId,
+      'Trigger Business Alert',
+      'businessAlert',
+      alert,
+      { after: alert },
+    );
     return alert;
   }
 

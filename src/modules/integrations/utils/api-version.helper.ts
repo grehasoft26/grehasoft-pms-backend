@@ -1,4 +1,7 @@
-export function resolveApiVersion(acceptHeader?: string, urlPath?: string): string {
+export function resolveApiVersion(
+  acceptHeader?: string,
+  urlPath?: string,
+): string {
   // 1. Resolve from URL path prefix, e.g. "/api/v2/reports" -> "v2"
   if (urlPath) {
     const urlMatch = urlPath.match(/\/api\/(v[0-9]+)\//);
@@ -18,7 +21,11 @@ export function resolveApiVersion(acceptHeader?: string, urlPath?: string): stri
   // Default fallback version
   return 'v1';
 }
-export function getVersionStatus(version: string, activeVersions: string[], deprecatedVersions: string[]): 'ACTIVE' | 'DEPRECATED' | 'UNKNOWN' {
+export function getVersionStatus(
+  version: string,
+  activeVersions: string[],
+  deprecatedVersions: string[],
+): 'ACTIVE' | 'DEPRECATED' | 'UNKNOWN' {
   if (activeVersions.includes(version)) {
     return 'ACTIVE';
   }

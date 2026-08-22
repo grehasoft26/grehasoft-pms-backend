@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectTemplatesRepository } from './project-templates.repository';
-import { CreateProjectTemplateDto, UpdateProjectTemplateDto } from './dto/project-templates.dto';
+import {
+  CreateProjectTemplateDto,
+  UpdateProjectTemplateDto,
+} from './dto/project-templates.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +11,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ProjectTemplatesService {
   constructor(
     private readonly repository: ProjectTemplatesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateProjectTemplateDto, context: RequestContext) {
@@ -18,12 +21,18 @@ export class ProjectTemplatesService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Create Project Template', 'projectTemplate', template, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: template,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Project Template',
+      'projectTemplate',
+      template,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: template,
+      },
+    );
 
     return this.parseTemplateConfig(template);
   }
@@ -41,7 +50,11 @@ export class ProjectTemplatesService {
     return this.parseTemplateConfig(template);
   }
 
-  async update(id: string, dto: UpdateProjectTemplateDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateProjectTemplateDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
     const updated = await this.repository.update(id, {
       ...dto,
@@ -49,13 +62,19 @@ export class ProjectTemplatesService {
       updatedBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Update Project Template', 'projectTemplate', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Project Template',
+      'projectTemplate',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return this.parseTemplateConfig(updated);
   }
@@ -64,12 +83,18 @@ export class ProjectTemplatesService {
     const before = await this.getById(id);
     await this.repository.delete(id, context.userId);
 
-    this.logger.audit(context.userId, 'Delete Project Template', 'projectTemplate', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Project Template',
+      'projectTemplate',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 
   private parseTemplateConfig(template: any) {

@@ -28,12 +28,7 @@ import { CrmDashboardController } from './crm-dashboard/crm-dashboard.controller
 import { CrmDashboardService } from './crm-dashboard/crm-dashboard.service';
 
 @Module({
-  imports: [
-    AuthModule,
-    ClientsModule,
-    StorageModule,
-    PdfModule,
-  ],
+  imports: [AuthModule, ClientsModule, StorageModule, PdfModule],
   controllers: [
     LeadsController,
     LeadSourcesController,

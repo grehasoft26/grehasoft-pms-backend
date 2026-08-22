@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { ProjectStatus, MilestoneStatus, RiskStatus, IssueStatus, ProjectHealth } from '@prisma/client';
+import {
+  ProjectStatus,
+  MilestoneStatus,
+  RiskStatus,
+  IssueStatus,
+  ProjectHealth,
+} from '@prisma/client';
 
 @Injectable()
 export class ProjectDashboardService {
@@ -19,12 +25,21 @@ export class ProjectDashboardService {
     });
 
     // 2. Project counts by status
-    const [activeCount, completedCount, planningCount, archivedCount] = await Promise.all([
-      this.prisma.project.count({ where: { status: ProjectStatus.ACTIVE, deletedAt: null } }),
-      this.prisma.project.count({ where: { status: ProjectStatus.COMPLETED, deletedAt: null } }),
-      this.prisma.project.count({ where: { status: ProjectStatus.PLANNING, deletedAt: null } }),
-      this.prisma.project.count({ where: { status: ProjectStatus.ARCHIVED, deletedAt: null } }),
-    ]);
+    const [activeCount, completedCount, planningCount, archivedCount] =
+      await Promise.all([
+        this.prisma.project.count({
+          where: { status: ProjectStatus.ACTIVE, deletedAt: null },
+        }),
+        this.prisma.project.count({
+          where: { status: ProjectStatus.COMPLETED, deletedAt: null },
+        }),
+        this.prisma.project.count({
+          where: { status: ProjectStatus.PLANNING, deletedAt: null },
+        }),
+        this.prisma.project.count({
+          where: { status: ProjectStatus.ARCHIVED, deletedAt: null },
+        }),
+      ]);
 
     // 3. Delayed Projects (Active/Planning projects past their end date and not 100% complete)
     const delayedProjects = await this.prisma.project.findMany({
@@ -78,10 +93,7 @@ export class ProjectDashboardService {
         deletedAt: null,
         status: { notIn: [IssueStatus.CLOSED, IssueStatus.RESOLVED] },
       },
-      orderBy: [
-        { severity: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ severity: 'desc' }, { createdAt: 'desc' }],
       take: 5,
       include: {
         project: { select: { name: true } },
@@ -102,9 +114,15 @@ export class ProjectDashboardService {
 
     // 8. Project Health Counts
     const [greenHealth, amberHealth, redHealth] = await Promise.all([
-      this.prisma.project.count({ where: { healthStatus: ProjectHealth.GREEN, deletedAt: null } }),
-      this.prisma.project.count({ where: { healthStatus: ProjectHealth.AMBER, deletedAt: null } }),
-      this.prisma.project.count({ where: { healthStatus: ProjectHealth.RED, deletedAt: null } }),
+      this.prisma.project.count({
+        where: { healthStatus: ProjectHealth.GREEN, deletedAt: null },
+      }),
+      this.prisma.project.count({
+        where: { healthStatus: ProjectHealth.AMBER, deletedAt: null },
+      }),
+      this.prisma.project.count({
+        where: { healthStatus: ProjectHealth.RED, deletedAt: null },
+      }),
     ]);
 
     // 9. Resource Allocation (allocated employees count and list)

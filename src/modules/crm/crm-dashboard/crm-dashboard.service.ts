@@ -7,9 +7,13 @@ export class CrmDashboardService {
 
   async getDashboardStats() {
     const now = new Date();
-    
+
     // Start dates
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
     startOfWeek.setHours(0, 0, 0, 0);
@@ -114,10 +118,11 @@ export class CrmDashboardService {
           email: user?.email,
           totalRevenue: perf._sum.value || 0,
         };
-      })
+      }),
     );
 
-    const conversionRate = totalLeadsCount > 0 ? (wonLeadsCount / totalLeadsCount) * 100 : 0;
+    const conversionRate =
+      totalLeadsCount > 0 ? (wonLeadsCount / totalLeadsCount) * 100 : 0;
     const totalRevenue = totalRevenueRes._sum.value || 0;
 
     // Sales funnel format

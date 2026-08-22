@@ -74,7 +74,7 @@ describe('DesignationsService', () => {
       repository.findByName.mockResolvedValue(mockDesignation);
 
       await expect(
-        service.create({ name: 'Architect', code: 'ARC' }, mockContext)
+        service.create({ name: 'Architect', code: 'ARC' }, mockContext),
       ).rejects.toThrow(ConflictException);
     });
   });

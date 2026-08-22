@@ -15,7 +15,9 @@ export interface AuditFinding {
   description: string;
 }
 
-export function runTechnicalAuditOnPages(pages: PageContentSimulated[]): AuditFinding[] {
+export function runTechnicalAuditOnPages(
+  pages: PageContentSimulated[],
+): AuditFinding[] {
   const findings: AuditFinding[] = [];
   const titles = new Set<string>();
 

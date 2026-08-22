@@ -1,8 +1,30 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
-import { CreateProjectDto, UpdateProjectDto, ProjectFilterDto, CloneProjectDto } from './dto/projects.dto';
+import {
+  CreateProjectDto,
+  UpdateProjectDto,
+  ProjectFilterDto,
+  CloneProjectDto,
+} from './dto/projects.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -44,16 +66,23 @@ export class ProjectsController {
     @Body('proposalId') proposalId: string,
     @Body('categoryId') categoryId: string,
     @Body('managerId') managerId: string,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
-    const data = await this.projectsService.createFromProposal(proposalId, categoryId, managerId, context);
+    const data = await this.projectsService.createFromProposal(
+      proposalId,
+      categoryId,
+      managerId,
+      context,
+    );
     return { message: 'Project successfully created from Proposal', data };
   }
 
   @Get()
   @Permissions('projects.read')
-  @ApiOperation({ summary: 'List projects with filtering, sorting, and pagination' })
+  @ApiOperation({
+    summary: 'List projects with filtering, sorting, and pagination',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(@Query() query: ProjectFilterDto) {
     const { data, totalCount } = await this.projectsService.getMany(query);
@@ -90,7 +119,11 @@ export class ProjectsController {
   @Permissions('projects.update')
   @ApiOperation({ summary: 'Update project details, budget, or timeline' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateProjectDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProjectDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.projectsService.update(id, dto, context);
     return { message: 'Project updated successfully', data };
@@ -120,7 +153,11 @@ export class ProjectsController {
   @Permissions('projects.clone')
   @ApiOperation({ summary: 'Clone/Duplicate a project template structure' })
   @ApiResponse({ type: SuccessResponseDto })
-  async clone(@Param('id') id: string, @Body() dto: CloneProjectDto, @Req() req: Request) {
+  async clone(
+    @Param('id') id: string,
+    @Body() dto: CloneProjectDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.projectsService.clone(id, dto, context);
     return { message: 'Project cloned successfully', data };
@@ -138,7 +175,9 @@ export class ProjectsController {
 
   @Delete(':id/permanent')
   @Permissions('projects.permanent-delete')
-  @ApiOperation({ summary: 'Permanently hard-delete a project (Super Admin only)' })
+  @ApiOperation({
+    summary: 'Permanently hard-delete a project (Super Admin only)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async permanentDelete(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);

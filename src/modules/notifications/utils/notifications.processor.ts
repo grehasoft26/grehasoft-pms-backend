@@ -9,13 +9,15 @@ export class NotificationsProcessor {
   constructor(
     private readonly webhookService: WebhookService,
     private readonly notificationsService: NotificationsService,
-    private readonly reminderService: ReminderService
+    private readonly reminderService: ReminderService,
   ) {}
 
   @Process('send-digest')
   async handleSendDigest(job: Bull.Job<any>) {
     const { userId, tenantId, notifications } = job.data;
-    console.log(`[QUEUE WORKER] Processing digest batch of ${notifications.length} for user ${userId}`);
+    console.log(
+      `[QUEUE WORKER] Processing digest batch of ${notifications.length} for user ${userId}`,
+    );
 
     // Send unified digest Email
     await this.notificationsService.sendNotification(
@@ -23,14 +25,16 @@ export class NotificationsProcessor {
       userId,
       'Notification Digest Batch Summary',
       `You have ${notifications.length} batched notifications from quiet hours or digest preferences.`,
-      'INFO'
+      'INFO',
     );
   }
 
   @Process('webhook-delivery')
   async handleWebhookDelivery(job: Bull.Job<any>) {
     const { tenantId, eventType, payload } = job.data;
-    console.log(`[QUEUE WORKER] Triggering outbound Webhook Delivery: ${eventType}`);
+    console.log(
+      `[QUEUE WORKER] Triggering outbound Webhook Delivery: ${eventType}`,
+    );
     await this.webhookService.triggerEvent(tenantId, eventType, payload);
   }
 

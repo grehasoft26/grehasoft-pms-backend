@@ -8,11 +8,18 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ExportsService {
   constructor(
     private readonly repository: ReportsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
-  async triggerExport(tenantId: string, dto: TriggerExportDto, context: RequestContext) {
-    const report = await this.repository.findDefinitionById(tenantId, dto.reportDefinitionId);
+  async triggerExport(
+    tenantId: string,
+    dto: TriggerExportDto,
+    context: RequestContext,
+  ) {
+    const report = await this.repository.findDefinitionById(
+      tenantId,
+      dto.reportDefinitionId,
+    );
     if (!report) throw new NotFoundException('Report definition not found');
 
     const startedAt = new Date();
@@ -30,27 +37,35 @@ export class ExportsService {
     return exportRecord;
   }
 
-  private async processBackgroundExport(tenantId: string, exportId: string, startedAt: Date) {
+  private async processBackgroundExport(
+    tenantId: string,
+    exportId: string,
+    startedAt: Date,
+  ) {
     try {
       // Simulate rendering time
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       const completedAt = new Date();
-      const duration = Math.ceil((completedAt.getTime() - startedAt.getTime()) / 1000);
+      const duration = Math.ceil(
+        (completedAt.getTime() - startedAt.getTime()) / 1000,
+      );
 
       await this.repository.updateExport(tenantId, exportId, {
         exportStatus: 'COMPLETED',
         completedAt,
         duration,
         recordCount: 150, // mock count
-        fileSize: 45280,  // mock bytes size
+        fileSize: 45280, // mock bytes size
         filePath: `/exports/downloads/report_${exportId}.bin`,
       });
     } catch (err) {
-      await this.repository.updateExport(tenantId, exportId, {
-        exportStatus: 'FAILED',
-        completedAt: new Date(),
-      }).catch(() => {});
+      await this.repository
+        .updateExport(tenantId, exportId, {
+          exportStatus: 'FAILED',
+          completedAt: new Date(),
+        })
+        .catch(() => {});
     }
   }
 

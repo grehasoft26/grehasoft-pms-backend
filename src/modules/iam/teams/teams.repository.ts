@@ -80,7 +80,10 @@ export class TeamsRepository {
     });
   }
 
-  async assignMembers(teamId: string, members: { userId: string; roleInTeam?: string }[]) {
+  async assignMembers(
+    teamId: string,
+    members: { userId: string; roleInTeam?: string }[],
+  ) {
     // Delete existing links first in a transaction
     return this.prisma.$transaction(async (tx) => {
       await tx.userTeam.deleteMany({

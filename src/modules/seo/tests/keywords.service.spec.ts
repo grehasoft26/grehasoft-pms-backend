@@ -8,9 +8,13 @@ describe('KeywordsService', () => {
 
   beforeEach(async () => {
     const mockRepository = {
-      createKeyword: jest.fn().mockImplementation((tenantId, data) => ({ id: 'kw-1', ...data })),
+      createKeyword: jest
+        .fn()
+        .mockImplementation((tenantId, data) => ({ id: 'kw-1', ...data })),
       findKeywords: jest.fn().mockResolvedValue([]),
-      createKeywordGroup: jest.fn().mockImplementation((tenantId, data) => ({ id: 'group-1', ...data })),
+      createKeywordGroup: jest
+        .fn()
+        .mockImplementation((tenantId, data) => ({ id: 'group-1', ...data })),
       findKeywordGroups: jest.fn().mockResolvedValue([]),
       logAudit: jest.fn(),
       prisma: {

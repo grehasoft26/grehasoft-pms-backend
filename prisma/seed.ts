@@ -64,6 +64,18 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('🌱 Starting Database Seeding...');
 
+  // 0. Default Company
+  console.log('Seeding Default Company...');
+  const defaultCompany = await prisma.company.upsert({
+    where: { id: '00000000-0000-0000-0000-000000000000' },
+    update: {},
+    create: {
+      id: '00000000-0000-0000-0000-000000000000',
+      name: 'Default Company',
+      status: 'ACTIVE',
+    },
+  });
+
   // 1. Roles
   console.log('Seeding Roles...');
   const superAdminRole = await prisma.role.upsert({
@@ -1090,6 +1102,7 @@ async function main() {
         roleId: superAdminRole.id,
         departmentId: rootDept.id,
         designationId: ceoDesig.id,
+        companyId: '00000000-0000-0000-0000-000000000000',
         preferences: {
           create: {
             theme: 'dark',
@@ -1120,6 +1133,41 @@ async function main() {
     where: { id: archTeam.id },
     data: { leadId: superAdminUser.id },
   });
+
+  // Seeding CRM Pipelines and Stages
+  console.log('Seeding CRM Pipelines and Stages...');
+  const salesPipeline = await prisma.pipeline.upsert({
+    where: { id: 'default-sales-pipeline-id' },
+    update: {},
+    create: {
+      id: 'default-sales-pipeline-id',
+      name: 'Sales Pipeline',
+      description: 'Standard sales opportunities pipeline',
+    },
+  });
+
+  const stagesData = [
+    { id: 'stage-new-prospect', name: 'New Prospect', code: 'NEW_PROSPECT', sortOrder: 1 },
+    { id: 'stage-contacted', name: 'Contacted / Warm', code: 'CONTACTED', sortOrder: 2 },
+    { id: 'stage-proposal-sent', name: 'Proposal Sent', code: 'PROPOSAL_SENT', sortOrder: 3 },
+    { id: 'stage-negotiation', name: 'Negotiation', code: 'NEGOTIATION', sortOrder: 4 },
+    { id: 'stage-closed-won', name: 'Closed Won', code: 'CLOSED_WON', sortOrder: 5 },
+    { id: 'stage-closed-lost', name: 'Closed Lost', code: 'CLOSED_LOST', sortOrder: 6 },
+  ];
+
+  for (const stg of stagesData) {
+    await prisma.pipelineStage.upsert({
+      where: { id: stg.id },
+      update: {},
+      create: {
+        id: stg.id,
+        pipelineId: salesPipeline.id,
+        name: stg.name,
+        code: stg.code,
+        sortOrder: stg.sortOrder,
+      },
+    });
+  }
 
   // Seeding Client Categories
   console.log('Seeding Client Categories...');
@@ -1861,6 +1909,245 @@ async function main() {
       });
     }
   }
+
+  // Seeding P0 RBAC Roles and Permissions Mappings
+    console.log('Seeding P0 RBAC Roles and Permissions Mappings...');
+
+    const seoManagerRole = await prisma.role.upsert({
+      where: { name: 'SEO Manager' },
+      update: {},
+      create: {
+        name: 'SEO Manager',
+        description: 'SEO Manager role with full target setting and review access',
+        isSystem: false,
+      },
+    });
+
+    const seoExecRole = await prisma.role.upsert({
+      where: { name: 'SEO Executive' },
+      update: {},
+      create: {
+        name: 'SEO Executive',
+        description: 'SEO Executive role for logging daily work and tracking tasks',
+        isSystem: false,
+      },
+    });
+
+    const salesManagerRole = await prisma.role.upsert({
+      where: { name: 'Sales Manager' },
+      update: {},
+      create: {
+        name: 'Sales Manager',
+        description: 'Sales Manager role with full proposal and lead access',
+        isSystem: false,
+      },
+    });
+
+    const salesExecRole = await prisma.role.upsert({
+      where: { name: 'Sales Executive' },
+      update: {},
+      create: {
+        name: 'Sales Executive',
+        description: 'Sales Executive role for creating proposals and managing assigned leads',
+        isSystem: false,
+      },
+    });
+
+    const clientRole = await prisma.role.upsert({
+      where: { name: 'Client' },
+      update: {},
+      create: {
+        name: 'Client',
+        description: 'Client Portal access role',
+        isSystem: false,
+      },
+    });
+
+    const allPermissionsInDb = await prisma.permission.findMany();
+
+    async function assignPermissionsToRole(roleName: string, permissionCodes: string[]) {
+      const role = await prisma.role.findFirst({
+        where: { name: roleName },
+      });
+      if (!role) {
+        console.warn(`Role "${roleName}" not found. Skipping.`);
+        return;
+      }
+      
+      const dbPermissions = allPermissionsInDb.filter(p => permissionCodes.includes(p.code));
+
+      const foundCodes = dbPermissions.map(p => p.code);
+      const missingCodes = permissionCodes.filter(c => !foundCodes.includes(c));
+      if (missingCodes.length > 0) {
+        console.log(`Skipped missing codes for role "${roleName}":`, missingCodes);
+      }
+
+      await prisma.role.update({
+        where: { id: role.id },
+        data: {
+          permissions: {
+            connect: dbPermissions.map(p => ({ id: p.id })),
+          },
+        },
+      });
+      console.log(`Successfully mapped ${dbPermissions.length} permissions to role "${roleName}".`);
+    }
+
+    const employeeCodes = [
+      'projects.read',
+      'tasks.read',
+      'tasks.update',
+      'timetracking.read',
+      'timesheets.submit',
+      'attendance.read',
+      'reports.read',
+    ];
+
+    const managerCodes = [
+      ...employeeCodes,
+      'projects.create',
+      'projects.update',
+      'tasks.create',
+      'tasks.delete',
+      'client-categories.read',
+      'clients.read',
+      'leave.approve',
+      'timesheets.approve',
+    ];
+
+    const seoManagerCodes = [
+      ...managerCodes,
+      'seo.manage',
+    ];
+
+    const seoExecCodes = [
+      ...employeeCodes,
+      'seo.read',
+    ];
+
+    const salesManagerCodes = [
+      'leads.create',
+      'leads.read',
+      'leads.update',
+      'leads.delete',
+      'leads.assign',
+      'leads.merge',
+      'leads.restore',
+      'proposals.create',
+      'proposals.read',
+      'proposals.update',
+      'proposals.delete',
+      'proposals.approve',
+      'proposals.pdf',
+      'proposal-templates.create',
+      'proposal-templates.read',
+      'proposal-templates.update',
+      'proposal-templates.delete',
+      'clients.create',
+      'clients.read',
+      'clients.update',
+      'opportunities.create',
+      'opportunities.read',
+      'opportunities.update',
+      'opportunities.delete',
+      'opportunities.convert',
+      'reports.read',
+    ];
+
+    const salesExecCodes = [
+      'leads.create',
+      'leads.read',
+      'leads.update',
+      'proposals.create',
+      'proposals.read',
+      'proposals.update',
+      'proposals.pdf',
+      'proposal-templates.read',
+      'clients.read',
+      'opportunities.create',
+      'opportunities.read',
+      'opportunities.update',
+      'opportunities.convert',
+      'reports.read',
+    ];
+
+    const clientCodes = [
+      'projects.read',
+      'proposals.read',
+      'invoices.read',
+      'payments.read',
+    ];
+
+    const systemExcludedPrefixes = [
+      'infrastructure',
+      'servers',
+      'domains',
+      'api.',
+      'apikeys',
+      'oauth',
+      'webhooks',
+      'analytics.manage',
+      'developer.manage',
+    ];
+    const companyAdminCodes = allPermissionsInDb
+      .map(p => p.code)
+      .filter(code => !systemExcludedPrefixes.some(prefix => code.startsWith(prefix)));
+
+    // Apply mappings synchronously
+    await assignPermissionsToRole('Employee', employeeCodes);
+    await assignPermissionsToRole('Manager', managerCodes);
+    await assignPermissionsToRole('SEO Manager', seoManagerCodes);
+    await assignPermissionsToRole('SEO Executive', seoExecCodes);
+    await assignPermissionsToRole('Sales Manager', salesManagerCodes);
+    await assignPermissionsToRole('Sales Executive', salesExecCodes);
+    await assignPermissionsToRole('Client', clientCodes);
+    await assignPermissionsToRole('Company Admin', companyAdminCodes);
+
+    // Auto-create missing EmployeeProfiles for existing non-client users
+    console.log('Ensuring all non-client users have linked EmployeeProfiles...');
+    const dbUsers = await prisma.user.findMany({
+      include: {
+        role: true,
+        employeeProfile: true,
+      },
+    });
+
+    const currentYear = new Date().getFullYear();
+    let codeIndex = 1;
+    for (const u of dbUsers) {
+      const roleName = (u.role?.name || '').toUpperCase();
+      if (roleName !== 'CLIENT' && !u.employeeProfile) {
+        let empCode = '';
+        while (true) {
+          const checkCode = `EMP-${currentYear}-${String(codeIndex).padStart(6, '0')}`;
+          const codeExists = await prisma.employeeProfile.findUnique({
+            where: { employeeCode: checkCode },
+          });
+          if (!codeExists) {
+            empCode = checkCode;
+            break;
+          }
+          codeIndex++;
+        }
+
+        await prisma.employeeProfile.create({
+          data: {
+            userId: u.id,
+            employeeCode: empCode,
+            dateOfJoining: u.createdAt || new Date(),
+            employmentStatus: 'ACTIVE',
+          },
+        });
+        console.log(`Created missing EmployeeProfile for user ${u.email} (${empCode})`);
+      }
+  }
+
+  // Ensure all existing/seeded users are assigned to the Default Company
+  console.log('Mapping all unlinked users to the Default Company...');
+  await prisma.user.updateMany({
+    where: { companyId: null },
+    data: { companyId: '00000000-0000-0000-0000-000000000000' },
+  });
 
   console.log('🌿 Seeding completed successfully.');
 }

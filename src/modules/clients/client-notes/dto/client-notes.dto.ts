@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsArray } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsArray,
+} from 'class-validator';
 import { NoteType } from '@prisma/client';
 
 export class CreateClientNoteDto {
@@ -52,7 +60,10 @@ export class UpdateClientNoteDto {
   @IsString()
   title?: string;
 
-  @ApiProperty({ example: 'Discussed project roadmap and timeline updates.', required: false })
+  @ApiProperty({
+    example: 'Discussed project roadmap and timeline updates.',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   content?: string;
@@ -78,7 +89,10 @@ export class UpdateClientNoteDto {
   @IsString({ each: true })
   mentions?: string[];
 
-  @ApiProperty({ example: ['general/attach-1.jpg', 'general/attach-2.jpg'], required: false })
+  @ApiProperty({
+    example: ['general/attach-1.jpg', 'general/attach-2.jpg'],
+    required: false,
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })

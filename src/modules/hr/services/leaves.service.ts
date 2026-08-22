@@ -1,6 +1,14 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { HrRepository } from '../repositories/hr.repository';
-import { CreateLeaveRequestDto, CreateLeaveApprovalDto, CreateLeaveTypeDto } from '../dto/leaves.dto';
+import {
+  CreateLeaveRequestDto,
+  CreateLeaveApprovalDto,
+  CreateLeaveTypeDto,
+} from '../dto/leaves.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { LeaveStatus, TimelineEventType } from '@prisma/client';
@@ -9,7 +17,7 @@ import { LeaveStatus, TimelineEventType } from '@prisma/client';
 export class LeavesService {
   constructor(
     private readonly repository: HrRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createLeaveType(dto: CreateLeaveTypeDto, context: RequestContext) {
@@ -23,7 +31,9 @@ export class LeavesService {
       allowEncashment: dto.allowEncashment ?? false,
       allowNegative: dto.allowNegative ?? false,
     });
-    this.logger.audit(context.userId, 'Create Leave Type', 'leaveType', lt, { after: lt });
+    this.logger.audit(context.userId, 'Create Leave Type', 'leaveType', lt, {
+      after: lt,
+    });
     return lt;
   }
 
@@ -32,10 +42,15 @@ export class LeavesService {
   }
 
   // Create Leave request
-  async createRequest(employeeProfileId: string, dto: CreateLeaveRequestDto, context: RequestContext) {
+  async createRequest(
+    employeeProfileId: string,
+    dto: CreateLeaveRequestDto,
+    context: RequestContext,
+  ) {
     const start = new Date(dto.startDate);
     const end = new Date(dto.endDate);
-    if (end < start) throw new BadRequestException('End date cannot be prior to start date');
+    if (end < start)
+      throw new BadRequestException('End date cannot be prior to start date');
 
     // 1. Verify Blackout Dates
     const blackouts = await this.repository.findLeaveBlackoutDates();
@@ -45,7 +60,9 @@ export class LeavesService {
         (end >= b.startDate && end <= b.endDate) ||
         (start <= b.startDate && end >= b.endDate)
       ) {
-        throw new BadRequestException(`Cannot request leave: Overlaps with Blackout period: ${b.name}`);
+        throw new BadRequestException(
+          `Cannot request leave: Overlaps with Blackout period: ${b.name}`,
+        );
       }
     }
 
@@ -55,22 +72,35 @@ export class LeavesService {
     // Calculate days requested
     let daysRequested = 0;
     if (dto.isHourly) {
-      if (!type.allowHourly) throw new BadRequestException('Hourly leave not allowed for this leave type');
+      if (!type.allowHourly)
+        throw new BadRequestException(
+          'Hourly leave not allowed for this leave type',
+        );
       daysRequested = (dto.hoursRequested || 8) / 8.0;
     } else if (dto.isHalfDay) {
-      if (!type.allowHalfDay) throw new BadRequestException('Half day leave not allowed for this leave type');
+      if (!type.allowHalfDay)
+        throw new BadRequestException(
+          'Half day leave not allowed for this leave type',
+        );
       daysRequested = 0.5;
     } else {
       // Days difference inclusive
-      daysRequested = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      daysRequested =
+        Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) +
+        1;
     }
 
     // 2. Verify Leave Balance
-    const balance = await this.repository.findLeaveBalance(employeeProfileId, dto.leaveTypeId);
+    const balance = await this.repository.findLeaveBalance(
+      employeeProfileId,
+      dto.leaveTypeId,
+    );
     const remaining = balance ? Number(balance.remaining) : 0;
 
     if (remaining < daysRequested && !type.allowNegative) {
-      throw new BadRequestException(`Insufficient leave balance. Requested: ${daysRequested}, Remaining: ${remaining}`);
+      throw new BadRequestException(
+        `Insufficient leave balance. Requested: ${daysRequested}, Remaining: ${remaining}`,
+      );
     }
 
     const request = await this.repository.createLeaveRequest({
@@ -85,23 +115,43 @@ export class LeavesService {
       status: LeaveStatus.SUBMITTED,
     });
 
-    this.logger.audit(context.userId, 'Submit Leave Request', 'leaveRequest', request, { after: request });
+    this.logger.audit(
+      context.userId,
+      'Submit Leave Request',
+      'leaveRequest',
+      request,
+      { after: request },
+    );
     return request;
   }
 
   // Workflow Approvals
-  async approveRequest(id: string, dto: CreateLeaveApprovalDto, context: RequestContext) {
+  async approveRequest(
+    id: string,
+    dto: CreateLeaveApprovalDto,
+    context: RequestContext,
+  ) {
     const request = await this.repository.findLeaveRequestById(id);
     if (!request) throw new NotFoundException('Leave request not found');
 
     const currentStatus = request.status;
 
     // Transition checks
-    if (dto.status === LeaveStatus.MANAGER_APPROVED && currentStatus !== LeaveStatus.SUBMITTED) {
-      throw new BadRequestException('Leave request must be Submitted to get Manager approval');
+    if (
+      dto.status === LeaveStatus.MANAGER_APPROVED &&
+      currentStatus !== LeaveStatus.SUBMITTED
+    ) {
+      throw new BadRequestException(
+        'Leave request must be Submitted to get Manager approval',
+      );
     }
-    if (dto.status === LeaveStatus.HR_APPROVED && currentStatus !== LeaveStatus.MANAGER_APPROVED) {
-      throw new BadRequestException('Leave request must have Manager approval to get HR approval');
+    if (
+      dto.status === LeaveStatus.HR_APPROVED &&
+      currentStatus !== LeaveStatus.MANAGER_APPROVED
+    ) {
+      throw new BadRequestException(
+        'Leave request must have Manager approval to get HR approval',
+      );
     }
 
     // Record approval log
@@ -124,24 +174,43 @@ export class LeavesService {
       } else if (request.isHalfDay) {
         daysDeducted = 0.5;
       } else {
-        daysDeducted = Math.ceil((request.endDate.getTime() - request.startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        daysDeducted =
+          Math.ceil(
+            (request.endDate.getTime() - request.startDate.getTime()) /
+              (1000 * 60 * 60 * 24),
+          ) + 1;
       }
 
-      const balance = await this.repository.findLeaveBalance(request.employeeProfileId, request.leaveTypeId);
+      const balance = await this.repository.findLeaveBalance(
+        request.employeeProfileId,
+        request.leaveTypeId,
+      );
       if (balance) {
         const newUsed = Number(balance.used) + daysDeducted;
         const newRemaining = Number(balance.allocated) - newUsed;
-        await this.repository.updateLeaveBalance(balance.id, newUsed, newRemaining);
+        await this.repository.updateLeaveBalance(
+          balance.id,
+          newUsed,
+          newRemaining,
+        );
       }
-
     }
 
-    this.logger.audit(context.userId, `Leave Approval: ${dto.status}`, 'leaveRequest', updated, { before: request, after: updated });
+    this.logger.audit(
+      context.userId,
+      `Leave Approval: ${dto.status}`,
+      'leaveRequest',
+      updated,
+      { before: request, after: updated },
+    );
     return updated;
   }
 
   // Carry Forward leaves at period end
-  async processCarryForward(employeeProfileId: string, context: RequestContext) {
+  async processCarryForward(
+    employeeProfileId: string,
+    context: RequestContext,
+  ) {
     const balances = await this.repository.prisma.leaveBalance.findMany({
       where: { employeeProfileId },
       include: { leaveType: true },
@@ -166,26 +235,49 @@ export class LeavesService {
   }
 
   // Leave Encashment
-  async encashLeaves(employeeProfileId: string, leaveTypeId: string, daysToEncash: number, context: RequestContext) {
+  async encashLeaves(
+    employeeProfileId: string,
+    leaveTypeId: string,
+    daysToEncash: number,
+    context: RequestContext,
+  ) {
     const type = await this.repository.findLeaveTypeById(leaveTypeId);
     if (!type || !type.allowEncashment) {
       throw new BadRequestException('Leave type does not allow encashment');
     }
 
-    const balance = await this.repository.findLeaveBalance(employeeProfileId, leaveTypeId);
+    const balance = await this.repository.findLeaveBalance(
+      employeeProfileId,
+      leaveTypeId,
+    );
     if (!balance || Number(balance.remaining) < daysToEncash) {
-      throw new BadRequestException('Insufficient remaining leave balance for encashment');
+      throw new BadRequestException(
+        'Insufficient remaining leave balance for encashment',
+      );
     }
 
     const newUsed = Number(balance.used) + daysToEncash;
     const newRemaining = Number(balance.allocated) - newUsed;
 
-    const updated = await this.repository.updateLeaveBalance(balance.id, newUsed, newRemaining);
-    this.logger.audit(context.userId, 'Encash Leaves', 'leaveBalance', updated, { after: updated });
+    const updated = await this.repository.updateLeaveBalance(
+      balance.id,
+      newUsed,
+      newRemaining,
+    );
+    this.logger.audit(
+      context.userId,
+      'Encash Leaves',
+      'leaveBalance',
+      updated,
+      { after: updated },
+    );
     return updated;
   }
 
-  async getLeaveRequests(filters: { status?: LeaveStatus; employeeProfileId?: string }) {
+  async getLeaveRequests(filters: {
+    status?: LeaveStatus;
+    employeeProfileId?: string;
+  }) {
     return this.repository.findLeaveRequests(filters);
   }
 
@@ -193,7 +285,12 @@ export class LeavesService {
     return this.repository.findLeaveRequestById(id);
   }
 
-  async createBlackoutDate(name: string, start: string, end: string, description?: string) {
+  async createBlackoutDate(
+    name: string,
+    start: string,
+    end: string,
+    description?: string,
+  ) {
     return this.repository.createLeaveBlackoutDate({
       name,
       startDate: new Date(start),

@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { CreateClientCategoryDto, UpdateClientCategoryDto } from './dto/client-categories.dto';
+import {
+  CreateClientCategoryDto,
+  UpdateClientCategoryDto,
+} from './dto/client-categories.dto';
 
 @Injectable()
 export class ClientCategoriesRepository {
@@ -31,7 +34,10 @@ export class ClientCategoriesRepository {
     });
   }
 
-  async update(id: string, dto: UpdateClientCategoryDto & { updatedBy?: string }) {
+  async update(
+    id: string,
+    dto: UpdateClientCategoryDto & { updatedBy?: string },
+  ) {
     return this.prisma.clientCategory.update({
       where: { id },
       data: {

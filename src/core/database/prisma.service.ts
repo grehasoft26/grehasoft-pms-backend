@@ -29,12 +29,18 @@ function parseDatabaseUrl(url: string) {
 }
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   constructor(
     private readonly logger: LoggerService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
-    const dbUrl = configService.get<string>('app.database.url') || process.env.DATABASE_URL || '';
+    const dbUrl =
+      configService.get<string>('app.database.url') ||
+      process.env.DATABASE_URL ||
+      '';
     const dbConfig = parseDatabaseUrl(dbUrl);
 
     const adapter = new PrismaMariaDb({
@@ -44,6 +50,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       password: dbConfig.password,
       database: dbConfig.database,
       connectionLimit: 10,
+      timezone: '+00:00',
     });
 
     super({
@@ -80,9 +87,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     try {
       await this.$connect();
-      this.logger.log('Connected to MySQL Database via Prisma 7 Driver Adapter', 'Database');
+      this.logger.log(
+        'Connected to MySQL Database via Prisma 7 Driver Adapter',
+        'Database',
+      );
     } catch (error) {
-      this.logger.error('Failed to connect to MySQL Database', error.stack, 'Database');
+      this.logger.error(
+        'Failed to connect to MySQL Database',
+        error.stack,
+        'Database',
+      );
       throw error;
     }
   }

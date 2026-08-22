@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { DocumentCategory } from '@prisma/client';
 
 export class CreateClientDocumentDto {
@@ -30,7 +37,11 @@ export class CreateClientDocumentDto {
 }
 
 export class UpdateClientDocumentDto {
-  @ApiProperty({ enum: DocumentCategory, example: DocumentCategory.NDA, required: false })
+  @ApiProperty({
+    enum: DocumentCategory,
+    example: DocumentCategory.NDA,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(DocumentCategory)
   category?: DocumentCategory;

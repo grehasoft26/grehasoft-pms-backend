@@ -102,7 +102,7 @@ describe('ClientsService', () => {
           registrationNumber: 'REG-9012',
           remarks: 'Test Remarks',
         },
-        mockContext
+        mockContext,
       );
 
       expect(result).toEqual(mockClient);
@@ -140,7 +140,9 @@ describe('ClientsService', () => {
 
     it('should throw NotFoundException if not found', async () => {
       repository.findById.mockResolvedValue(null);
-      await expect(service.getById('invalid-id')).rejects.toThrow(NotFoundException);
+      await expect(service.getById('invalid-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -150,7 +152,11 @@ describe('ClientsService', () => {
       const updatedClient = { ...mockClient, name: 'Acme Updated' };
       repository.update.mockResolvedValue(updatedClient);
 
-      const result = await service.update('client-uuid', { name: 'Acme Updated' }, mockContext);
+      const result = await service.update(
+        'client-uuid',
+        { name: 'Acme Updated' },
+        mockContext,
+      );
       expect(result).toEqual(updatedClient);
       expect(timelineRepository.create).toHaveBeenCalled();
       expect(logger.audit).toHaveBeenCalled();
@@ -161,7 +167,10 @@ describe('ClientsService', () => {
     it('should soft delete client, create timeline and audit entries', async () => {
       repository.findById.mockResolvedValue(mockClient);
       await service.delete('client-uuid', mockContext);
-      expect(repository.delete).toHaveBeenCalledWith('client-uuid', mockContext.userId);
+      expect(repository.delete).toHaveBeenCalledWith(
+        'client-uuid',
+        mockContext.userId,
+      );
       expect(timelineRepository.create).toHaveBeenCalled();
       expect(logger.audit).toHaveBeenCalled();
     });
@@ -184,7 +193,11 @@ describe('ClientsService', () => {
       const updatedClient = { ...mockClient, status: ClientStatus.ACTIVE };
       repository.update.mockResolvedValue(updatedClient);
 
-      const result = await service.setStatus('client-uuid', ClientStatus.ACTIVE, mockContext);
+      const result = await service.setStatus(
+        'client-uuid',
+        ClientStatus.ACTIVE,
+        mockContext,
+      );
       expect(result.status).toEqual(ClientStatus.ACTIVE);
       expect(timelineRepository.create).toHaveBeenCalled();
       expect(logger.audit).toHaveBeenCalled();

@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AlertsService } from '../alerts/alerts.service';
 import { TriggerAlertDto } from '../dto/alerts.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -27,7 +32,10 @@ export class AlertsController {
   }
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post()
@@ -38,7 +46,10 @@ export class AlertsController {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
     const data = await this.service.triggerAlert(tenantId, dto, context);
-    return { message: 'Alert triggered and notification event logged successfully', data };
+    return {
+      message: 'Alert triggered and notification event logged successfully',
+      data,
+    };
   }
 
   @Get()

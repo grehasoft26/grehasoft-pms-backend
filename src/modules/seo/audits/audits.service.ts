@@ -15,8 +15,13 @@ export class AuditsService {
       {
         urlPath: '/',
         title: 'Grehasoft Home',
-        metaDescription: 'Grehasoft Enterprise Resource Suite PMS software for business.',
-        headings: ['H1: Grehasoft Home', 'H2: Core features', 'H2: Pricing details'],
+        metaDescription:
+          'Grehasoft Enterprise Resource Suite PMS software for business.',
+        headings: [
+          'H1: Grehasoft Home',
+          'H2: Core features',
+          'H2: Pricing details',
+        ],
         images: [{ alt: 'Logo image banner', sizeBytes: 150000 }],
         links: ['/services', '/about', '/broken-link-url'],
         loadTimeMs: 450,
@@ -36,7 +41,9 @@ export class AuditsService {
     const findings = runTechnicalAuditOnPages(pages);
 
     // 3. Compute score
-    const healthScore = calculateSeoHealthScore(findings.map((f) => ({ severity: f.severity, isResolved: false })));
+    const healthScore = calculateSeoHealthScore(
+      findings.map((f) => ({ severity: f.severity, isResolved: false })),
+    );
 
     const audit = await this.repository.createAudit(tenantId, {
       seoProjectId,
@@ -61,8 +68,14 @@ export class AuditsService {
         seoProjectId,
         title: `Fix ${f.issueType.replace(/_/g, ' ')}`,
         description: f.description,
-        priority: f.severity === 'CRITICAL' || f.severity === 'HIGH' ? 'HIGH' : f.severity === 'MEDIUM' ? 'MEDIUM' : 'LOW',
-        impactScore: f.severity === 'CRITICAL' ? 95 : f.severity === 'HIGH' ? 80 : 50,
+        priority:
+          f.severity === 'CRITICAL' || f.severity === 'HIGH'
+            ? 'HIGH'
+            : f.severity === 'MEDIUM'
+              ? 'MEDIUM'
+              : 'LOW',
+        impactScore:
+          f.severity === 'CRITICAL' ? 95 : f.severity === 'HIGH' ? 80 : 50,
         isCompleted: false,
       });
     }
@@ -76,13 +89,25 @@ export class AuditsService {
           urlPath: p.urlPath,
           statusCode: p.loadTimeMs > 2200 ? 504 : 200,
           loadTimeMs: p.loadTimeMs,
-          pageSizeBytes: p.images.reduce((acc, img) => acc + img.sizeBytes, 12000),
+          pageSizeBytes: p.images.reduce(
+            (acc, img) => acc + img.sizeBytes,
+            12000,
+          ),
         },
       });
     }
 
-    await this.repository.logAudit(tenantId, 'Run Technical Audit', `Technical crawl completed. Health Score: ${healthScore}%. Found ${findings.length} issues.`);
-    return { auditId: audit.id, healthScore, findingsCount: findings.length, findings };
+    await this.repository.logAudit(
+      tenantId,
+      'Run Technical Audit',
+      `Technical crawl completed. Health Score: ${healthScore}%. Found ${findings.length} issues.`,
+    );
+    return {
+      auditId: audit.id,
+      healthScore,
+      findingsCount: findings.length,
+      findings,
+    };
   }
 
   async getAudits(tenantId: string, seoProjectId: string) {

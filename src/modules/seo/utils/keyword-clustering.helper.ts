@@ -16,11 +16,26 @@ export function clusterKeywords(terms: string[]): KeywordClusteringResult[] {
     const lower = term.toLowerCase();
     if (lower.includes('grehasoft') || lower.includes('brand')) {
       clusters['Brand & Core'].push(term);
-    } else if (lower.includes('service') || lower.includes('software') || lower.includes('pms') || lower.includes('tool')) {
+    } else if (
+      lower.includes('service') ||
+      lower.includes('software') ||
+      lower.includes('pms') ||
+      lower.includes('tool')
+    ) {
       clusters['Services & Solutions'].push(term);
-    } else if (lower.includes('how') || lower.includes('what') || lower.includes('guide') || lower.includes('tips')) {
+    } else if (
+      lower.includes('how') ||
+      lower.includes('what') ||
+      lower.includes('guide') ||
+      lower.includes('tips')
+    ) {
       clusters['Information & Support'].push(term);
-    } else if (lower.includes('near') || lower.includes('india') || lower.includes('bangalore') || lower.includes('local')) {
+    } else if (
+      lower.includes('near') ||
+      lower.includes('india') ||
+      lower.includes('bangalore') ||
+      lower.includes('local')
+    ) {
       clusters['Local & Regional'].push(term);
     } else {
       clusters['General Queries'].push(term);

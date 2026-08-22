@@ -1,6 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { NotificationsRepository } from '../repositories/notifications.repository';
-import { NotificationChannel, NotificationType, NotificationStatus } from '@prisma/client';
+import {
+  NotificationChannel,
+  NotificationType,
+  NotificationStatus,
+} from '@prisma/client';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,10 +12,14 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class NotificationsService {
   constructor(
     private readonly repository: NotificationsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
-  isInsideQuietHours(timezone: string, startStr?: string | null, endStr?: string | null): boolean {
+  isInsideQuietHours(
+    timezone: string,
+    startStr?: string | null,
+    endStr?: string | null,
+  ): boolean {
     if (!startStr || !endStr) return false;
     try {
       const formatter = new Intl.DateTimeFormat('en-US', {
@@ -42,15 +50,16 @@ export class NotificationsService {
     title: string,
     message: string,
     type: NotificationType,
-    context?: RequestContext
+    context?: RequestContext,
   ) {
     // 1. Get user preferences
     const prefs = await this.repository.findPreferences(tenantId, userId);
 
     // 2. Default preferences if empty
-    const channels = prefs.length > 0 
-      ? prefs.filter(p => p.enabled).map(p => p.channel)
-      : [NotificationChannel.IN_APP, NotificationChannel.EMAIL];
+    const channels =
+      prefs.length > 0
+        ? prefs.filter((p) => p.enabled).map((p) => p.channel)
+        : [NotificationChannel.IN_APP, NotificationChannel.EMAIL];
 
     const digestFreq = prefs[0]?.digestFrequency || 'IMMEDIATE';
     const qStart = prefs[0]?.quietHoursStart;
@@ -74,8 +83,15 @@ export class NotificationsService {
         },
       });
 
-      await this.repository.logAudit(tenantId, 'Queue Notification', `Queued notification: ${title} due to quiet hours or digest settings.`);
-      return { status: 'QUEUED', message: 'Notification queued due to quiet hours or digest settings' };
+      await this.repository.logAudit(
+        tenantId,
+        'Queue Notification',
+        `Queued notification: ${title} due to quiet hours or digest settings.`,
+      );
+      return {
+        status: 'QUEUED',
+        message: 'Notification queued due to quiet hours or digest settings',
+      };
     }
 
     // 3. Dispatch IMMEDIATE
@@ -106,7 +122,11 @@ export class NotificationsService {
       }
     }
 
-    await this.repository.logAudit(tenantId, 'Dispatch Notification', `Immediate dispatch completed for user ${userId}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Dispatch Notification',
+      `Immediate dispatch completed for user ${userId}.`,
+    );
     return { status: 'DISPATCHED', results };
   }
 

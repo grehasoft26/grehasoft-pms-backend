@@ -1,6 +1,20 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ShiftsService } from '../services/shifts.service';
 import { CreateShiftDto, AssignShiftDto } from '../dto/shifts.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -28,7 +42,10 @@ export class ShiftsController {
 
   @Post()
   @Permissions('hr.manage')
-  @ApiOperation({ summary: 'Create shift configuration (General, Morning, Evening, Night, Grace periods)' })
+  @ApiOperation({
+    summary:
+      'Create shift configuration (General, Morning, Evening, Night, Grace periods)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async create(@Body() dto: CreateShiftDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -43,7 +60,7 @@ export class ShiftsController {
   async assign(
     @Param('profileId') profileId: string,
     @Body() dto: AssignShiftDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     const data = await this.service.assignShift(profileId, dto, context);
@@ -61,9 +78,14 @@ export class ShiftsController {
 
   @Get('assignment/:profileId')
   @Permissions('hr.read')
-  @ApiOperation({ summary: 'Get effective shift assigned to employee on a specific date' })
+  @ApiOperation({
+    summary: 'Get effective shift assigned to employee on a specific date',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async getAssignment(@Param('profileId') profileId: string, @Query('date') date?: string) {
+  async getAssignment(
+    @Param('profileId') profileId: string,
+    @Query('date') date?: string,
+  ) {
     const data = await this.service.getShiftAssignment(profileId, date);
     return { message: 'Effective shift assignment details', data };
   }

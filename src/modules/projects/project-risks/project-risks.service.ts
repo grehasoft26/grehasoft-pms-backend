@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectRisksRepository } from './project-risks.repository';
-import { CreateProjectRiskDto, UpdateProjectRiskDto } from './dto/project-risks.dto';
+import {
+  CreateProjectRiskDto,
+  UpdateProjectRiskDto,
+} from './dto/project-risks.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +11,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ProjectRisksService {
   constructor(
     private readonly repository: ProjectRisksRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateProjectRiskDto, context: RequestContext) {
@@ -38,12 +41,18 @@ export class ProjectRisksService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Create Project Risk', 'projectRisk', risk, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: risk,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Project Risk',
+      'projectRisk',
+      risk,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: risk,
+      },
+    );
 
     return risk;
   }
@@ -63,7 +72,8 @@ export class ProjectRisksService {
   async update(id: string, dto: UpdateProjectRiskDto, context: RequestContext) {
     const before = await this.getById(id);
 
-    const probability = dto.probability !== undefined ? dto.probability : before.probability;
+    const probability =
+      dto.probability !== undefined ? dto.probability : before.probability;
     const impact = dto.impact !== undefined ? dto.impact : before.impact;
     const riskScore = probability * impact;
 
@@ -92,13 +102,19 @@ export class ProjectRisksService {
     }
 
     // Audit
-    this.logger.audit(context.userId, 'Update Project Risk', 'projectRisk', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Project Risk',
+      'projectRisk',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -118,11 +134,17 @@ export class ProjectRisksService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Delete Project Risk', 'projectRisk', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Project Risk',
+      'projectRisk',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

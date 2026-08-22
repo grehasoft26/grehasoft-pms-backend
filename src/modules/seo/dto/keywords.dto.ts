@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsEnum, IsOptional, IsNumber, Min, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  Min,
+  IsUUID,
+} from 'class-validator';
 import { KeywordIntent } from '@prisma/client';
 
 export class CreateKeywordDto {

@@ -1,6 +1,19 @@
-import { Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -20,18 +33,28 @@ export class NotificationsController {
   }
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Get()
   @Permissions('notifications.read')
   @ApiOperation({ summary: 'Get list of notifications (all or unread only)' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getNotifications(@Req() req: Request, @Query('unread') unread?: string) {
+  async getNotifications(
+    @Req() req: Request,
+    @Query('unread') unread?: string,
+  ) {
     const tenantId = this.getTenantId(req);
     const userId = this.getUserId(req);
     const unreadOnly = unread === 'true';
-    const data = await this.service.getNotifications(tenantId, userId, unreadOnly);
+    const data = await this.service.getNotifications(
+      tenantId,
+      userId,
+      unreadOnly,
+    );
     return { message: 'Notifications retrieved successfully', data };
   }
 

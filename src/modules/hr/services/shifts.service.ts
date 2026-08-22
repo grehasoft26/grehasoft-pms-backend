@@ -8,7 +8,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class ShiftsService {
   constructor(
     private readonly repository: HrRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createShift(dto: CreateShiftDto, context: RequestContext) {
@@ -18,13 +18,19 @@ export class ShiftsService {
       startTime: dto.startTime,
       endTime: dto.endTime,
       gracePeriod: dto.gracePeriod ?? 15,
-      nightShiftAllowance: dto.nightShiftAllowance ?? 0.00,
+      nightShiftAllowance: dto.nightShiftAllowance ?? 0.0,
     });
-    this.logger.audit(context.userId, 'Create Shift', 'shift', shift, { after: shift });
+    this.logger.audit(context.userId, 'Create Shift', 'shift', shift, {
+      after: shift,
+    });
     return shift;
   }
 
-  async assignShift(employeeProfileId: string, dto: AssignShiftDto, context: RequestContext) {
+  async assignShift(
+    employeeProfileId: string,
+    dto: AssignShiftDto,
+    context: RequestContext,
+  ) {
     const profile = await this.repository.findProfileById(employeeProfileId);
     if (!profile) throw new NotFoundException('Employee profile not found');
 
@@ -38,7 +44,13 @@ export class ShiftsService {
       endDate: dto.endDate ? new Date(dto.endDate) : null,
     });
 
-    this.logger.audit(context.userId, 'Assign Shift', 'shiftAssignment', assign, { after: assign });
+    this.logger.audit(
+      context.userId,
+      'Assign Shift',
+      'shiftAssignment',
+      assign,
+      { after: assign },
+    );
     return assign;
   }
 

@@ -16,6 +16,9 @@ import { AnalyticsService } from './analytics/analytics.service';
 import { DashboardService } from './dashboard/dashboard.service';
 import { ReportsService } from './reports/reports.service';
 
+import { WorkforceService } from './workforce/services/workforce.service';
+import { WorkforceDashboardService } from './workforce/services/workforce-dashboard.service';
+
 import { ProjectsController } from './controllers/projects.controller';
 import { KeywordsController } from './controllers/keywords.controller';
 import { PagesController } from './controllers/pages.controller';
@@ -30,10 +33,18 @@ import { SchemaController } from './controllers/schema.controller';
 import { AnalyticsController } from './controllers/analytics.controller';
 import { DashboardController } from './controllers/dashboard.controller';
 
+import { ActivityTypesController } from './controllers/activity-types.controller';
+import { CredentialsController } from './controllers/credentials.controller';
+import { MonthlyTargetsController } from './controllers/monthly-targets.controller';
+import { TasksController } from './controllers/tasks.controller';
+import { WorkLogsController } from './controllers/work-logs.controller';
+import { WorkforceDashboardController } from './controllers/workforce-dashboard.controller';
+
 import { AuthModule } from '../auth/auth.module';
+import { IntegrationsModule } from '../integrations/integrations.module';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, IntegrationsModule],
   controllers: [
     ProjectsController,
     KeywordsController,
@@ -48,6 +59,12 @@ import { AuthModule } from '../auth/auth.module';
     SchemaController,
     AnalyticsController,
     DashboardController,
+    ActivityTypesController,
+    CredentialsController,
+    MonthlyTargetsController,
+    TasksController,
+    WorkLogsController,
+    WorkforceDashboardController,
   ],
   providers: [
     SeoRepository,
@@ -66,6 +83,8 @@ import { AuthModule } from '../auth/auth.module';
     AnalyticsService,
     DashboardService,
     ReportsService,
+    WorkforceService,
+    WorkforceDashboardService,
   ],
   exports: [
     ProjectsService,
@@ -78,6 +97,8 @@ import { AuthModule } from '../auth/auth.module';
     RedirectsService,
     AnalyticsService,
     DashboardService,
+    WorkforceService,
+    WorkforceDashboardService,
   ],
 })
 export class SeoModule {}

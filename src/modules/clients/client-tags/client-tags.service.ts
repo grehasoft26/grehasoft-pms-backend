@@ -8,7 +8,7 @@ import { RequestContext } from '../../../common/interfaces/request-context.inter
 export class ClientTagsService {
   constructor(
     private readonly repository: ClientTagsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateClientTagDto, context: RequestContext) {

@@ -91,7 +91,7 @@ describe('UsersService', () => {
   describe('create', () => {
     it('should create a user successfully', async () => {
       repository.findByEmail.mockResolvedValue(null);
-      repository.create.mockResolvedValue(mockUser);
+      repository.create.mockResolvedValue(mockUser as any);
 
       const result = await service.create(
         {
@@ -100,7 +100,7 @@ describe('UsersService', () => {
           lastName: 'Charly',
           password: 'password123',
         },
-        mockContext
+        mockContext,
       );
 
       expect(result).toEqual(mockUser);
@@ -109,7 +109,7 @@ describe('UsersService', () => {
     });
 
     it('should throw ConflictException if email exists', async () => {
-      repository.findByEmail.mockResolvedValue(mockUser);
+      repository.findByEmail.mockResolvedValue(mockUser as any);
 
       await expect(
         service.create(
@@ -118,22 +118,24 @@ describe('UsersService', () => {
             firstName: 'Jisha',
             lastName: 'Charly',
           },
-          mockContext
-        )
+          mockContext,
+        ),
       ).rejects.toThrow(ConflictException);
     });
   });
 
   describe('getById', () => {
     it('should return a user if found', async () => {
-      repository.findById.mockResolvedValue(mockUser);
+      repository.findById.mockResolvedValue(mockUser as any);
       const result = await service.getById('user-uuid');
       expect(result).toEqual(mockUser);
     });
 
     it('should throw NotFoundException if not found', async () => {
       repository.findById.mockResolvedValue(null);
-      await expect(service.getById('invalid-uuid')).rejects.toThrow(NotFoundException);
+      await expect(service.getById('invalid-uuid')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

@@ -8,8 +8,14 @@ export class InfrastructureDashboardService {
   async getDashboardStats() {
     const prisma = this.repository.prisma;
     const now = new Date();
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thirtyDaysFromNow = new Date(
+      now.getTime() + 30 * 24 * 60 * 60 * 1000,
+    );
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
 
     // 1. Expiring Domains
     const expiringDomains = await prisma.domain.count({
@@ -66,7 +72,10 @@ export class InfrastructureDashboardService {
     });
     let avgResponseTime = 0;
     if (checks.length > 0) {
-      const sum = checks.reduce((acc, curr) => acc + (curr.responseTimeMs || 0), 0);
+      const sum = checks.reduce(
+        (acc, curr) => acc + (curr.responseTimeMs || 0),
+        0,
+      );
       avgResponseTime = sum / checks.length;
     }
 

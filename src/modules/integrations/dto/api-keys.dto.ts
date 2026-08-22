@@ -1,5 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsDateString,
+} from 'class-validator';
 
 export class CreateApiKeyDto {
   @ApiProperty()
@@ -7,7 +12,9 @@ export class CreateApiKeyDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: 'Comma-separated scopes, e.g. "reports:read,tasks:manage"' })
+  @ApiProperty({
+    description: 'Comma-separated scopes, e.g. "reports:read,tasks:manage"',
+  })
   @IsNotEmpty()
   @IsString()
   scopes: string;

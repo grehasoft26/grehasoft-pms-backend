@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsNumber, Min, IsEnum, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsNumber,
+  Min,
+  IsEnum,
+  IsUUID,
+} from 'class-validator';
 import { ServerType, Environment, InfrastructureStatus } from '@prisma/client';
 
 export class CreateServerDto {
@@ -71,6 +79,16 @@ export class CreateServerDto {
   @IsOptional()
   @IsUUID()
   projectId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  owner?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  serverIp?: string;
 }
 
 export class CreateServerEnvironmentDto {

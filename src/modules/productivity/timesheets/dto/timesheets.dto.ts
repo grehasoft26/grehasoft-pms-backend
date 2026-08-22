@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsDateString,
+} from 'class-validator';
 import { TimesheetStatus } from '@prisma/client';
 
 export class SubmitTimesheetDto {
@@ -10,7 +16,10 @@ export class SubmitTimesheetDto {
 }
 
 export class ApproveTimesheetDto {
-  @ApiProperty({ enum: TimesheetStatus, description: 'MANAGER_APPROVED, FINANCE_APPROVED, REJECTED' })
+  @ApiProperty({
+    enum: TimesheetStatus,
+    description: 'MANAGER_APPROVED, FINANCE_APPROVED, REJECTED',
+  })
   @IsNotEmpty()
   @IsEnum(TimesheetStatus)
   status: TimesheetStatus;

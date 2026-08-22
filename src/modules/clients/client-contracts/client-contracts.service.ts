@@ -1,8 +1,15 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ClientContractsRepository } from './client-contracts.repository';
 import { ClientTimelinesRepository } from '../client-timelines/client-timelines.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { CreateClientContractDto, UpdateClientContractDto } from './dto/client-contracts.dto';
+import {
+  CreateClientContractDto,
+  UpdateClientContractDto,
+} from './dto/client-contracts.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 
 @Injectable()
@@ -10,12 +17,17 @@ export class ClientContractsService {
   constructor(
     private readonly repository: ClientContractsRepository,
     private readonly timelineRepository: ClientTimelinesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateClientContractDto, context: RequestContext) {
-    const exists = await this.repository.findByContractNumber(dto.contractNumber);
-    if (exists) throw new ConflictException(`Contract with number "${dto.contractNumber}" already exists`);
+    const exists = await this.repository.findByContractNumber(
+      dto.contractNumber,
+    );
+    if (exists)
+      throw new ConflictException(
+        `Contract with number "${dto.contractNumber}" already exists`,
+      );
 
     const contract = await this.repository.create({
       ...dto,
@@ -30,12 +42,18 @@ export class ClientContractsService {
       metadata: { contract },
     });
 
-    this.logger.audit(context.userId, 'Create Client Contract', 'clientContract', contract, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: contract,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Client Contract',
+      'clientContract',
+      contract,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: contract,
+      },
+    );
 
     return contract;
   }
@@ -50,12 +68,21 @@ export class ClientContractsService {
     return contract;
   }
 
-  async update(id: string, dto: UpdateClientContractDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateClientContractDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
 
     if (dto.contractNumber && dto.contractNumber !== before.contractNumber) {
-      const exists = await this.repository.findByContractNumber(dto.contractNumber);
-      if (exists) throw new ConflictException(`Contract with number "${dto.contractNumber}" already exists`);
+      const exists = await this.repository.findByContractNumber(
+        dto.contractNumber,
+      );
+      if (exists)
+        throw new ConflictException(
+          `Contract with number "${dto.contractNumber}" already exists`,
+        );
     }
 
     const updated = await this.repository.update(id, {
@@ -71,13 +98,19 @@ export class ClientContractsService {
       metadata: { before, after: updated },
     });
 
-    this.logger.audit(context.userId, 'Contract Update', 'clientContract', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Contract Update',
+      'clientContract',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -93,11 +126,17 @@ export class ClientContractsService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Delete Client Contract', 'clientContract', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Client Contract',
+      'clientContract',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

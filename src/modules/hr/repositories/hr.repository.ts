@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { Prisma, EmploymentStatus, AttendanceStatus, LeaveStatus, AssetStatus, TimelineEventType } from '@prisma/client';
+import {
+  Prisma,
+  EmploymentStatus,
+  LeaveStatus,
+  TimelineEventType,
+  LeaveTypeEnum,
+} from '@prisma/client';
 
 @Injectable()
 export class HrRepository {
@@ -31,7 +37,10 @@ export class HrRepository {
     });
   }
 
-  async updateProfile(id: string, data: Prisma.EmployeeProfileUncheckedUpdateInput) {
+  async updateProfile(
+    id: string,
+    data: Prisma.EmployeeProfileUncheckedUpdateInput,
+  ) {
     return this.prisma.employeeProfile.update({
       where: { id },
       data,
@@ -46,7 +55,11 @@ export class HrRepository {
 
     return this.prisma.employeeProfile.findMany({
       where,
-      include: { user: { include: { department: true, designation: true } }, businessUnit: true, division: true },
+      include: {
+        user: { include: { department: true, designation: true } },
+        businessUnit: true,
+        division: true,
+      },
     });
   }
 
@@ -101,7 +114,9 @@ export class HrRepository {
     return this.prisma.employeeSkill.create({ data });
   }
 
-  async addCertification(data: Prisma.EmployeeCertificationUncheckedCreateInput) {
+  async addCertification(
+    data: Prisma.EmployeeCertificationUncheckedCreateInput,
+  ) {
     return this.prisma.employeeCertification.create({ data });
   }
 
@@ -144,7 +159,10 @@ export class HrRepository {
   }
 
   async assignShift(data: Prisma.ShiftAssignmentUncheckedCreateInput) {
-    return this.prisma.shiftAssignment.create({ data, include: { shift: true } });
+    return this.prisma.shiftAssignment.create({
+      data,
+      include: { shift: true },
+    });
   }
 
   async findShiftAssignment(employeeProfileId: string, date: Date) {
@@ -152,10 +170,7 @@ export class HrRepository {
       where: {
         employeeProfileId,
         startDate: { lte: date },
-        OR: [
-          { endDate: null },
-          { endDate: { gte: date } },
-        ],
+        OR: [{ endDate: null }, { endDate: { gte: date } }],
       },
       include: { shift: true },
     });
@@ -187,7 +202,7 @@ export class HrRepository {
     return this.prisma.leaveType.findUnique({ where: { id } });
   }
 
-  async findLeaveTypeByCode(code: any) {
+  async findLeaveTypeByCode(code: LeaveTypeEnum) {
     return this.prisma.leaveType.findUnique({ where: { code } });
   }
 
@@ -235,18 +250,29 @@ export class HrRepository {
   async findLeaveRequestById(id: string) {
     return this.prisma.leaveRequest.findUnique({
       where: { id },
-      include: { leaveType: true, employeeProfile: { include: { user: true } }, approvals: { include: { approver: true } } },
+      include: {
+        leaveType: true,
+        employeeProfile: { include: { user: true } },
+        approvals: { include: { approver: true } },
+      },
     });
   }
 
-  async findLeaveRequests(filters: { status?: LeaveStatus; employeeProfileId?: string }) {
+  async findLeaveRequests(filters: {
+    status?: LeaveStatus;
+    employeeProfileId?: string;
+  }) {
     const where: Prisma.LeaveRequestWhereInput = {};
     if (filters.status) where.status = filters.status;
-    if (filters.employeeProfileId) where.employeeProfileId = filters.employeeProfileId;
+    if (filters.employeeProfileId)
+      where.employeeProfileId = filters.employeeProfileId;
 
     return this.prisma.leaveRequest.findMany({
       where,
-      include: { leaveType: true, employeeProfile: { include: { user: true } } },
+      include: {
+        leaveType: true,
+        employeeProfile: { include: { user: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -256,7 +282,9 @@ export class HrRepository {
   }
 
   async findLeaveBlackoutDates() {
-    return this.prisma.leaveBlackoutDate.findMany({ orderBy: { startDate: 'asc' } });
+    return this.prisma.leaveBlackoutDate.findMany({
+      orderBy: { startDate: 'asc' },
+    });
   }
 
   // Overtime Requests
@@ -268,7 +296,11 @@ export class HrRepository {
     return this.prisma.overtimeRequest.findUnique({ where: { id } });
   }
 
-  async updateOvertimeStatus(id: string, status: LeaveStatus, approvedById?: string) {
+  async updateOvertimeStatus(
+    id: string,
+    status: LeaveStatus,
+    approvedById?: string,
+  ) {
     return this.prisma.overtimeRequest.update({
       where: { id },
       data: { status, approvedById },
@@ -295,7 +327,9 @@ export class HrRepository {
   }
 
   async findGoals(employeeProfileId: string) {
-    return this.prisma.performanceGoal.findMany({ where: { employeeProfileId } });
+    return this.prisma.performanceGoal.findMany({
+      where: { employeeProfileId },
+    });
   }
 
   async createReviewCycle(data: Prisma.PerformanceCycleCreateInput) {
@@ -310,7 +344,10 @@ export class HrRepository {
     return this.prisma.performanceReview.create({ data });
   }
 
-  async updateReview(id: string, data: Prisma.PerformanceReviewUncheckedUpdateInput) {
+  async updateReview(
+    id: string,
+    data: Prisma.PerformanceReviewUncheckedUpdateInput,
+  ) {
     return this.prisma.performanceReview.update({
       where: { id },
       data,
@@ -321,13 +358,18 @@ export class HrRepository {
   async findReviewById(id: string) {
     return this.prisma.performanceReview.findUnique({
       where: { id },
-      include: { cycle: true, employeeProfile: { include: { user: true } }, pip: true },
+      include: {
+        cycle: true,
+        employeeProfile: { include: { user: true } },
+        pip: true,
+      },
     });
   }
 
   async findReviews(filters: { employeeProfileId?: string; cycleId?: string }) {
     const where: Prisma.PerformanceReviewWhereInput = {};
-    if (filters.employeeProfileId) where.employeeProfileId = filters.employeeProfileId;
+    if (filters.employeeProfileId)
+      where.employeeProfileId = filters.employeeProfileId;
     if (filters.cycleId) where.cycleId = filters.cycleId;
 
     return this.prisma.performanceReview.findMany({
@@ -354,11 +396,17 @@ export class HrRepository {
   }
 
   async enrollEmployee(data: Prisma.TrainingEnrollmentUncheckedCreateInput) {
-    return this.prisma.trainingEnrollment.create({ data, include: { course: true } });
+    return this.prisma.trainingEnrollment.create({
+      data,
+      include: { course: true },
+    });
   }
 
   async findEnrollmentById(id: string) {
-    return this.prisma.trainingEnrollment.findUnique({ where: { id }, include: { course: true } });
+    return this.prisma.trainingEnrollment.findUnique({
+      where: { id },
+      include: { course: true },
+    });
   }
 
   async updateEnrollment(id: string, status: string, completionDate?: Date) {
@@ -369,21 +417,37 @@ export class HrRepository {
     });
   }
 
-  async createCertificate(data: Prisma.TrainingCertificateUncheckedCreateInput) {
+  async createCertificate(
+    data: Prisma.TrainingCertificateUncheckedCreateInput,
+  ) {
     return this.prisma.trainingCertificate.create({ data });
   }
 
   // Asset Assignment
-  async createAssetAssignment(data: Prisma.AssetAssignmentUncheckedCreateInput) {
+  async createAssetAssignment(
+    data: Prisma.AssetAssignmentUncheckedCreateInput,
+  ) {
     return this.prisma.assetAssignment.create({ data });
   }
 
-  async updateAssetAssignment(id: string, data: Prisma.AssetAssignmentUncheckedUpdateInput) {
+  async updateAssetAssignment(
+    id: string,
+    data: Prisma.AssetAssignmentUncheckedUpdateInput,
+  ) {
     return this.prisma.assetAssignment.update({ where: { id }, data });
   }
 
   async findAssetAssignments(employeeProfileId: string) {
-    return this.prisma.assetAssignment.findMany({ where: { employeeProfileId } });
+    return this.prisma.assetAssignment.findMany({
+      where: { employeeProfileId },
+    });
+  }
+
+  async findManyAssetAssignments() {
+    return this.prisma.assetAssignment.findMany({
+      include: { employeeProfile: { include: { user: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findAssetAssignmentById(id: string) {
@@ -391,7 +455,11 @@ export class HrRepository {
   }
 
   // Employee Timeline Auditing
-  async createTimelineEvent(employeeProfileId: string, event: TimelineEventType, description: string) {
+  async createTimelineEvent(
+    employeeProfileId: string,
+    event: TimelineEventType,
+    description: string,
+  ) {
     return this.prisma.employeeTimeline.create({
       data: {
         employeeProfileId,

@@ -16,9 +16,22 @@ describe('PermissionsService', () => {
     correlationId: 'test-correlation-id',
   };
 
-  const mockGroup = { id: 'group-uuid', name: 'CRM', description: 'CRM Module' };
-  const mockCategory = { id: 'category-uuid', name: 'Leads', groupId: 'group-uuid' };
-  const mockPermission = { id: 'perm-uuid', name: 'Create Leads', code: 'leads.create', categoryId: 'category-uuid' };
+  const mockGroup = {
+    id: 'group-uuid',
+    name: 'CRM',
+    description: 'CRM Module',
+  };
+  const mockCategory = {
+    id: 'category-uuid',
+    name: 'Leads',
+    groupId: 'group-uuid',
+  };
+  const mockPermission = {
+    id: 'perm-uuid',
+    name: 'Create Leads',
+    code: 'leads.create',
+    categoryId: 'category-uuid',
+  };
 
   beforeEach(async () => {
     const mockRepo = {
@@ -62,7 +75,10 @@ describe('PermissionsService', () => {
       repository.findGroupById.mockResolvedValue(null);
 
       await expect(
-        service.createCategory({ name: 'Leads', groupId: 'invalid-group-uuid' }, mockContext)
+        service.createCategory(
+          { name: 'Leads', groupId: 'invalid-group-uuid' },
+          mockContext,
+        ),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -73,7 +89,14 @@ describe('PermissionsService', () => {
       repository.findPermissionByCode.mockResolvedValue(mockPermission);
 
       await expect(
-        service.createPermission({ name: 'Create Leads', code: 'leads.create', categoryId: 'category-uuid' }, mockContext)
+        service.createPermission(
+          {
+            name: 'Create Leads',
+            code: 'leads.create',
+            categoryId: 'category-uuid',
+          },
+          mockContext,
+        ),
       ).rejects.toThrow(ConflictException);
     });
   });

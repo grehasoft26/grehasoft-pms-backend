@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ClientNotesRepository } from './client-notes.repository';
 import { ClientTimelinesRepository } from '../client-timelines/client-timelines.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { CreateClientNoteDto, UpdateClientNoteDto } from './dto/client-notes.dto';
+import {
+  CreateClientNoteDto,
+  UpdateClientNoteDto,
+} from './dto/client-notes.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 
 @Injectable()
@@ -10,7 +13,7 @@ export class ClientNotesService {
   constructor(
     private readonly repository: ClientNotesRepository,
     private readonly timelineRepository: ClientTimelinesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateClientNoteDto, context: RequestContext) {
@@ -27,12 +30,18 @@ export class ClientNotesService {
       metadata: { note },
     });
 
-    this.logger.audit(context.userId, 'Create Client Note', 'clientNote', note, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: note,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Client Note',
+      'clientNote',
+      note,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: note,
+      },
+    );
 
     return note;
   }
@@ -62,13 +71,19 @@ export class ClientNotesService {
       metadata: { before, after: updated },
     });
 
-    this.logger.audit(context.userId, 'Update Client Note', 'clientNote', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Client Note',
+      'clientNote',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -84,11 +99,17 @@ export class ClientNotesService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Delete Client Note', 'clientNote', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Client Note',
+      'clientNote',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

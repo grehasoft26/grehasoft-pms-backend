@@ -1,6 +1,14 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { ReportsRepository } from '../repositories/reports.repository';
-import { CreateDashboardDto, ShareDashboardDto, AddWidgetDto } from '../dto/dashboards.dto';
+import {
+  CreateDashboardDto,
+  ShareDashboardDto,
+  AddWidgetDto,
+} from '../dto/dashboards.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,17 +16,22 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class DashboardsService {
   constructor(
     private readonly repository: ReportsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
-  async createDashboard(tenantId: string, dto: CreateDashboardDto, context: RequestContext) {
+  async createDashboard(
+    tenantId: string,
+    dto: CreateDashboardDto,
+    context: RequestContext,
+  ) {
     let layoutJson = '[]';
     let templateId: string | null = null;
 
     if (dto.templateId) {
-      const template = await this.repository.prisma.dashboardTemplate.findUnique({
-        where: { id: dto.templateId },
-      });
+      const template =
+        await this.repository.prisma.dashboardTemplate.findUnique({
+          where: { id: dto.templateId },
+        });
       if (template) {
         layoutJson = template.layoutJson;
         templateId = template.id;
@@ -39,7 +52,9 @@ export class DashboardsService {
       try {
         const layoutWidgets = JSON.parse(layoutJson);
         for (const item of layoutWidgets) {
-          const widget = await this.repository.findWidgetByCode(item.widgetCode);
+          const widget = await this.repository.findWidgetByCode(
+            item.widgetCode,
+          );
           if (widget) {
             await this.repository.createDashboardWidget(tenantId, {
               dashboardId: dashboard.id,
@@ -57,7 +72,13 @@ export class DashboardsService {
       }
     }
 
-    this.logger.audit(context.userId, 'Create Dashboard', 'dashboard', dashboard, { after: dashboard });
+    this.logger.audit(
+      context.userId,
+      'Create Dashboard',
+      'dashboard',
+      dashboard,
+      { after: dashboard },
+    );
     return dashboard;
   }
 
@@ -85,7 +106,12 @@ export class DashboardsService {
     return dashboard;
   }
 
-  async shareDashboard(tenantId: string, id: string, dto: ShareDashboardDto, context: RequestContext) {
+  async shareDashboard(
+    tenantId: string,
+    id: string,
+    dto: ShareDashboardDto,
+    context: RequestContext,
+  ) {
     const dashboard = await this.getDashboard(tenantId, id, context);
     if (dashboard.ownerId !== context.userId) {
       throw new ForbiddenException('Only the owner can share this dashboard');
@@ -99,11 +125,22 @@ export class DashboardsService {
       permission: dto.permission,
     });
 
-    this.logger.audit(context.userId, 'Share Dashboard', 'dashboardShare', share, { after: share });
+    this.logger.audit(
+      context.userId,
+      'Share Dashboard',
+      'dashboardShare',
+      share,
+      { after: share },
+    );
     return share;
   }
 
-  async addWidget(tenantId: string, id: string, dto: AddWidgetDto, context: RequestContext) {
+  async addWidget(
+    tenantId: string,
+    id: string,
+    dto: AddWidgetDto,
+    context: RequestContext,
+  ) {
     const dashboard = await this.getDashboard(tenantId, id, context);
 
     const widget = await this.repository.createDashboardWidget(tenantId, {
@@ -118,13 +155,26 @@ export class DashboardsService {
       drillDownMetadata: dto.drillDownMetadata,
     });
 
-    this.logger.audit(context.userId, 'Add Dashboard Widget', 'dashboardWidget', widget, { after: widget });
+    this.logger.audit(
+      context.userId,
+      'Add Dashboard Widget',
+      'dashboardWidget',
+      widget,
+      { after: widget },
+    );
     return widget;
   }
 
-  async togglePin(tenantId: string, id: string, isPinned: boolean, context: RequestContext) {
+  async togglePin(
+    tenantId: string,
+    id: string,
+    isPinned: boolean,
+    context: RequestContext,
+  ) {
     const dashboard = await this.getDashboard(tenantId, id, context);
-    const updated = await this.repository.updateDashboard(tenantId, id, { isPinned });
+    const updated = await this.repository.updateDashboard(tenantId, id, {
+      isPinned,
+    });
     return updated;
   }
 

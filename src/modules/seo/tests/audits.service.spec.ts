@@ -8,7 +8,9 @@ describe('AuditsService', () => {
 
   beforeEach(async () => {
     const mockRepository = {
-      createAudit: jest.fn().mockImplementation((tenantId, data) => ({ id: 'audit-1', ...data })),
+      createAudit: jest
+        .fn()
+        .mockImplementation((tenantId, data) => ({ id: 'audit-1', ...data })),
       createAuditIssue: jest.fn(),
       createRecommendation: jest.fn(),
       logAudit: jest.fn(),

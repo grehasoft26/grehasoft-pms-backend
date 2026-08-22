@@ -1,6 +1,23 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, IsDateString, IsBoolean, IsArray, Min, Max } from 'class-validator';
-import { ProjectType, ProjectStatus, ProjectPriority, ProjectHealth } from '@prisma/client';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsDateString,
+  IsBoolean,
+  IsArray,
+  Min,
+  Max,
+} from 'class-validator';
+import {
+  ProjectType,
+  ProjectStatus,
+  ProjectPriority,
+  ProjectHealth,
+} from '@prisma/client';
 
 export class CreateProjectDto {
   @ApiProperty({ description: 'Name of the project' })
@@ -81,7 +98,10 @@ export class CreateProjectDto {
   @IsUUID()
   managerId: string;
 
-  @ApiPropertyOptional({ type: [String], description: 'Tags associated with project' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Tags associated with project',
+  })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -234,7 +254,10 @@ export class ProjectFilterDto {
   @IsUUID()
   managerId?: string;
 
-  @ApiPropertyOptional({ description: 'Filter by archived/deleted projects', default: 'false' })
+  @ApiPropertyOptional({
+    description: 'Filter by archived/deleted projects',
+    default: 'false',
+  })
   @IsOptional()
   @IsString()
   isDeleted?: string;

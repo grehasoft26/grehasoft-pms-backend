@@ -1,5 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { InfrastructureDashboardService } from '../services/dashboard.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -15,7 +20,10 @@ export class InfrastructureDashboardController {
 
   @Get('stats')
   @Permissions('monitoring.read')
-  @ApiOperation({ summary: 'Get DevOps dashboard metrics (expiring domains/SSL, backup failures, open incidents, average uptime)' })
+  @ApiOperation({
+    summary:
+      'Get DevOps dashboard metrics (expiring domains/SSL, backup failures, open incidents, average uptime)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getStats() {
     const data = await this.service.getDashboardStats();

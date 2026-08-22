@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PreferencesService } from '../preferences/preferences.service';
 import { UpdatePreferenceDto } from '../dto/preferences.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -27,12 +32,17 @@ export class PreferencesController {
   }
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Get()
   @Permissions('notifications.read')
-  @ApiOperation({ summary: 'Get user preferences (quiet hours and digest options)' })
+  @ApiOperation({
+    summary: 'Get user preferences (quiet hours and digest options)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async get(@Req() req: Request) {
     const tenantId = this.getTenantId(req);
@@ -48,7 +58,12 @@ export class PreferencesController {
   async update(@Body() dto: UpdatePreferenceDto, @Req() req: Request) {
     const context = this.getContext(req);
     const tenantId = this.getTenantId(req);
-    const data = await this.service.updatePreference(tenantId, context.userId, dto, context);
+    const data = await this.service.updatePreference(
+      tenantId,
+      context.userId,
+      dto,
+      context,
+    );
     return { message: 'Preference updated successfully', data };
   }
 }

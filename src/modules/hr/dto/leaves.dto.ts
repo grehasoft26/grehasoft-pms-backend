@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsDateString, IsBoolean, IsNumber, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsDateString,
+  IsBoolean,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { LeaveStatus, LeaveTypeEnum } from '@prisma/client';
 
 export class CreateLeaveTypeDto {

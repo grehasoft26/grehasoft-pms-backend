@@ -1,8 +1,26 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TaskConfigsService } from './task-configs.service';
-import { CreateTaskTypeDto, CreateTaskStatusDto, CreateTaskPriorityDto, CreateTaskLabelDto } from './dto/task-configs.dto';
+import {
+  CreateTaskTypeDto,
+  CreateTaskStatusDto,
+  CreateTaskPriorityDto,
+  CreateTaskLabelDto,
+} from './dto/task-configs.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -71,7 +89,10 @@ export class TaskConfigsController {
   @Permissions('task-configs.manage')
   @ApiOperation({ summary: 'Create custom Task Priority' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createPriority(@Body() dto: CreateTaskPriorityDto, @Req() req: Request) {
+  async createPriority(
+    @Body() dto: CreateTaskPriorityDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.configsService.createPriority(dto, context);
     return { message: 'Task priority created successfully', data };

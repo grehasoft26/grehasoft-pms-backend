@@ -7,15 +7,27 @@ import { RequestContext } from '../../../common/interfaces/request-context.inter
 export class AnnouncementsService {
   constructor(private readonly repository: NotificationsRepository) {}
 
-  async createAnnouncement(tenantId: string, dto: CreateAnnouncementDto, context: RequestContext) {
-    const ann = await this.repository.createAnnouncement(tenantId, context.userId, {
-      title: dto.title,
-      content: dto.content,
-      priority: dto.priority || 'NORMAL',
-      departmentId: dto.departmentId || null,
-    });
+  async createAnnouncement(
+    tenantId: string,
+    dto: CreateAnnouncementDto,
+    context: RequestContext,
+  ) {
+    const ann = await this.repository.createAnnouncement(
+      tenantId,
+      context.userId,
+      {
+        title: dto.title,
+        content: dto.content,
+        priority: dto.priority || 'NORMAL',
+        departmentId: dto.departmentId || null,
+      },
+    );
 
-    await this.repository.logAudit(tenantId, 'Create Announcement', `Announcement created: ${dto.title}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Create Announcement',
+      `Announcement created: ${dto.title}.`,
+    );
     return ann;
   }
 

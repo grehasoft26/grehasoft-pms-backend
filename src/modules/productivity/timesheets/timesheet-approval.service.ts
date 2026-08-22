@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { TimesheetsRepository } from './timesheets.repository';
 import { TimesheetStatus } from '@prisma/client';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -8,40 +12,78 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class TimesheetApprovalService {
   constructor(
     private readonly repository: TimesheetsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
-  async submitTimesheet(userId: string, startDateStr: string, context: RequestContext) {
+  async submitTimesheet(
+    userId: string,
+    startDateStr: string,
+    context: RequestContext,
+  ) {
     const startDate = new Date(startDateStr);
     const weekly = await this.repository.findWeekly(userId, startDate);
     if (!weekly) {
-      throw new NotFoundException('Weekly timesheet not found for specified week');
+      throw new NotFoundException(
+        'Weekly timesheet not found for specified week',
+      );
     }
 
-    if (weekly.status !== TimesheetStatus.DRAFT && weekly.status !== TimesheetStatus.REJECTED) {
-      throw new BadRequestException(`Timesheet cannot be submitted from status ${weekly.status}`);
+    if (
+      weekly.status !== TimesheetStatus.DRAFT &&
+      weekly.status !== TimesheetStatus.REJECTED
+    ) {
+      throw new BadRequestException(
+        `Timesheet cannot be submitted from status ${weekly.status}`,
+      );
     }
 
-    const updated = await this.repository.updateWeeklyStatus(weekly.id, TimesheetStatus.SUBMITTED);
-    this.logger.audit(context.userId, 'Submit Weekly Timesheet', 'weeklyTimesheet', updated, { before: weekly, after: updated });
+    const updated = await this.repository.updateWeeklyStatus(
+      weekly.id,
+      TimesheetStatus.SUBMITTED,
+    );
+    this.logger.audit(
+      context.userId,
+      'Submit Weekly Timesheet',
+      'weeklyTimesheet',
+      updated,
+      { before: weekly, after: updated },
+    );
     return updated;
   }
 
-  async approveTimesheet(timesheetId: string, status: TimesheetStatus, comments: string, context: RequestContext) {
+  async approveTimesheet(
+    timesheetId: string,
+    status: TimesheetStatus,
+    comments: string,
+    context: RequestContext,
+  ) {
     const weekly = await this.repository.findWeeklyById(timesheetId);
     if (!weekly) {
       throw new NotFoundException('Weekly timesheet not found');
     }
 
     // Workflow state validation rules
-    if (status === TimesheetStatus.MANAGER_APPROVED && weekly.status !== TimesheetStatus.SUBMITTED) {
-      throw new BadRequestException('Manager approval requires the timesheet to be submitted first');
+    if (
+      status === TimesheetStatus.MANAGER_APPROVED &&
+      weekly.status !== TimesheetStatus.SUBMITTED
+    ) {
+      throw new BadRequestException(
+        'Manager approval requires the timesheet to be submitted first',
+      );
     }
-    if (status === TimesheetStatus.FINANCE_APPROVED && weekly.status !== TimesheetStatus.MANAGER_APPROVED) {
-      throw new BadRequestException('Finance approval requires manager approval first');
+    if (
+      status === TimesheetStatus.FINANCE_APPROVED &&
+      weekly.status !== TimesheetStatus.MANAGER_APPROVED
+    ) {
+      throw new BadRequestException(
+        'Finance approval requires manager approval first',
+      );
     }
 
-    const updated = await this.repository.updateWeeklyStatus(timesheetId, status);
+    const updated = await this.repository.updateWeeklyStatus(
+      timesheetId,
+      status,
+    );
 
     // Create approval history entry
     await this.repository.createApproval({
@@ -74,7 +116,13 @@ export class TimesheetApprovalService {
       }
     }
 
-    this.logger.audit(context.userId, `Timesheet workflow approval: ${status}`, 'weeklyTimesheet', updated, { before: weekly, after: updated });
+    this.logger.audit(
+      context.userId,
+      `Timesheet workflow approval: ${status}`,
+      'weeklyTimesheet',
+      updated,
+      { before: weekly, after: updated },
+    );
     return updated;
   }
 
@@ -84,5 +132,10 @@ export class TimesheetApprovalService {
 
   async getTimesheetById(id: string) {
     return this.repository.findWeeklyById(id);
+  }
+
+  async getWeekly(userId: string, startDateStr: string) {
+    const startDate = new Date(startDateStr);
+    return this.repository.findWeekly(userId, startDate);
   }
 }

@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsArray, IsUrl } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsArray,
+  IsUrl,
+} from 'class-validator';
 import { ClientStatus } from '@prisma/client';
 
 export class CreateClientDto {
@@ -8,7 +16,11 @@ export class CreateClientDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ enum: ClientStatus, example: ClientStatus.PROSPECT, required: false })
+  @ApiProperty({
+    enum: ClientStatus,
+    example: ClientStatus.PROSPECT,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(ClientStatus)
   status?: ClientStatus;
@@ -71,7 +83,11 @@ export class UpdateClientDto {
   @IsString()
   name?: string;
 
-  @ApiProperty({ enum: ClientStatus, example: ClientStatus.ACTIVE, required: false })
+  @ApiProperty({
+    enum: ClientStatus,
+    example: ClientStatus.ACTIVE,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(ClientStatus)
   status?: ClientStatus;

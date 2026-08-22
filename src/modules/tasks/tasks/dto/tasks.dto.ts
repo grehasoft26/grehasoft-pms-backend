@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min, Max } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class CreateTaskDto {
   @ApiProperty({ description: 'Associated Project ID' })
@@ -74,7 +85,9 @@ export class CreateTaskDto {
   @IsBoolean()
   isRecurring?: boolean;
 
-  @ApiPropertyOptional({ description: 'Recurrence rule: DAILY, WEEKLY, MONTHLY, YEARLY, CRON' })
+  @ApiPropertyOptional({
+    description: 'Recurrence rule: DAILY, WEEKLY, MONTHLY, YEARLY, CRON',
+  })
   @IsOptional()
   @IsString()
   recurrenceRule?: string;
@@ -84,7 +97,10 @@ export class CreateTaskDto {
   @IsString()
   cronExpression?: string;
 
-  @ApiPropertyOptional({ type: [String], description: 'List of Assignee User IDs' })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'List of Assignee User IDs',
+  })
   @IsOptional()
   @IsArray()
   @IsUUID('all', { each: true })
@@ -270,12 +286,16 @@ export class CloneTaskDto {
   @IsString()
   title: string;
 
-  @ApiPropertyOptional({ description: 'Change project if cloning to different project' })
+  @ApiPropertyOptional({
+    description: 'Change project if cloning to different project',
+  })
   @IsOptional()
   @IsUUID()
   projectId?: string;
 
-  @ApiPropertyOptional({ description: 'Change parent task if cloning to different parent' })
+  @ApiPropertyOptional({
+    description: 'Change parent task if cloning to different parent',
+  })
   @IsOptional()
   @IsUUID()
   parentTaskId?: string;
@@ -287,7 +307,10 @@ export class UpdateTaskPositionDto {
   @IsUUID()
   statusId: string;
 
-  @ApiProperty({ description: 'New sort position in column (0-indexed)', default: 0 })
+  @ApiProperty({
+    description: 'New sort position in column (0-indexed)',
+    default: 0,
+  })
   @IsNotEmpty()
   @IsNumber()
   position: number;

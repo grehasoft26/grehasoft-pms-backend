@@ -16,7 +16,12 @@ export class TimeEntriesRepository {
     });
   }
 
-  async findMany(filters: { userId?: string; projectId?: string; taskId?: string; approved?: boolean }) {
+  async findMany(filters: {
+    userId?: string;
+    projectId?: string;
+    taskId?: string;
+    approved?: boolean;
+  }) {
     const where: Prisma.TimeEntryWhereInput = {};
     if (filters.userId) where.userId = filters.userId;
     if (filters.projectId) where.projectId = filters.projectId;
@@ -62,8 +67,16 @@ export class TimeEntriesRepository {
 
   // Get daily sums of work logged
   async getDailySum(userId: string, date: Date) {
-    const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const endOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+    const startOfDay = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
+    const endOfDay = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate() + 1,
+    );
 
     const entries = await this.prisma.timeEntry.findMany({
       where: {

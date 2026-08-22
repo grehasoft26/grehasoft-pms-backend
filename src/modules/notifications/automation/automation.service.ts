@@ -13,12 +13,20 @@ export class AutomationEngine {
     private readonly repository: NotificationsRepository,
     private readonly notificationsService: NotificationsService,
     private readonly workflowEngine: WorkflowEngine,
-    private readonly webhookService: WebhookService
+    private readonly webhookService: WebhookService,
   ) {}
 
   // Central execution method for automation rules
-  async executeRules(tenantId: string, eventName: string, entityId: string, payload: any) {
-    const rules = await this.repository.findAutomationRuleByEvent(tenantId, eventName);
+  async executeRules(
+    tenantId: string,
+    eventName: string,
+    entityId: string,
+    payload: any,
+  ) {
+    const rules = await this.repository.findAutomationRuleByEvent(
+      tenantId,
+      eventName,
+    );
     const results: any[] = [];
 
     for (const rule of rules) {
@@ -37,7 +45,7 @@ export class AutomationEngine {
             userId,
             rule.name,
             config.message || `Automated trigger event: ${eventName}`,
-            'INFO'
+            'INFO',
           );
           resultMessage = `Sent notification to user ${userId}`;
         } else if (rule.actionType === 'WORKFLOW') {
@@ -47,13 +55,21 @@ export class AutomationEngine {
             config.workflowDefinitionId,
             entityId,
             config.entityType || 'GENERAL',
-            { userId: payload.userId || 'system', ip: '', userAgent: '', correlationId: '' }
+            {
+              userId: payload.userId || 'system',
+              ip: '',
+              userAgent: '',
+              correlationId: '',
+            },
           );
           resultMessage = `Initiated approval workflow execution ${exec.id}`;
         }
 
         // Trigger outbound webhooks delivery
-        await this.webhookService.triggerEvent(tenantId, eventName, { entityId, ...payload });
+        await this.webhookService.triggerEvent(tenantId, eventName, {
+          entityId,
+          ...payload,
+        });
       } catch (err: any) {
         status = 'FAILED';
         errorMsg = err.message || 'Automation execution failed';
@@ -84,14 +100,23 @@ export class AutomationEngine {
   // Task Events Listeners
   @OnEvent('task.completed')
   async handleTaskCompleted(payload: any) {
-    this.logger.log(`[AUTOMATION] Event task.completed received: ${JSON.stringify(payload)}`);
+    this.logger.log(
+      `[AUTOMATION] Event task.completed received: ${JSON.stringify(payload)}`,
+    );
     const tenantId = payload.tenantId || '00000000-0000-0000-0000-000000000000';
-    await this.executeRules(tenantId, 'task.completed', payload.taskId, payload);
+    await this.executeRules(
+      tenantId,
+      'task.completed',
+      payload.taskId,
+      payload,
+    );
   }
 
   @OnEvent('task.assigned')
   async handleTaskAssigned(payload: any) {
-    this.logger.log(`[AUTOMATION] Event task.assigned received: ${JSON.stringify(payload)}`);
+    this.logger.log(
+      `[AUTOMATION] Event task.assigned received: ${JSON.stringify(payload)}`,
+    );
     const tenantId = payload.tenantId || '00000000-0000-0000-0000-000000000000';
     await this.executeRules(tenantId, 'task.assigned', payload.taskId, payload);
   }
@@ -99,21 +124,38 @@ export class AutomationEngine {
   @OnEvent('task.comment.added')
   async handleTaskCommentAdded(payload: any) {
     const tenantId = payload.tenantId || '00000000-0000-0000-0000-000000000000';
-    await this.executeRules(tenantId, 'task.comment.added', payload.taskId, payload);
+    await this.executeRules(
+      tenantId,
+      'task.comment.added',
+      payload.taskId,
+      payload,
+    );
   }
 
   // Finance Events Listeners
   @OnEvent('invoice.paid')
   async handleInvoicePaid(payload: any) {
-    this.logger.log(`[AUTOMATION] Event invoice.paid received: ${JSON.stringify(payload)}`);
+    this.logger.log(
+      `[AUTOMATION] Event invoice.paid received: ${JSON.stringify(payload)}`,
+    );
     const tenantId = payload.tenantId || '00000000-0000-0000-0000-000000000000';
-    await this.executeRules(tenantId, 'invoice.paid', payload.invoiceId, payload);
+    await this.executeRules(
+      tenantId,
+      'invoice.paid',
+      payload.invoiceId,
+      payload,
+    );
   }
 
   @OnEvent('invoice.generated')
   async handleInvoiceGenerated(payload: any) {
     const tenantId = payload.tenantId || '00000000-0000-0000-0000-000000000000';
-    await this.executeRules(tenantId, 'invoice.generated', payload.invoiceId, payload);
+    await this.executeRules(
+      tenantId,
+      'invoice.generated',
+      payload.invoiceId,
+      payload,
+    );
   }
 
   // CRM Events Listeners
@@ -126,14 +168,24 @@ export class AutomationEngine {
   @OnEvent('proposal.approved')
   async handleProposalApproved(payload: any) {
     const tenantId = payload.tenantId || '00000000-0000-0000-0000-000000000000';
-    await this.executeRules(tenantId, 'proposal.approved', payload.proposalId, payload);
+    await this.executeRules(
+      tenantId,
+      'proposal.approved',
+      payload.proposalId,
+      payload,
+    );
   }
 
   // HR Events Listeners
   @OnEvent('leave.submitted')
   async handleLeaveSubmitted(payload: any) {
     const tenantId = payload.tenantId || '00000000-0000-0000-0000-000000000000';
-    await this.executeRules(tenantId, 'leave.submitted', payload.leaveRequestId, payload);
+    await this.executeRules(
+      tenantId,
+      'leave.submitted',
+      payload.leaveRequestId,
+      payload,
+    );
   }
 
   // Infrastructure Events Listeners
@@ -147,6 +199,11 @@ export class AutomationEngine {
   @OnEvent('alert.triggered')
   async handleAlertTriggered(payload: any) {
     const tenantId = payload.tenantId || '00000000-0000-0000-0000-000000000000';
-    await this.executeRules(tenantId, 'alert.triggered', payload.alertId, payload);
+    await this.executeRules(
+      tenantId,
+      'alert.triggered',
+      payload.alertId,
+      payload,
+    );
   }
 }

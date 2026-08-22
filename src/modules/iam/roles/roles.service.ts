@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { RolesRepository } from './roles.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -8,10 +13,13 @@ import { CreateRoleDto, UpdateRoleDto } from './dto/roles.dto';
 export class RolesService {
   constructor(
     private readonly repository: RolesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
-  private async checkRoleHierarchyCycle(roleId: string, parentId: string): Promise<boolean> {
+  private async checkRoleHierarchyCycle(
+    roleId: string,
+    parentId: string,
+  ): Promise<boolean> {
     if (roleId === parentId) return true;
     let parent = await this.repository.findById(parentId);
     while (parent && parent.parentId) {
@@ -24,7 +32,9 @@ export class RolesService {
   async create(dto: CreateRoleDto, context: RequestContext) {
     const exists = await this.repository.findByName(dto.name);
     if (exists) {
-      throw new ConflictException(`Role with name "${dto.name}" already exists`);
+      throw new ConflictException(
+        `Role with name "${dto.name}" already exists`,
+      );
     }
 
     if (dto.parentId) {
@@ -65,7 +75,9 @@ export class RolesService {
     if (dto.name && dto.name !== role.name) {
       const exists = await this.repository.findByName(dto.name);
       if (exists) {
-        throw new ConflictException(`Role with name "${dto.name}" already exists`);
+        throw new ConflictException(
+          `Role with name "${dto.name}" already exists`,
+        );
       }
     }
 
@@ -79,7 +91,9 @@ export class RolesService {
       }
       const isCycle = await this.checkRoleHierarchyCycle(id, dto.parentId);
       if (isCycle) {
-        throw new BadRequestException('Circular dependency detected in role hierarchy');
+        throw new BadRequestException(
+          'Circular dependency detected in role hierarchy',
+        );
       }
     }
 
@@ -90,7 +104,7 @@ export class RolesService {
     };
 
     const updatedRole = await this.repository.update(id, updateData);
-    
+
     this.logger.audit(context.userId, 'Update Role', 'role', updatedRole, {
       ip: context.ip,
       userAgent: context.userAgent,
@@ -107,12 +121,18 @@ export class RolesService {
       throw new BadRequestException('System roles cannot be deleted');
     }
     await this.repository.delete(id, context.userId);
-    this.logger.audit(context.userId, 'Delete Role', 'role', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before: role,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Role',
+      'role',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before: role,
+      },
+    );
   }
 
   async restore(id: string, context: RequestContext) {
@@ -130,7 +150,7 @@ export class RolesService {
 
   async clone(id: string, context: RequestContext) {
     const sourceRole = await this.getById(id);
-    
+
     const cloneData: CreateRoleDto = {
       name: `${sourceRole.name} - Clone (${Date.now()})`,
       description: sourceRole.description || undefined,
@@ -139,7 +159,7 @@ export class RolesService {
     };
 
     const cloned = await this.create(cloneData, context);
-    
+
     // Copy permissions
     if (sourceRole.permissions && sourceRole.permissions.length > 0) {
       const permissionIds = sourceRole.permissions.map((p) => p.id);
@@ -147,7 +167,7 @@ export class RolesService {
     }
 
     const finalRole = await this.getById(cloned.id);
-    
+
     this.logger.audit(context.userId, 'Clone Role', 'role', finalRole, {
       ip: context.ip,
       userAgent: context.userAgent,
@@ -158,17 +178,27 @@ export class RolesService {
     return finalRole;
   }
 
-  async assignPermissions(id: string, permissionIds: string[], context: RequestContext) {
+  async assignPermissions(
+    id: string,
+    permissionIds: string[],
+    context: RequestContext,
+  ) {
     const role = await this.getById(id);
     const updated = await this.repository.assignPermissions(id, permissionIds);
-    
-    this.logger.audit(context.userId, 'Assign Role Permissions', 'role', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before: role,
-      after: updated,
-    });
+
+    this.logger.audit(
+      context.userId,
+      'Assign Role Permissions',
+      'role',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before: role,
+        after: updated,
+      },
+    );
     return updated;
   }
 }

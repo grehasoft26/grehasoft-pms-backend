@@ -1,6 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { ApiKeyStatus, IntegrationProvider, WebhookStatus, OAuthStatus, IntegrationStatus, SDKLanguage, SecretType, DeveloperApplicationStatus } from '@prisma/client';
+import {
+  ApiKeyStatus,
+  IntegrationProvider,
+  WebhookStatus,
+  OAuthStatus,
+  IntegrationStatus,
+  SDKLanguage,
+  SecretType,
+  DeveloperApplicationStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class IntegrationsRepository {
@@ -109,7 +118,11 @@ export class IntegrationsRepository {
   }
 
   // Integrations
-  async upsertIntegration(tenantId: string, provider: IntegrationProvider, data: any) {
+  async upsertIntegration(
+    tenantId: string,
+    provider: IntegrationProvider,
+    data: any,
+  ) {
     const existing = await this.prisma.integration.findFirst({
       where: { tenantId, provider },
     });
@@ -131,7 +144,12 @@ export class IntegrationsRepository {
     });
   }
 
-  async upsertIntegrationCredential(tenantId: string, integrationId: string, key: string, encryptedValue: string) {
+  async upsertIntegrationCredential(
+    tenantId: string,
+    integrationId: string,
+    key: string,
+    encryptedValue: string,
+  ) {
     const existing = await this.prisma.integrationCredential.findFirst({
       where: { tenantId, integrationId, key },
     });
@@ -178,7 +196,12 @@ export class IntegrationsRepository {
   }
 
   // Secret Vault
-  async upsertSecret(tenantId: string, secretName: string, secretType: SecretType, encryptedPayload: string) {
+  async upsertSecret(
+    tenantId: string,
+    secretName: string,
+    secretType: SecretType,
+    encryptedPayload: string,
+  ) {
     const existing = await this.prisma.secretVault.findFirst({
       where: { tenantId, secretName, secretType },
     });
@@ -193,7 +216,11 @@ export class IntegrationsRepository {
     });
   }
 
-  async findSecret(tenantId: string, secretName: string, secretType: SecretType) {
+  async findSecret(
+    tenantId: string,
+    secretName: string,
+    secretType: SecretType,
+  ) {
     return this.prisma.secretVault.findFirst({
       where: this.tenantWhere(tenantId, { secretName, secretType }),
     });
@@ -218,7 +245,12 @@ export class IntegrationsRepository {
     });
   }
 
-  async addDeveloperMember(tenantId: string, teamId: string, email: string, role: string) {
+  async addDeveloperMember(
+    tenantId: string,
+    teamId: string,
+    email: string,
+    role: string,
+  ) {
     return this.prisma.developerMember.create({
       data: { tenantId, teamId, email, role },
     });
@@ -237,18 +269,34 @@ export class IntegrationsRepository {
   }
 
   // Analytics
-  async logApiAnalytics(tenantId: string, data: { endpointPath: string; method: string; latencyMs: number; isError: boolean }) {
+  async logApiAnalytics(
+    tenantId: string,
+    data: {
+      endpointPath: string;
+      method: string;
+      latencyMs: number;
+      isError: boolean;
+    },
+  ) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     const existing = await this.prisma.apiAnalytics.findFirst({
-      where: { tenantId, endpointPath: data.endpointPath, method: data.method, recordedDate: today },
+      where: {
+        tenantId,
+        endpointPath: data.endpointPath,
+        method: data.method,
+        recordedDate: today,
+      },
     });
 
     if (existing) {
       const totalRequests = existing.totalRequests + 1;
       const errorRequests = existing.errorRequests + (data.isError ? 1 : 0);
-      const avgLatencyMs = Math.round((existing.avgLatencyMs * existing.totalRequests + data.latencyMs) / totalRequests);
+      const avgLatencyMs = Math.round(
+        (existing.avgLatencyMs * existing.totalRequests + data.latencyMs) /
+          totalRequests,
+      );
 
       return this.prisma.apiAnalytics.update({
         where: { id: existing.id },

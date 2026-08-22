@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { BillableRatesService } from '../services/billable-rates.service';
 import { CreateBillableRateDto } from '../dto/rates.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -28,7 +41,10 @@ export class RatesController {
 
   @Post()
   @Permissions('billing.rates')
-  @ApiOperation({ summary: 'Setup a billable rate for employee, project, task, client or department' })
+  @ApiOperation({
+    summary:
+      'Setup a billable rate for employee, project, task, client or department',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async create(@Body() dto: CreateBillableRateDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -47,7 +63,10 @@ export class RatesController {
 
   @Get('resolve')
   @Permissions('finance.read')
-  @ApiOperation({ summary: 'Resolve effective billable rate using fallback chain lookup rules' })
+  @ApiOperation({
+    summary:
+      'Resolve effective billable rate using fallback chain lookup rules',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async resolve(
     @Query('taskId') taskId?: string,
@@ -55,7 +74,7 @@ export class RatesController {
     @Query('projectId') projectId?: string,
     @Query('departmentId') departmentId?: string,
     @Query('clientId') clientId?: string,
-    @Query('targetCurrencyId') targetCurrencyId?: string
+    @Query('targetCurrencyId') targetCurrencyId?: string,
   ) {
     const data = await this.service.resolveEffectiveRate({
       taskId,

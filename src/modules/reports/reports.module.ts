@@ -19,11 +19,10 @@ import { ReportsController } from './controllers/reports.controller';
 import { ExportsController } from './controllers/exports.controller';
 import { KpisController } from './controllers/kpis.controller';
 import { AlertsController } from './controllers/alerts.controller';
+import { TimeTrackingModule } from '../productivity/productivity.module';
 
 @Module({
-  imports: [
-    AuthModule,
-  ],
+  imports: [AuthModule, TimeTrackingModule],
   controllers: [
     DashboardsController,
     ReportsController,

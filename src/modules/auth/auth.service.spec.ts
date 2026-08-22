@@ -134,11 +134,16 @@ describe('AuthService', () => {
     it('should authenticate successfully with correct credentials', async () => {
       prisma.user.findFirst.mockResolvedValue(mockUser as any);
       prisma.user.update.mockResolvedValue(mockUser as any);
-      jwtService.signAsync.mockResolvedValueOnce('access-token').mockResolvedValueOnce('refresh-token');
+      jwtService.signAsync
+        .mockResolvedValueOnce('access-token')
+        .mockResolvedValueOnce('refresh-token');
 
       const result = await service.login(
-        { email: 'superadmin@grehasoft.com', password: 'SuperAdminPassword123' },
-        mockContext
+        {
+          email: 'superadmin@grehasoft.com',
+          password: 'SuperAdminPassword123',
+        },
+        mockContext,
       );
 
       expect(result.accessToken).toEqual('access-token');
@@ -151,7 +156,10 @@ describe('AuthService', () => {
       prisma.user.update.mockResolvedValue(mockUser as any);
 
       await expect(
-        service.login({ email: 'superadmin@grehasoft.com', password: 'wrongpassword' }, mockContext)
+        service.login(
+          { email: 'superadmin@grehasoft.com', password: 'wrongpassword' },
+          mockContext,
+        ),
       ).rejects.toThrow(UnauthorizedException);
     });
 
@@ -163,7 +171,13 @@ describe('AuthService', () => {
       prisma.user.findFirst.mockResolvedValue(lockedUser as any);
 
       await expect(
-        service.login({ email: 'superadmin@grehasoft.com', password: 'SuperAdminPassword123' }, mockContext)
+        service.login(
+          {
+            email: 'superadmin@grehasoft.com',
+            password: 'SuperAdminPassword123',
+          },
+          mockContext,
+        ),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
@@ -177,8 +191,8 @@ describe('AuthService', () => {
         service.changePassword(
           'user-uuid',
           { oldPassword: 'SuperAdminPassword123', newPassword: 'short' },
-          mockContext
-        )
+          mockContext,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
   });

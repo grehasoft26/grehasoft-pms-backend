@@ -8,7 +8,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class BillableRatesService {
   constructor(
     private readonly repository: FinanceRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createRate(dto: CreateBillableRateDto, context: RequestContext) {
@@ -21,7 +21,13 @@ export class BillableRatesService {
       rate: dto.rate,
       currencyId: dto.currencyId,
     });
-    this.logger.audit(context.userId, 'Create Billable Rate', 'billableRate', rate, { after: rate });
+    this.logger.audit(
+      context.userId,
+      'Create Billable Rate',
+      'billableRate',
+      rate,
+      { after: rate },
+    );
     return rate;
   }
 
@@ -40,15 +46,20 @@ export class BillableRatesService {
   }) {
     const rateRecord = await this.repository.findEffectiveRate(filters);
     if (!rateRecord) {
-      return { rate: 0.00, currencyCode: 'INR' };
+      return { rate: 0.0, currencyCode: 'INR' };
     }
 
     let rate = Number(rateRecord.rate);
     let currencyCode = rateRecord.currency.code;
 
     // Optional exchange conversion
-    if (filters.targetCurrencyId && filters.targetCurrencyId !== rateRecord.currencyId) {
-      const targetCurrency = await this.repository.findCurrencyById(filters.targetCurrencyId);
+    if (
+      filters.targetCurrencyId &&
+      filters.targetCurrencyId !== rateRecord.currencyId
+    ) {
+      const targetCurrency = await this.repository.findCurrencyById(
+        filters.targetCurrencyId,
+      );
       if (targetCurrency) {
         // Exchange calculation: Convert to base, then to target
         const rateInBase = rate / Number(rateRecord.currency.exchangeRate);

@@ -16,8 +16,14 @@ export class ProjectReportsService {
     const healthStatus = projects.map((p) => {
       // Calculate based on overdue tasks count
       const totalTasks = p.tasks?.length || 0;
-      const overdueTasks = p.tasks?.filter((t: any) => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'COMPLETED').length || 0;
-      
+      const overdueTasks =
+        p.tasks?.filter(
+          (t: any) =>
+            t.dueDate &&
+            new Date(t.dueDate) < new Date() &&
+            t.status !== 'COMPLETED',
+        ).length || 0;
+
       let status = 'GREEN';
       if (overdueTasks > 5) status = 'RED';
       else if (overdueTasks > 2) status = 'YELLOW';
@@ -33,7 +39,9 @@ export class ProjectReportsService {
     });
 
     const redCount = healthStatus.filter((h) => h.status === 'RED').length;
-    const yellowCount = healthStatus.filter((h) => h.status === 'YELLOW').length;
+    const yellowCount = healthStatus.filter(
+      (h) => h.status === 'YELLOW',
+    ).length;
     const greenCount = healthStatus.filter((h) => h.status === 'GREEN').length;
 
     return {
@@ -75,7 +83,8 @@ export class ProjectReportsService {
     });
 
     // Group by User
-    const utilization: Record<string, { name: string; projectsCount: number }> = {};
+    const utilization: Record<string, { name: string; projectsCount: number }> =
+      {};
     for (const m of members) {
       if (m.user) {
         const name = `${m.user.firstName} ${m.user.lastName}`;
@@ -99,9 +108,13 @@ export class ProjectReportsService {
 
     return {
       resourceUtilizationList: list,
-      averageUtilization: list.length > 0 
-        ? Math.round(list.reduce((acc, curr) => acc + curr.utilizationPercentage, 0) / list.length) 
-        : 0,
+      averageUtilization:
+        list.length > 0
+          ? Math.round(
+              list.reduce((acc, curr) => acc + curr.utilizationPercentage, 0) /
+                list.length,
+            )
+          : 0,
     };
   }
 }

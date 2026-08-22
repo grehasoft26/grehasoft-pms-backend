@@ -1,8 +1,27 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClientContractsService } from './client-contracts.service';
-import { CreateClientContractDto, UpdateClientContractDto } from './dto/client-contracts.dto';
+import {
+  CreateClientContractDto,
+  UpdateClientContractDto,
+} from './dto/client-contracts.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -38,7 +57,9 @@ export class ClientContractsController {
 
   @Get()
   @Permissions('client-contracts.read')
-  @ApiOperation({ summary: 'Get all client contracts, optionally filtered by clientId' })
+  @ApiOperation({
+    summary: 'Get all client contracts, optionally filtered by clientId',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(@Query('clientId') clientId?: string) {
     const data = await this.contractsService.getMany(clientId);
@@ -58,7 +79,11 @@ export class ClientContractsController {
   @Permissions('client-contracts.update')
   @ApiOperation({ summary: 'Update client contract details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateClientContractDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateClientContractDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.contractsService.update(id, dto, context);
     return { message: 'Client contract updated successfully', data };

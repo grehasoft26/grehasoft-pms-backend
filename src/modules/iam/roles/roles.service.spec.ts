@@ -72,7 +72,10 @@ describe('RolesService', () => {
       repository.findByName.mockResolvedValue(null);
       repository.create.mockResolvedValue(mockRole);
 
-      const result = await service.create({ name: 'Admin', description: 'Admin role' }, mockContext);
+      const result = await service.create(
+        { name: 'Admin', description: 'Admin role' },
+        mockContext,
+      );
       expect(result).toEqual(mockRole);
     });
 
@@ -80,7 +83,10 @@ describe('RolesService', () => {
       repository.findByName.mockResolvedValue(mockRole);
 
       await expect(
-        service.create({ name: 'Admin', description: 'Admin role' }, mockContext)
+        service.create(
+          { name: 'Admin', description: 'Admin role' },
+          mockContext,
+        ),
       ).rejects.toThrow(ConflictException);
     });
   });
@@ -90,7 +96,7 @@ describe('RolesService', () => {
       repository.findById.mockResolvedValue(mockRole);
 
       await expect(
-        service.update('role-uuid', { parentId: 'role-uuid' }, mockContext)
+        service.update('role-uuid', { parentId: 'role-uuid' }, mockContext),
       ).rejects.toThrow(BadRequestException);
     });
   });

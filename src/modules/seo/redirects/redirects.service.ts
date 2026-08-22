@@ -6,16 +6,29 @@ import { CreateRedirectDto } from '../dto/redirects.dto';
 export class RedirectsService {
   constructor(private readonly repository: SeoRepository) {}
 
-  async addRedirect(tenantId: string, seoProjectId: string, dto: CreateRedirectDto) {
+  async addRedirect(
+    tenantId: string,
+    seoProjectId: string,
+    dto: CreateRedirectDto,
+  ) {
     if (dto.sourcePath === dto.targetPath) {
-      throw new BadRequestException('Source and target redirect paths cannot be identical (causes redirect loop)');
+      throw new BadRequestException(
+        'Source and target redirect paths cannot be identical (causes redirect loop)',
+      );
     }
 
     // Redirect loop chain check
-    const existing = await this.repository.findRedirects(tenantId, seoProjectId);
-    const hasChainLoop = existing.some((r) => r.sourcePath === dto.targetPath && r.targetPath === dto.sourcePath);
+    const existing = await this.repository.findRedirects(
+      tenantId,
+      seoProjectId,
+    );
+    const hasChainLoop = existing.some(
+      (r) => r.sourcePath === dto.targetPath && r.targetPath === dto.sourcePath,
+    );
     if (hasChainLoop) {
-      throw new BadRequestException('A redirect rule mapping back in the opposite direction already exists, creating a loop.');
+      throw new BadRequestException(
+        'A redirect rule mapping back in the opposite direction already exists, creating a loop.',
+      );
     }
 
     const redirect = await this.repository.createRedirect(tenantId, {
@@ -26,7 +39,11 @@ export class RedirectsService {
       isActive: true,
     });
 
-    await this.repository.logAudit(tenantId, 'Create Redirect Rule', `Redirect created from ${dto.sourcePath} to ${dto.targetPath}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Create Redirect Rule',
+      `Redirect created from ${dto.sourcePath} to ${dto.targetPath}.`,
+    );
     return redirect;
   }
 

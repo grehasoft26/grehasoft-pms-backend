@@ -1,6 +1,15 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { HrRepository } from '../repositories/hr.repository';
-import { CreateEmployeeProfileDto, AddDocumentDto, AddSkillDto, AddEmergencyContactDto } from '../dto/employees.dto';
+import {
+  CreateEmployeeProfileDto,
+  AddDocumentDto,
+  AddSkillDto,
+  AddEmergencyContactDto,
+} from '../dto/employees.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { TimelineEventType, EmploymentStatus } from '@prisma/client';
@@ -9,7 +18,7 @@ import { TimelineEventType, EmploymentStatus } from '@prisma/client';
 export class EmployeesService {
   constructor(
     private readonly repository: HrRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   private async getNextEmployeeCode(): Promise<string> {
@@ -25,13 +34,21 @@ export class EmployeesService {
     return `EMP-${year}-${String(nextNum).padStart(6, '0')}`;
   }
 
-  async onboardEmployee(dto: CreateEmployeeProfileDto, context: RequestContext) {
+  async onboardEmployee(
+    dto: CreateEmployeeProfileDto,
+    context: RequestContext,
+  ) {
     // 1. Verify user exists
-    const user = await this.repository.prisma.user.findUnique({ where: { id: dto.userId } });
+    const user = await this.repository.prisma.user.findUnique({
+      where: { id: dto.userId },
+    });
     if (!user) throw new NotFoundException('User profile not found');
 
     const existing = await this.repository.findProfileByUserId(dto.userId);
-    if (existing) throw new BadRequestException('Employee profile already exists for this user');
+    if (existing)
+      throw new BadRequestException(
+        'Employee profile already exists for this user',
+      );
 
     const employeeCode = await this.getNextEmployeeCode();
 
@@ -62,7 +79,7 @@ export class EmployeesService {
     await this.repository.createTimelineEvent(
       profile.id,
       TimelineEventType.JOINED,
-      `Employee onboarded successfully with code ${employeeCode}`
+      `Employee onboarded successfully with code ${employeeCode}`,
     );
 
     // Automatically allocate default leave balances
@@ -76,7 +93,13 @@ export class EmployeesService {
       });
     }
 
-    this.logger.audit(context.userId, 'Onboard Employee', 'employeeProfile', profile, { after: profile });
+    this.logger.audit(
+      context.userId,
+      'Onboard Employee',
+      'employeeProfile',
+      profile,
+      { after: profile },
+    );
     return profile;
   }
 
@@ -87,15 +110,24 @@ export class EmployeesService {
     const updated = await this.repository.updateProfile(id, dto);
 
     // Audit promotion/salary revision timeline events
-    if (dto.employmentStatus && dto.employmentStatus !== before.employmentStatus) {
+    if (
+      dto.employmentStatus &&
+      dto.employmentStatus !== before.employmentStatus
+    ) {
       await this.repository.createTimelineEvent(
         id,
         TimelineEventType.DEPARTMENT_CHANGE,
-        `Employment status updated from ${before.employmentStatus} to ${dto.employmentStatus}`
+        `Employment status updated from ${before.employmentStatus} to ${dto.employmentStatus}`,
       );
     }
 
-    this.logger.audit(context.userId, 'Update Employee Profile', 'employeeProfile', updated, { before, after: updated });
+    this.logger.audit(
+      context.userId,
+      'Update Employee Profile',
+      'employeeProfile',
+      updated,
+      { before, after: updated },
+    );
     return updated;
   }
 

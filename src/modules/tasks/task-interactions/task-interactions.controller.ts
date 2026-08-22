@@ -1,8 +1,31 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { TaskInteractionsService } from './task-interactions.service';
-import { CreateTaskChecklistDto, CreateTaskChecklistItemDto, UpdateTaskChecklistItemDto, CreateTaskCommentDto, CreateTaskAttachmentDto, AddWatcherDto, AddTaskDependencyDto } from './dto/task-interactions.dto';
+import {
+  CreateTaskChecklistDto,
+  CreateTaskChecklistItemDto,
+  UpdateTaskChecklistItemDto,
+  CreateTaskCommentDto,
+  CreateTaskAttachmentDto,
+  AddWatcherDto,
+  AddTaskDependencyDto,
+} from './dto/task-interactions.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -17,9 +40,10 @@ export class TaskInteractionsController {
   constructor(private readonly interactionsService: TaskInteractionsService) {}
 
   private getContext(req: Request): RequestContext {
-    const user = (req as any).user;
+    const user = (req as any).user as Record<string, any> | undefined;
+    const userId = user?.id ? String(user.id) : '';
     return {
-      userId: user?.id || (req.headers['x-user-id'] as string) || 'system',
+      userId: userId || (req.headers['x-user-id'] as string) || 'system',
       ip: req.ip || '',
       userAgent: req.get('user-agent') || '',
       correlationId: (req.headers['x-correlation-id'] as string) || '',
@@ -51,9 +75,12 @@ export class TaskInteractionsController {
   @ApiResponse({ type: SuccessResponseDto })
   async updateChecklistItem(
     @Param('itemId') itemId: string,
-    @Body() dto: UpdateTaskChecklistItemDto
+    @Body() dto: UpdateTaskChecklistItemDto,
   ) {
-    const data = await this.interactionsService.updateChecklistItem(itemId, dto);
+    const data = await this.interactionsService.updateChecklistItem(
+      itemId,
+      dto,
+    );
     return { message: 'Checklist item updated', data };
   }
 
@@ -81,7 +108,10 @@ export class TaskInteractionsController {
   @Permissions('tasks.update')
   @ApiOperation({ summary: 'Delete Comment' })
   @ApiResponse({ type: SuccessResponseDto })
-  async deleteComment(@Param('commentId') commentId: string, @Req() req: Request) {
+  async deleteComment(
+    @Param('commentId') commentId: string,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     await this.interactionsService.deleteComment(commentId, context);
     return { message: 'Comment deleted successfully' };
@@ -105,7 +135,7 @@ export class TaskInteractionsController {
   async removeWatcher(
     @Query('taskId') taskId: string,
     @Query('userId') userId: string,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const context = this.getContext(req);
     await this.interactionsService.removeWatcher(taskId, userId, context);
@@ -117,7 +147,10 @@ export class TaskInteractionsController {
   @Permissions('tasks.update')
   @ApiOperation({ summary: 'Add file attachment metadata' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createAttachment(@Body() dto: CreateTaskAttachmentDto, @Req() req: Request) {
+  async createAttachment(
+    @Body() dto: CreateTaskAttachmentDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.interactionsService.createAttachment(dto, context);
     return { message: 'Attachment registered successfully', data };
@@ -127,7 +160,10 @@ export class TaskInteractionsController {
   @Permissions('tasks.update')
   @ApiOperation({ summary: 'Delete attachment' })
   @ApiResponse({ type: SuccessResponseDto })
-  async deleteAttachment(@Param('attachmentId') attachmentId: string, @Req() req: Request) {
+  async deleteAttachment(
+    @Param('attachmentId') attachmentId: string,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     await this.interactionsService.deleteAttachment(attachmentId, context);
     return { message: 'Attachment deleted successfully' };
@@ -142,5 +178,23 @@ export class TaskInteractionsController {
     const context = this.getContext(req);
     const data = await this.interactionsService.addDependency(dto, context);
     return { message: 'Task scheduling dependency created successfully', data };
+  }
+
+  @Delete('dependencies')
+  @Permissions('tasks.update')
+  @ApiOperation({ summary: 'Remove task dependency' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async removeDependency(
+    @Query('taskId') taskId: string,
+    @Query('dependsOnTaskId') dependsOnTaskId: string,
+    @Req() req: Request,
+  ) {
+    const context = this.getContext(req);
+    await this.interactionsService.removeDependency(
+      taskId,
+      dependsOnTaskId,
+      context,
+    );
+    return { message: 'Dependency removed successfully' };
   }
 }

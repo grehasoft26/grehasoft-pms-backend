@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { Status } from '@prisma/client';
 
 export class CreateTeamDto {
@@ -13,7 +20,10 @@ export class CreateTeamDto {
   @IsString()
   code: string;
 
-  @ApiProperty({ example: 'Core engineering developers for PMS NestJS system', required: false })
+  @ApiProperty({
+    example: 'Core engineering developers for PMS NestJS system',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -40,7 +50,10 @@ export class UpdateTeamDto {
   @IsString()
   code?: string;
 
-  @ApiProperty({ example: 'Oversees foundational architectural features', required: false })
+  @ApiProperty({
+    example: 'Oversees foundational architectural features',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;

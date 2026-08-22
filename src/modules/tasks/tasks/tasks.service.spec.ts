@@ -51,7 +51,11 @@ describe('TasksService', () => {
         task: { updateMany: jest.fn(), update: jest.fn() },
         taskChecklist: { findMany: jest.fn() },
         taskChecklistItem: { create: jest.fn() },
-        taskStatus: { findFirst: jest.fn().mockResolvedValue({ id: 'status-done-uuid', code: 'DONE' }) },
+        taskStatus: {
+          findFirst: jest
+            .fn()
+            .mockResolvedValue({ id: 'status-done-uuid', code: 'DONE' }),
+        },
       },
     };
 
@@ -99,12 +103,15 @@ describe('TasksService', () => {
           estimatedHours: 8,
           assigneeIds: ['assignee-uuid'],
         },
-        mockContext
+        mockContext,
       );
 
       expect(result).toEqual(mockTask);
       expect(repository.create).toHaveBeenCalled();
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.assigned', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'task.assigned',
+        expect.any(Object),
+      );
     });
   });
 
@@ -118,11 +125,14 @@ describe('TasksService', () => {
       const result = await service.update(
         'task-uuid',
         { statusId: 'status-done-uuid' },
-        mockContext
+        mockContext,
       );
 
       expect(result.statusId).toEqual('status-done-uuid');
-      expect(eventEmitter.emit).toHaveBeenCalledWith('task.status.changed', expect.any(Object));
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'task.status.changed',
+        expect.any(Object),
+      );
     });
   });
 
@@ -131,7 +141,12 @@ describe('TasksService', () => {
       repository.findById.mockResolvedValue(mockTask);
       repository.findById.mockResolvedValue({ ...mockTask, position: 2 });
 
-      const result = await service.updatePosition('task-uuid', 'status-todo-uuid', 2, mockContext);
+      const result = await service.updatePosition(
+        'task-uuid',
+        'status-todo-uuid',
+        2,
+        mockContext,
+      );
       expect(repository.prisma.task.update).toHaveBeenCalled();
     });
   });

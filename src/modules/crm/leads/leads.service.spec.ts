@@ -3,7 +3,11 @@ import { LeadsService } from './leads.service';
 import { LeadsRepository } from './leads.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
-import { LeadPriority, LeadTemperature, LeadActivityType } from '@prisma/client';
+import {
+  LeadPriority,
+  LeadTemperature,
+  LeadActivityType,
+} from '@prisma/client';
 import { NotFoundException } from '@nestjs/common';
 
 describe('LeadsService', () => {
@@ -98,7 +102,7 @@ describe('LeadsService', () => {
           statusId: 'status-uuid',
           ownerId: 'test-user-id',
         },
-        mockContext
+        mockContext,
       );
 
       expect(result).toEqual(mockLead);
@@ -117,7 +121,9 @@ describe('LeadsService', () => {
 
     it('should throw NotFoundException if not found', async () => {
       repository.findById.mockResolvedValue(null);
-      await expect(service.getById('invalid-id')).rejects.toThrow(NotFoundException);
+      await expect(service.getById('invalid-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -127,7 +133,11 @@ describe('LeadsService', () => {
       const updated = { ...mockLead, companyName: 'New Acme Name' };
       repository.update.mockResolvedValue(updated);
 
-      const result = await service.update('lead-uuid', { companyName: 'New Acme Name' }, mockContext);
+      const result = await service.update(
+        'lead-uuid',
+        { companyName: 'New Acme Name' },
+        mockContext,
+      );
       expect(result.companyName).toEqual('New Acme Name');
       expect(repository.createTimeline).toHaveBeenCalled();
       expect(logger.audit).toHaveBeenCalled();
@@ -140,7 +150,11 @@ describe('LeadsService', () => {
       const assigned = { ...mockLead, ownerId: 'new-owner-id' };
       repository.update.mockResolvedValue(assigned);
 
-      const result = await service.assign('lead-uuid', { assigneeId: 'new-owner-id', notes: 'Assign' }, mockContext);
+      const result = await service.assign(
+        'lead-uuid',
+        { assigneeId: 'new-owner-id', notes: 'Assign' },
+        mockContext,
+      );
       expect(result.ownerId).toEqual('new-owner-id');
       expect(repository.createAssignment).toHaveBeenCalled();
       expect(repository.createTimeline).toHaveBeenCalled();
@@ -150,13 +164,20 @@ describe('LeadsService', () => {
   describe('merge', () => {
     it('should merge two duplicate leads and delete the secondary lead', async () => {
       const primaryLead = { ...mockLead, id: 'primary-uuid', phone: null };
-      const secondaryLead = { ...mockLead, id: 'secondary-uuid', phone: '+919999999999' };
+      const secondaryLead = {
+        ...mockLead,
+        id: 'secondary-uuid',
+        phone: '+919999999999',
+      };
 
       repository.findById
         .mockResolvedValueOnce(primaryLead) // first call primary
         .mockResolvedValueOnce(secondaryLead); // second call secondary
 
-      repository.update.mockResolvedValue({ ...primaryLead, phone: '+919999999999' });
+      repository.update.mockResolvedValue({
+        ...primaryLead,
+        phone: '+919999999999',
+      });
 
       // Mock Prisma transfers
       repository.prisma.leadActivity.findMany.mockResolvedValue([]);
@@ -164,8 +185,14 @@ describe('LeadsService', () => {
       repository.prisma.leadTimeline.findMany.mockResolvedValue([]);
       repository.prisma.opportunity.findMany.mockResolvedValue([]);
 
-      const result = await service.merge({ primaryLeadId: 'primary-uuid', secondaryLeadId: 'secondary-uuid' }, mockContext);
-      expect(repository.delete).toHaveBeenCalledWith('secondary-uuid', mockContext.userId);
+      const result = await service.merge(
+        { primaryLeadId: 'primary-uuid', secondaryLeadId: 'secondary-uuid' },
+        mockContext,
+      );
+      expect(repository.delete).toHaveBeenCalledWith(
+        'secondary-uuid',
+        mockContext.userId,
+      );
       expect(repository.createTimeline).toHaveBeenCalled();
     });
   });

@@ -12,7 +12,10 @@ export class AssignProjectMemberDto {
   @IsUUID()
   userId: string;
 
-  @ApiProperty({ description: 'Role within project (e.g. PM, QA, Developer, Client)', default: 'Developer' })
+  @ApiProperty({
+    description: 'Role within project (e.g. PM, QA, Developer, Client)',
+    default: 'Developer',
+  })
   @IsNotEmpty()
   @IsString()
   role: string;

@@ -19,9 +19,7 @@ import { RatesController } from './controllers/rates.controller';
 import { FinancialDashboardController } from './controllers/dashboard.controller';
 
 @Module({
-  imports: [
-    AuthModule,
-  ],
+  imports: [AuthModule],
   controllers: [
     InvoicesController,
     EstimatesController,

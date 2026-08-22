@@ -4,7 +4,11 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PermissionsService } from './permissions.service';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
-import { CreatePermissionGroupDto, CreatePermissionCategoryDto, CreatePermissionDto } from './dto/permissions.dto';
+import {
+  CreatePermissionGroupDto,
+  CreatePermissionCategoryDto,
+  CreatePermissionDto,
+} from './dto/permissions.dto';
 
 @ApiTags('Permissions')
 @Controller('permissions')
@@ -24,14 +28,19 @@ export class PermissionsController {
   @Post('groups')
   @ApiOperation({ summary: 'Create a new permission group (e.g., CRM)' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createGroup(@Body() dto: CreatePermissionGroupDto, @Req() req: Request) {
+  async createGroup(
+    @Body() dto: CreatePermissionGroupDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.permissionsService.createGroup(dto, context);
     return { message: 'Permission group created successfully', data };
   }
 
   @Get('groups')
-  @ApiOperation({ summary: 'Get all permission groups with categories and permissions' })
+  @ApiOperation({
+    summary: 'Get all permission groups with categories and permissions',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getGroups() {
     const data = await this.permissionsService.getGroups();
@@ -42,7 +51,10 @@ export class PermissionsController {
   @Post('categories')
   @ApiOperation({ summary: 'Create a new permission category' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createCategory(@Body() dto: CreatePermissionCategoryDto, @Req() req: Request) {
+  async createCategory(
+    @Body() dto: CreatePermissionCategoryDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.permissionsService.createCategory(dto, context);
     return { message: 'Permission category created successfully', data };
@@ -60,7 +72,10 @@ export class PermissionsController {
   @Post()
   @ApiOperation({ summary: 'Create a new permission' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createPermission(@Body() dto: CreatePermissionDto, @Req() req: Request) {
+  async createPermission(
+    @Body() dto: CreatePermissionDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.permissionsService.createPermission(dto, context);
     return { message: 'Permission created successfully', data };

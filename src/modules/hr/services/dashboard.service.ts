@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { HrRepository } from '../repositories/hr.repository';
-import { EmploymentStatus, AttendanceStatus, LeaveStatus } from '@prisma/client';
+import {
+  EmploymentStatus,
+  AttendanceStatus,
+  LeaveStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class HrDashboardService {
@@ -9,7 +13,11 @@ export class HrDashboardService {
   async getDashboardStats() {
     const prisma = this.repository.prisma;
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
 
     // 1. Employee status aggregates
     const totalEmployees = await prisma.employeeProfile.count();
@@ -27,7 +35,14 @@ export class HrDashboardService {
     const presentToday = await prisma.attendance.count({
       where: {
         date: todayStart,
-        status: { in: [AttendanceStatus.PRESENT, AttendanceStatus.LATE, AttendanceStatus.REMOTE, AttendanceStatus.WFH] },
+        status: {
+          in: [
+            AttendanceStatus.PRESENT,
+            AttendanceStatus.LATE,
+            AttendanceStatus.REMOTE,
+            AttendanceStatus.WFH,
+          ],
+        },
       },
     });
 
@@ -69,7 +84,8 @@ export class HrDashboardService {
     const upcomingBirthdays: any[] = [];
     const upcomingAnniversaries: any[] = [];
 
-    const monthDayStr = (d: Date) => `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const monthDayStr = (d: Date) =>
+      `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     const todayMD = monthDayStr(now);
 
     // Anniversaries & Birthdays list

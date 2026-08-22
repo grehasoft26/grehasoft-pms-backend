@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, IsBoolean, IsDateString } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  IsBoolean,
+  IsDateString,
+} from 'class-validator';
 import { TimeEntryCategory } from '@prisma/client';
 
 export class CreateTimeEntryDto {
@@ -33,7 +41,10 @@ export class CreateTimeEntryDto {
   @IsBoolean()
   billable?: boolean;
 
-  @ApiProperty({ enum: TimeEntryCategory, default: TimeEntryCategory.DEVELOPMENT })
+  @ApiProperty({
+    enum: TimeEntryCategory,
+    default: TimeEntryCategory.DEVELOPMENT,
+  })
   @IsNotEmpty()
   @IsEnum(TimeEntryCategory)
   category: TimeEntryCategory;

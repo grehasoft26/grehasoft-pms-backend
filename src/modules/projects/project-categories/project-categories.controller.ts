@@ -1,8 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectCategoriesService } from './project-categories.service';
-import { CreateProjectCategoryDto, UpdateProjectCategoryDto } from './dto/project-categories.dto';
+import {
+  CreateProjectCategoryDto,
+  UpdateProjectCategoryDto,
+} from './dto/project-categories.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -58,7 +76,11 @@ export class ProjectCategoriesController {
   @Permissions('project-categories.update')
   @ApiOperation({ summary: 'Update custom project category' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateProjectCategoryDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProjectCategoryDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.categoriesService.update(id, dto, context);
     return { message: 'Category updated successfully', data };

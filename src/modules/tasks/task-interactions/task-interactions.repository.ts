@@ -28,11 +28,16 @@ export class TaskInteractionsRepository {
     });
   }
 
-  async createChecklistItem(data: Prisma.TaskChecklistItemUncheckedCreateInput) {
+  async createChecklistItem(
+    data: Prisma.TaskChecklistItemUncheckedCreateInput,
+  ) {
     return this.prisma.taskChecklistItem.create({ data });
   }
 
-  async updateChecklistItem(id: string, data: Prisma.TaskChecklistItemUncheckedUpdateInput) {
+  async updateChecklistItem(
+    id: string,
+    data: Prisma.TaskChecklistItemUncheckedUpdateInput,
+  ) {
     return this.prisma.taskChecklistItem.update({
       where: { id },
       data,
@@ -65,7 +70,9 @@ export class TaskInteractionsRepository {
         author: { select: { id: true, firstName: true, lastName: true } },
         replies: {
           where: { deletedAt: null },
-          include: { author: { select: { id: true, firstName: true, lastName: true } } },
+          include: {
+            author: { select: { id: true, firstName: true, lastName: true } },
+          },
         },
       },
     });
@@ -118,13 +125,19 @@ export class TaskInteractionsRepository {
     return this.prisma.taskWatcher.findMany({
       where: { taskId },
       include: {
-        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
   }
 
   // 5. Scheduling Dependencies
-  async addDependency(taskId: string, dependsOnTaskId: string, type: DependencyType = DependencyType.FS) {
+  async addDependency(
+    taskId: string,
+    dependsOnTaskId: string,
+    type: DependencyType = DependencyType.FS,
+  ) {
     return this.prisma.taskDependency.create({
       data: {
         taskId,

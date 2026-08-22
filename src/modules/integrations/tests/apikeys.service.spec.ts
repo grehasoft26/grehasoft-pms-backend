@@ -8,7 +8,14 @@ describe('ApiKeysService', () => {
 
   beforeEach(() => {
     mockRepository = {
-      createApiKey: jest.fn().mockImplementation((tenantId, data) => Promise.resolve({ id: 'key-123', name: data.name, scopes: data.scopes, expiresAt: data.expiresAt })),
+      createApiKey: jest.fn().mockImplementation((tenantId, data) =>
+        Promise.resolve({
+          id: 'key-123',
+          name: data.name,
+          scopes: data.scopes,
+          expiresAt: data.expiresAt,
+        }),
+      ),
       logAudit: jest.fn().mockResolvedValue(null),
       findApiKeyByHash: jest.fn(),
       updateApiKey: jest.fn().mockResolvedValue(null),
@@ -47,7 +54,10 @@ describe('ApiKeysService', () => {
     const result = await service.validateKey('tenant-1', rawKey);
     expect(result).toBeDefined();
     expect(result.id).toBe('key-123');
-    expect(mockRepository.logApiKeyUsage).toHaveBeenCalledWith('tenant-1', 'key-123');
+    expect(mockRepository.logApiKeyUsage).toHaveBeenCalledWith(
+      'tenant-1',
+      'key-123',
+    );
   });
 
   it('should invalidate expired keys', async () => {
@@ -64,7 +74,11 @@ describe('ApiKeysService', () => {
 
     const result = await service.validateKey('tenant-1', rawKey);
     expect(result).toBeNull();
-    expect(mockRepository.updateApiKey).toHaveBeenCalledWith('tenant-1', 'key-123', { status: 'EXPIRED' });
+    expect(mockRepository.updateApiKey).toHaveBeenCalledWith(
+      'tenant-1',
+      'key-123',
+      { status: 'EXPIRED' },
+    );
   });
 
   it('should rotate keys', async () => {
@@ -82,6 +96,10 @@ describe('ApiKeysService', () => {
   it('should revoke keys', async () => {
     const result = await service.revoke('tenant-1', 'key-123');
     expect(result.message).toContain('revoked');
-    expect(mockRepository.updateApiKey).toHaveBeenCalledWith('tenant-1', 'key-123', { status: 'REVOKED' });
+    expect(mockRepository.updateApiKey).toHaveBeenCalledWith(
+      'tenant-1',
+      'key-123',
+      { status: 'REVOKED' },
+    );
   });
 });

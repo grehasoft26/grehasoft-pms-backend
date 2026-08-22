@@ -5,7 +5,12 @@ import { SeoRepository } from '../repositories/seo.repository';
 export class SitemapService {
   constructor(private readonly repository: SeoRepository) {}
 
-  async generateXmlSitemap(tenantId: string, seoProjectId: string, domain: string, paths: string[]) {
+  async generateXmlSitemap(
+    tenantId: string,
+    seoProjectId: string,
+    domain: string,
+    paths: string[],
+  ) {
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
 
     for (const path of paths) {
@@ -14,9 +19,18 @@ export class SitemapService {
     xml += `</urlset>`;
 
     const sitemapUrl = `https://${domain}/sitemap.xml`;
-    const sitemap = await this.repository.upsertSitemap(tenantId, seoProjectId, sitemapUrl, xml);
+    const sitemap = await this.repository.upsertSitemap(
+      tenantId,
+      seoProjectId,
+      sitemapUrl,
+      xml,
+    );
 
-    await this.repository.logAudit(tenantId, 'Generate Sitemap', `XML Sitemap generated for ${domain}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Generate Sitemap',
+      `XML Sitemap generated for ${domain}.`,
+    );
     return sitemap;
   }
 

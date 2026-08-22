@@ -12,7 +12,7 @@ export class ProjectDocumentsService {
     private readonly repository: ProjectDocumentsRepository,
     private readonly logger: LoggerService,
     @Inject(STORAGE_PROVIDER_TOKEN)
-    private readonly storageProvider: IStorageProvider
+    private readonly storageProvider: IStorageProvider,
   ) {}
 
   async create(dto: CreateProjectDocumentDto, context: RequestContext) {
@@ -32,12 +32,18 @@ export class ProjectDocumentsService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Upload Project Document', 'projectDocument', doc, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: doc,
-    });
+    this.logger.audit(
+      context.userId,
+      'Upload Project Document',
+      'projectDocument',
+      doc,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: doc,
+      },
+    );
 
     return doc;
   }
@@ -69,12 +75,18 @@ export class ProjectDocumentsService {
     });
 
     // Audit
-    this.logger.audit(context.userId, 'Delete Project Document', 'projectDocument', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Project Document',
+      'projectDocument',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 
   async getFileStream(id: string) {

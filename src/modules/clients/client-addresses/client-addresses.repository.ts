@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { CreateClientAddressDto, UpdateClientAddressDto } from './dto/client-addresses.dto';
+import {
+  CreateClientAddressDto,
+  UpdateClientAddressDto,
+} from './dto/client-addresses.dto';
 
 @Injectable()
 export class ClientAddressesRepository {
@@ -29,7 +32,10 @@ export class ClientAddressesRepository {
     });
   }
 
-  async update(id: string, dto: UpdateClientAddressDto & { updatedBy?: string }) {
+  async update(
+    id: string,
+    dto: UpdateClientAddressDto & { updatedBy?: string },
+  ) {
     return this.prisma.clientAddress.update({
       where: { id },
       data: {

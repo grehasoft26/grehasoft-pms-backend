@@ -8,7 +8,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class SprintsService {
   constructor(
     private readonly repository: SprintsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateSprintDto, context: RequestContext) {
@@ -30,7 +30,9 @@ export class SprintsService {
       }
     }
 
-    this.logger.audit(context.userId, 'Create Sprint', 'sprint', sprint, { after: sprint });
+    this.logger.audit(context.userId, 'Create Sprint', 'sprint', sprint, {
+      after: sprint,
+    });
     return this.getById(sprint.id);
   }
 
@@ -60,14 +62,23 @@ export class SprintsService {
       updatedBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Update Sprint', 'sprint', updated, { before, after: updated });
+    this.logger.audit(context.userId, 'Update Sprint', 'sprint', updated, {
+      before,
+      after: updated,
+    });
     return this.getById(id);
   }
 
   async delete(id: string, context: RequestContext) {
     const before = await this.getById(id);
     await this.repository.delete(id, context.userId);
-    this.logger.audit(context.userId, 'Delete Sprint', 'sprint', { id }, { before });
+    this.logger.audit(
+      context.userId,
+      'Delete Sprint',
+      'sprint',
+      { id },
+      { before },
+    );
   }
 
   // Sprint Goals

@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InfrastructureRepository } from '../repositories/infrastructure.repository';
-import { CreateHostingPlanDto, CreateHostingAccountDto } from '../dto/hosting.dto';
+import {
+  CreateHostingPlanDto,
+  CreateHostingAccountDto,
+} from '../dto/hosting.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +11,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class HostingService {
   constructor(
     private readonly repository: InfrastructureRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createPlan(dto: CreateHostingPlanDto, context: RequestContext) {
@@ -22,7 +25,13 @@ export class HostingService {
       priceMonthly: dto.priceMonthly || null,
     });
 
-    this.logger.audit(context.userId, 'Create Hosting Plan', 'hostingPlan', plan, { after: plan });
+    this.logger.audit(
+      context.userId,
+      'Create Hosting Plan',
+      'hostingPlan',
+      plan,
+      { after: plan },
+    );
     return plan;
   }
 
@@ -35,13 +44,19 @@ export class HostingService {
       controlPanelUrl: dto.controlPanelUrl || '',
       hostingPlanId: dto.hostingPlanId || null,
       diskLimitGb: dto.diskLimitGb || null,
-      diskUsedGb: 0.00,
+      diskUsedGb: 0.0,
       bandwidthLimitGb: dto.bandwidthLimitGb || null,
-      bandwidthUsedGb: 0.00,
+      bandwidthUsedGb: 0.0,
       notes: dto.notes || '',
     });
 
-    this.logger.audit(context.userId, 'Create Hosting Account', 'hostingAccount', account, { after: account });
+    this.logger.audit(
+      context.userId,
+      'Create Hosting Account',
+      'hostingAccount',
+      account,
+      { after: account },
+    );
     return account;
   }
 

@@ -10,13 +10,15 @@ export class TimeEntriesService {
   constructor(
     private readonly repository: TimeEntriesRepository,
     private readonly timesheetsRepository: TimesheetsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateTimeEntryDto, context: RequestContext) {
     const startTime = new Date(dto.startTime);
     const endTime = new Date(dto.endTime);
-    const duration = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+    const duration = Math.round(
+      (endTime.getTime() - startTime.getTime()) / 1000,
+    );
 
     const entry = await this.repository.create({
       userId: context.userId,
@@ -33,26 +35,39 @@ export class TimeEntriesService {
 
     await this.recalculateTimesheets(context.userId, startTime);
 
-    this.logger.audit(context.userId, 'Create Time Entry', 'timeEntry', entry, { after: entry });
+    this.logger.audit(context.userId, 'Create Time Entry', 'timeEntry', entry, {
+      after: entry,
+    });
     return entry;
   }
 
-  async getMany(filters: { userId?: string; projectId?: string; taskId?: string; approved?: boolean }) {
+  async getMany(filters: {
+    userId?: string;
+    projectId?: string;
+    taskId?: string;
+    approved?: boolean;
+  }) {
     return this.repository.findMany(filters);
   }
 
   async getById(id: string) {
     const entry = await this.repository.findById(id);
-    if (!entry) throw new NotFoundException(`TimeEntry with ID ${id} not found`);
+    if (!entry)
+      throw new NotFoundException(`TimeEntry with ID ${id} not found`);
     return entry;
   }
 
   async update(id: string, dto: UpdateTimeEntryDto, context: RequestContext) {
     const before = await this.getById(id);
 
-    const startTime = dto.startTime ? new Date(dto.startTime) : before.startTime;
+    const startTime = dto.startTime
+      ? new Date(dto.startTime)
+      : before.startTime;
     const endTime = dto.endTime ? new Date(dto.endTime) : before.endTime;
-    const duration = dto.startTime || dto.endTime ? Math.round((endTime.getTime() - startTime.getTime()) / 1000) : before.duration;
+    const duration =
+      dto.startTime || dto.endTime
+        ? Math.round((endTime.getTime() - startTime.getTime()) / 1000)
+        : before.duration;
 
     const updated = await this.repository.update(id, {
       taskId: dto.taskId,
@@ -67,7 +82,13 @@ export class TimeEntriesService {
 
     await this.recalculateTimesheets(context.userId, startTime);
 
-    this.logger.audit(context.userId, 'Update Time Entry', 'timeEntry', updated, { before, after: updated });
+    this.logger.audit(
+      context.userId,
+      'Update Time Entry',
+      'timeEntry',
+      updated,
+      { before, after: updated },
+    );
     return updated;
   }
 
@@ -75,7 +96,13 @@ export class TimeEntriesService {
     const before = await this.getById(id);
     await this.repository.delete(id);
     await this.recalculateTimesheets(context.userId, before.startTime);
-    this.logger.audit(context.userId, 'Delete Time Entry', 'timeEntry', { id }, { before });
+    this.logger.audit(
+      context.userId,
+      'Delete Time Entry',
+      'timeEntry',
+      { id },
+      { before },
+    );
   }
 
   // Recalculate daily and weekly timesheet aggregates from single-source-of-truth entries
@@ -86,7 +113,7 @@ export class TimeEntriesService {
       userId,
       date,
       dailySums.totalHours,
-      dailySums.billableHours
+      dailySums.billableHours,
     );
 
     // Link entries to the dailyTimesheet
@@ -117,8 +144,16 @@ export class TimeEntriesService {
       },
     });
 
-    const weeklyTotal = dailySheets.reduce((sum, ds) => sum + Number(ds.totalHours), 0);
+    const weeklyTotal = dailySheets.reduce(
+      (sum, ds) => sum + Number(ds.totalHours),
+      0,
+    );
 
-    await this.timesheetsRepository.upsertWeekly(userId, currentMonday, sunday, weeklyTotal);
+    await this.timesheetsRepository.upsertWeekly(
+      userId,
+      currentMonday,
+      sunday,
+      weeklyTotal,
+    );
   }
 }

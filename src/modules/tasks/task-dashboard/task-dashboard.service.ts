@@ -7,7 +7,11 @@ export class TaskDashboardService {
 
   async getDashboardStats(userId?: string, projectId?: string) {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
 
     // Basic filters
     const taskQuery: any = { deletedAt: null };
@@ -18,7 +22,9 @@ export class TaskDashboardService {
     if (userId) {
       assignedTodayQuery.assignees = { some: { id: userId } };
     }
-    const assignedToday = await this.prisma.task.count({ where: assignedTodayQuery });
+    const assignedToday = await this.prisma.task.count({
+      where: assignedTodayQuery,
+    });
 
     // 2. Completed Today (status code = DONE and updated today)
     const completedTodayQuery = {
@@ -29,7 +35,9 @@ export class TaskDashboardService {
     if (userId) {
       completedTodayQuery.assignees = { some: { id: userId } };
     }
-    const completedToday = await this.prisma.task.count({ where: completedTodayQuery });
+    const completedToday = await this.prisma.task.count({
+      where: completedTodayQuery,
+    });
 
     // 3. Overdue (status not DONE and dueDate < today)
     const overdueQuery = {
@@ -50,11 +58,16 @@ export class TaskDashboardService {
     const blocked = await this.prisma.task.count({ where: blockedQuery });
 
     // 5. High Priority (priority code in HIGH, CRITICAL)
-    const highPriorityQuery = { ...taskQuery, priority: { code: { in: ['HIGH', 'CRITICAL'] } } };
+    const highPriorityQuery = {
+      ...taskQuery,
+      priority: { code: { in: ['HIGH', 'CRITICAL'] } },
+    };
     if (userId) {
       highPriorityQuery.assignees = { some: { id: userId } };
     }
-    const highPriority = await this.prisma.task.count({ where: highPriorityQuery });
+    const highPriority = await this.prisma.task.count({
+      where: highPriorityQuery,
+    });
 
     // 6. Upcoming Deadlines (due in next 7 days, incomplete)
     const next7Days = new Date();
@@ -94,8 +107,13 @@ export class TaskDashboardService {
     let sprintBurndown = null;
     if (activeSprint) {
       const totalTasks = activeSprint.tasks.length;
-      const completedTasks = activeSprint.tasks.filter((t) => t.statusId === 'DONE').length; // simple check
-      const totalStoryPoints = activeSprint.tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+      const completedTasks = activeSprint.tasks.filter(
+        (t) => t.statusId === 'DONE',
+      ).length; // simple check
+      const totalStoryPoints = activeSprint.tasks.reduce(
+        (sum, t) => sum + (t.storyPoints || 0),
+        0,
+      );
       const remainingStoryPoints = activeSprint.tasks
         .filter((t) => t.statusId !== 'DONE')
         .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
@@ -129,7 +147,10 @@ export class TaskDashboardService {
     });
 
     const teamVelocity = completedSprints.map((sprint) => {
-      const storyPointsCompleted = sprint.tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+      const storyPointsCompleted = sprint.tasks.reduce(
+        (sum, t) => sum + (t.storyPoints || 0),
+        0,
+      );
       return {
         sprintId: sprint.id,
         sprintName: sprint.name,
@@ -148,7 +169,10 @@ export class TaskDashboardService {
       },
     });
 
-    const workloadMap = new Map<string, { name: string; taskCount: number; remainingHours: number }>();
+    const workloadMap = new Map<
+      string,
+      { name: string; taskCount: number; remainingHours: number }
+    >();
     for (const t of openTasks) {
       const hrs = Number(t.remainingHours || 0);
       for (const user of t.assignees) {
@@ -164,10 +188,12 @@ export class TaskDashboardService {
       }
     }
 
-    const workload = Array.from(workloadMap.entries()).map(([userId, data]) => ({
-      userId,
-      ...data,
-    }));
+    const workload = Array.from(workloadMap.entries()).map(
+      ([userId, data]) => ({
+        userId,
+        ...data,
+      }),
+    );
 
     return {
       assignedToday,

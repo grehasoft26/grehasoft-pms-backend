@@ -1,6 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { TaskConfigsRepository } from './task-configs.repository';
-import { CreateTaskTypeDto, CreateTaskStatusDto, CreateTaskPriorityDto, CreateTaskLabelDto } from './dto/task-configs.dto';
+import {
+  CreateTaskTypeDto,
+  CreateTaskStatusDto,
+  CreateTaskPriorityDto,
+  CreateTaskLabelDto,
+} from './dto/task-configs.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +13,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class TaskConfigsService {
   constructor(
     private readonly repository: TaskConfigsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   // 1. Task Types
@@ -17,7 +22,9 @@ export class TaskConfigsService {
       ...dto,
       createdBy: context.userId,
     });
-    this.logger.audit(context.userId, 'Create Task Type', 'taskType', type, { after: type });
+    this.logger.audit(context.userId, 'Create Task Type', 'taskType', type, {
+      after: type,
+    });
     return type;
   }
 
@@ -37,7 +44,13 @@ export class TaskConfigsService {
       ...dto,
       createdBy: context.userId,
     });
-    this.logger.audit(context.userId, 'Create Task Status', 'taskStatus', status, { after: status });
+    this.logger.audit(
+      context.userId,
+      'Create Task Status',
+      'taskStatus',
+      status,
+      { after: status },
+    );
     return status;
   }
 
@@ -47,7 +60,8 @@ export class TaskConfigsService {
 
   async getStatusById(id: string) {
     const status = await this.repository.findStatusById(id);
-    if (!status) throw new NotFoundException(`Task status with ID ${id} not found`);
+    if (!status)
+      throw new NotFoundException(`Task status with ID ${id} not found`);
     return status;
   }
 
@@ -57,7 +71,13 @@ export class TaskConfigsService {
       ...dto,
       createdBy: context.userId,
     });
-    this.logger.audit(context.userId, 'Create Task Priority', 'taskPriority', priority, { after: priority });
+    this.logger.audit(
+      context.userId,
+      'Create Task Priority',
+      'taskPriority',
+      priority,
+      { after: priority },
+    );
     return priority;
   }
 
@@ -67,7 +87,8 @@ export class TaskConfigsService {
 
   async getPriorityById(id: string) {
     const priority = await this.repository.findPriorityById(id);
-    if (!priority) throw new NotFoundException(`Task priority with ID ${id} not found`);
+    if (!priority)
+      throw new NotFoundException(`Task priority with ID ${id} not found`);
     return priority;
   }
 

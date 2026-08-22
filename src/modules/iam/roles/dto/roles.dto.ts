@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreateRoleDto {
   @ApiProperty({ example: 'Project Manager' })
@@ -7,7 +14,10 @@ export class CreateRoleDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'Manages project deliverables and client communications', required: false })
+  @ApiProperty({
+    example: 'Manages project deliverables and client communications',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;
@@ -29,7 +39,10 @@ export class UpdateRoleDto {
   @IsString()
   name?: string;
 
-  @ApiProperty({ example: 'Oversees multiple projects portfolios', required: false })
+  @ApiProperty({
+    example: 'Oversees multiple projects portfolios',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   description?: string;

@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { BackupsService } from '../services/backups.service';
 import { CreateBackupScheduleDto, CreateBackupDto } from '../dto/backups.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -30,7 +43,10 @@ export class BackupsController {
   @Permissions('backups.manage')
   @ApiOperation({ summary: 'Create backup schedule (frequency, retention)' })
   @ApiResponse({ type: SuccessResponseDto })
-  async createSchedule(@Body() dto: CreateBackupScheduleDto, @Req() req: Request) {
+  async createSchedule(
+    @Body() dto: CreateBackupScheduleDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.service.createSchedule(dto, context);
     return { message: 'Backup schedule created successfully', data };
@@ -47,12 +63,18 @@ export class BackupsController {
 
   @Post('manual')
   @Permissions('backups.manage')
-  @ApiOperation({ summary: 'Trigger manual backup (database, files, incremental/full, encryption checks)' })
+  @ApiOperation({
+    summary:
+      'Trigger manual backup (database, files, incremental/full, encryption checks)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async trigger(@Body() dto: CreateBackupDto, @Req() req: Request) {
     const context = this.getContext(req);
     const data = await this.service.triggerBackup(dto, context);
-    return { message: 'Manual backup triggered and finished successfully', data };
+    return {
+      message: 'Manual backup triggered and finished successfully',
+      data,
+    };
   }
 
   @Get()
@@ -61,7 +83,7 @@ export class BackupsController {
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(
     @Query('serverId') serverId?: string,
-    @Query('hostingAccountId') hostingAccountId?: string
+    @Query('hostingAccountId') hostingAccountId?: string,
   ) {
     const data = await this.service.getBackups(serverId, hostingAccountId);
     return { message: 'Backups list retrieved', data };

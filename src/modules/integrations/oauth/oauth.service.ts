@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import * as crypto from 'crypto';
 import { IntegrationsRepository } from '../repositories/integrations.repository';
 import { CreateOAuthAppDto } from '../dto/oauth.dto';
@@ -7,7 +11,11 @@ import { CreateOAuthAppDto } from '../dto/oauth.dto';
 export class OAuthService {
   constructor(private readonly repository: IntegrationsRepository) {}
 
-  async createApplication(tenantId: string, userId: string, dto: CreateOAuthAppDto) {
+  async createApplication(
+    tenantId: string,
+    userId: string,
+    dto: CreateOAuthAppDto,
+  ) {
     const clientId = crypto.randomUUID();
     const clientSecret = crypto.randomBytes(32).toString('hex'); // Store as hashed or encrypted in vault
 
@@ -19,7 +27,11 @@ export class OAuthService {
       redirectUris: dto.redirectUris,
     });
 
-    await this.repository.logAudit(tenantId, 'Create OAuth Application', `OAuth Application "${dto.name}" created.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Create OAuth Application',
+      `OAuth Application "${dto.name}" created.`,
+    );
     return app;
   }
 
@@ -29,11 +41,15 @@ export class OAuthService {
     clientSecret: string,
     code: string,
     redirectUri: string,
-    codeVerifier?: string // optional PKCE verifier
+    codeVerifier?: string, // optional PKCE verifier
   ) {
-    const app = await this.repository.findOAuthAppByClientId(tenantId, clientId);
+    const app = await this.repository.findOAuthAppByClientId(
+      tenantId,
+      clientId,
+    );
     if (!app) throw new UnauthorizedException('Invalid client ID');
-    if (app.clientSecret !== clientSecret) throw new UnauthorizedException('Invalid client secret');
+    if (app.clientSecret !== clientSecret)
+      throw new UnauthorizedException('Invalid client secret');
 
     // Verify Redirect URI matches configured redirectUris
     const configuredUris = app.redirectUris.split(',');
@@ -43,7 +59,10 @@ export class OAuthService {
 
     // Optional PKCE code_verifier challenge check (mock check for code flow challenge)
     if (codeVerifier) {
-      const hash = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
+      const hash = crypto
+        .createHash('sha256')
+        .update(codeVerifier)
+        .digest('base64url');
       // Verify code flow challenge challenge code match validation (simulated code challenge)
       if (code === 'invalid_challenge') {
         throw new BadRequestException('PKCE challenge verification failed');
@@ -62,12 +81,19 @@ export class OAuthService {
       scopes: 'reports:read,tasks:manage',
     });
 
-    await this.repository.logAudit(tenantId, 'Generate OAuth Token', `OAuth Token generated for application ${app.name}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Generate OAuth Token',
+      `OAuth Token generated for application ${app.name}.`,
+    );
     return token;
   }
 
   async refreshToken(tenantId: string, refreshToken: string) {
-    const tokenRecord = await this.repository.findOAuthTokenByRefresh(tenantId, refreshToken);
+    const tokenRecord = await this.repository.findOAuthTokenByRefresh(
+      tenantId,
+      refreshToken,
+    );
     if (!tokenRecord) throw new UnauthorizedException('Invalid refresh token');
 
     if (tokenRecord.expiresAt.getTime() < Date.now()) {
@@ -88,7 +114,11 @@ export class OAuthService {
       },
     });
 
-    await this.repository.logAudit(tenantId, 'Refresh OAuth Token', `OAuth access token refreshed.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Refresh OAuth Token',
+      `OAuth access token refreshed.`,
+    );
     return {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
@@ -101,7 +131,11 @@ export class OAuthService {
     if (!token) throw new NotFoundException('Token not found');
 
     await this.repository.prisma.oAuthToken.delete({ where: { id: token.id } });
-    await this.repository.logAudit(tenantId, 'Revoke OAuth Token', `OAuth token revoked.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Revoke OAuth Token',
+      `OAuth token revoked.`,
+    );
     return { message: 'Token revoked successfully' };
   }
 }

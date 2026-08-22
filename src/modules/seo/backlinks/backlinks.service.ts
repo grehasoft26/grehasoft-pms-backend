@@ -16,7 +16,11 @@ export class BacklinksService {
       type: data.type || 'DOFOLLOW',
     });
 
-    await this.repository.logAudit(tenantId, 'Add Backlink', `Backlink logged from domain ${data.sourceUrl}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Add Backlink',
+      `Backlink logged from domain ${data.sourceUrl}.`,
+    );
     return link;
   }
 
@@ -24,7 +28,13 @@ export class BacklinksService {
     return this.repository.findBacklinks(tenantId, seoProjectId);
   }
 
-  async reportBrokenLink(tenantId: string, seoProjectId: string, sourceUrl: string, targetUrl: string, statusCode: number) {
+  async reportBrokenLink(
+    tenantId: string,
+    seoProjectId: string,
+    sourceUrl: string,
+    targetUrl: string,
+    statusCode: number,
+  ) {
     const link = await this.repository.createBrokenLink(tenantId, {
       seoProjectId,
       sourceUrl,
@@ -32,7 +42,11 @@ export class BacklinksService {
       statusCode,
     });
 
-    await this.repository.logAudit(tenantId, 'Report Broken Link', `Broken link detected: ${targetUrl} (Status ${statusCode})`);
+    await this.repository.logAudit(
+      tenantId,
+      'Report Broken Link',
+      `Broken link detected: ${targetUrl} (Status ${statusCode})`,
+    );
     return link;
   }
 

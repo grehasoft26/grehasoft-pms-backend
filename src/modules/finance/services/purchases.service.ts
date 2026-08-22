@@ -8,7 +8,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class PurchasesService {
   constructor(
     private readonly repository: FinanceRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   private async getNextPurchaseNumber(): Promise<string> {
@@ -29,7 +29,7 @@ export class PurchasesService {
 
     let subtotal = 0;
     const items = dto.items.map((it) => {
-      const total = (it.quantity * it.rate) - (it.discount || 0) + (it.tax || 0);
+      const total = it.quantity * it.rate - (it.discount || 0) + (it.tax || 0);
       subtotal += total;
       return {
         productName: it.productName,
@@ -58,7 +58,13 @@ export class PurchasesService {
       },
     });
 
-    this.logger.audit(context.userId, 'Create Purchase Order', 'purchase', purchase, { after: purchase });
+    this.logger.audit(
+      context.userId,
+      'Create Purchase Order',
+      'purchase',
+      purchase,
+      { after: purchase },
+    );
     return purchase;
   }
 

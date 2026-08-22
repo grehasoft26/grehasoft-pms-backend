@@ -53,21 +53,36 @@ describe('EmployeesService', () => {
 
   describe('onboardEmployee', () => {
     it('should throw BadRequestException if profile already exists', async () => {
-      repository.prisma.user.findUnique.mockResolvedValue({ id: 'user-uuid' } as any);
-      repository.findProfileByUserId.mockResolvedValue({ id: 'existing-profile-uuid' } as any);
+      repository.prisma.user.findUnique.mockResolvedValue({
+        id: 'user-uuid',
+      } as any);
+      repository.findProfileByUserId.mockResolvedValue({
+        id: 'existing-profile-uuid',
+      } as any);
 
       await expect(
-        service.onboardEmployee({ userId: 'user-uuid', dateOfJoining: '2026-08-06' }, mockContext)
+        service.onboardEmployee(
+          { userId: 'user-uuid', dateOfJoining: '2026-08-06' },
+          mockContext,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should onboard employee profile successfully', async () => {
-      repository.prisma.user.findUnique.mockResolvedValue({ id: 'user-uuid' } as any);
+      repository.prisma.user.findUnique.mockResolvedValue({
+        id: 'user-uuid',
+      } as any);
       repository.findProfileByUserId.mockResolvedValue(null);
       repository.getLastEmployeeCode.mockResolvedValue(null);
-      repository.createProfile.mockResolvedValue({ id: 'new-profile-uuid', employeeCode: 'EMP-2026-000001' } as any);
+      repository.createProfile.mockResolvedValue({
+        id: 'new-profile-uuid',
+        employeeCode: 'EMP-2026-000001',
+      } as any);
 
-      const result = await service.onboardEmployee({ userId: 'user-uuid', dateOfJoining: '2026-08-06' }, mockContext);
+      const result = await service.onboardEmployee(
+        { userId: 'user-uuid', dateOfJoining: '2026-08-06' },
+        mockContext,
+      );
       expect(result.id).toEqual('new-profile-uuid');
       expect(repository.createProfile).toHaveBeenCalled();
     });

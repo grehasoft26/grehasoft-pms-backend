@@ -1,4 +1,10 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Response } from 'express';
 import { LoggerService } from '../../shared/logger/logger.service';
@@ -20,8 +26,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const resBody: any = exception.getResponse();
-      message = typeof resBody === 'string' ? resBody : resBody.message || exception.message;
-      errors = typeof resBody === 'object' && resBody.message !== message ? resBody.message : null;
+      message =
+        typeof resBody === 'string'
+          ? resBody
+          : resBody.message || exception.message;
+      errors =
+        typeof resBody === 'object' && resBody.message !== message
+          ? resBody.message
+          : null;
     } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       // Handle known Prisma errors
       switch (exception.code) {

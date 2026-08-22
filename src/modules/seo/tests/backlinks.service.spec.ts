@@ -8,8 +8,12 @@ describe('BacklinksService', () => {
 
   beforeEach(async () => {
     const mockRepository = {
-      createBacklink: jest.fn().mockImplementation((tenantId, data) => ({ id: 'bl-1', ...data })),
-      createBrokenLink: jest.fn().mockImplementation((tenantId, data) => ({ id: 'br-1', ...data })),
+      createBacklink: jest
+        .fn()
+        .mockImplementation((tenantId, data) => ({ id: 'bl-1', ...data })),
+      createBrokenLink: jest
+        .fn()
+        .mockImplementation((tenantId, data) => ({ id: 'br-1', ...data })),
       logAudit: jest.fn(),
     };
 

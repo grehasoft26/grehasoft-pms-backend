@@ -1,15 +1,22 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ProjectMilestonesRepository } from './project-milestones.repository';
-import { CreateProjectMilestoneDto, UpdateProjectMilestoneDto } from './dto/project-milestones.dto';
+import {
+  CreateProjectMilestoneDto,
+  UpdateProjectMilestoneDto,
+} from './dto/project-milestones.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { DependencyType } from '@prisma/client';
+import { DependencyType, MilestoneStatus, ProjectStatus } from '@prisma/client';
 
 @Injectable()
 export class ProjectMilestonesService {
   constructor(
     private readonly repository: ProjectMilestonesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateProjectMilestoneDto, context: RequestContext) {
@@ -38,24 +45,41 @@ export class ProjectMilestonesService {
         }
 
         // Check for circular dependency
-        const hasCycle = await this.checkCircularDependency(milestone.id, dependsOnId);
+        const hasCycle = await this.checkCircularDependency(
+          milestone.id,
+          dependsOnId,
+        );
         if (hasCycle) {
           // Cleanup created milestone and throw
           await this.repository.delete(milestone.id, context.userId);
-          throw new BadRequestException(`Circular dependency detected: Milestone ${milestone.title} cannot depend on milestone ID ${dependsOnId}`);
+          throw new BadRequestException(
+            `Circular dependency detected: Milestone ${milestone.title} cannot depend on milestone ID ${dependsOnId}`,
+          );
         }
 
-        await this.repository.addDependency(milestone.id, dependsOnId, DependencyType.FS);
+        await this.repository.addDependency(
+          milestone.id,
+          dependsOnId,
+          DependencyType.FS,
+        );
       }
     }
 
     // 3. Log Audit
-    this.logger.audit(context.userId, 'Create Project Milestone', 'projectMilestone', milestone, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: milestone,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Project Milestone',
+      'projectMilestone',
+      milestone,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: milestone,
+      },
+    );
+
+    await this.recalculateProjectProgress(milestone.projectId);
 
     return this.getById(milestone.id);
   }
@@ -72,16 +96,27 @@ export class ProjectMilestonesService {
     return milestone;
   }
 
-  async update(id: string, dto: UpdateProjectMilestoneDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateProjectMilestoneDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
 
     const dueDate = dto.dueDate ? new Date(dto.dueDate) : undefined;
+    let completionPercentage = dto.completionPercentage;
+    if (dto.status === 'COMPLETED' && completionPercentage === undefined) {
+      completionPercentage = 100;
+    } else if (dto.status === 'PENDING' && completionPercentage === undefined) {
+      completionPercentage = 0;
+    }
+
     const updated = await this.repository.update(id, {
       phaseId: dto.phaseId,
       title: dto.title,
       description: dto.description,
       dueDate,
-      completionPercentage: dto.completionPercentage,
+      completionPercentage,
       status: dto.status,
       ownerId: dto.ownerId,
       estimatedHours: dto.estimatedHours,
@@ -92,7 +127,7 @@ export class ProjectMilestonesService {
     // Handle dependencies updates if provided
     if (dto.dependsOnMilestones !== undefined) {
       await this.repository.clearDependencies(id);
-      
+
       for (const dependsOnId of dto.dependsOnMilestones) {
         if (dependsOnId === id) {
           throw new BadRequestException('A milestone cannot depend on itself');
@@ -105,10 +140,16 @@ export class ProjectMilestonesService {
           const oldDeps = before.dependencies || [];
           for (const oldDep of oldDeps) {
             if (oldDep.dependsOnMilestoneId) {
-              await this.repository.addDependency(id, oldDep.dependsOnMilestoneId, oldDep.type);
+              await this.repository.addDependency(
+                id,
+                oldDep.dependsOnMilestoneId,
+                oldDep.type,
+              );
             }
           }
-          throw new BadRequestException(`Circular dependency detected: Milestone ${updated.title} cannot depend on milestone ID ${dependsOnId}`);
+          throw new BadRequestException(
+            `Circular dependency detected: Milestone ${updated.title} cannot depend on milestone ID ${dependsOnId}`,
+          );
         }
 
         await this.repository.addDependency(id, dependsOnId, DependencyType.FS);
@@ -116,13 +157,21 @@ export class ProjectMilestonesService {
     }
 
     // Audit Log
-    this.logger.audit(context.userId, 'Update Project Milestone', 'projectMilestone', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Project Milestone',
+      'projectMilestone',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
+
+    await this.recalculateProjectProgress(updated.projectId);
 
     return this.getById(id);
   }
@@ -131,18 +180,29 @@ export class ProjectMilestonesService {
     const before = await this.getById(id);
     await this.repository.delete(id, context.userId);
 
-    this.logger.audit(context.userId, 'Delete Project Milestone', 'projectMilestone', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Project Milestone',
+      'projectMilestone',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
+
+    await this.recalculateProjectProgress(before.projectId);
   }
 
   // DFS Cycle Detection helper
-  async checkCircularDependency(milestoneId: string, dependsOnMilestoneId: string): Promise<boolean> {
+  async checkCircularDependency(
+    milestoneId: string,
+    dependsOnMilestoneId: string,
+  ): Promise<boolean> {
     const visited = new Set<string>();
-    
+
     const check = async (currentId: string): Promise<boolean> => {
       if (currentId === milestoneId) return true;
       if (visited.has(currentId)) return false;
@@ -162,5 +222,60 @@ export class ProjectMilestonesService {
     };
 
     return check(dependsOnMilestoneId);
+  }
+
+  async recalculateProjectProgress(projectId: string) {
+    const prisma = this.repository.prisma;
+
+    const milestones = await prisma.projectMilestone.findMany({
+      where: { projectId, deletedAt: null },
+    });
+
+    let projectProgress = 0;
+    if (milestones.length > 0) {
+      const totalMilestoneProgress = milestones.reduce(
+        (sum, m) => sum + (m.completionPercentage || 0),
+        0,
+      );
+      projectProgress = Math.round(totalMilestoneProgress / milestones.length);
+    }
+
+    // Determine project status
+    let projectStatus: ProjectStatus = ProjectStatus.PLANNING;
+    const hasBlockedMilestones = milestones.some(
+      (m) => m.status === MilestoneStatus.DELAYED,
+    );
+    if (hasBlockedMilestones) {
+      projectStatus = ProjectStatus.ACTIVE;
+    } else if (projectProgress === 0) {
+      projectStatus = ProjectStatus.PLANNING;
+    } else if (projectProgress < 100) {
+      projectStatus = ProjectStatus.ACTIVE;
+    } else if (projectProgress === 100) {
+      projectStatus = ProjectStatus.COMPLETED;
+    }
+
+    // Read current status to avoid overriding manual override statuses like ARCHIVED or ON_HOLD
+    const currentProject = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { status: true },
+    });
+
+    const updateData: { completionPercentage: number; status?: ProjectStatus } =
+      {
+        completionPercentage: projectProgress,
+      };
+    if (
+      currentProject &&
+      currentProject.status !== ProjectStatus.ARCHIVED &&
+      currentProject.status !== ProjectStatus.ON_HOLD
+    ) {
+      updateData.status = projectStatus;
+    }
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: updateData,
+    });
   }
 }

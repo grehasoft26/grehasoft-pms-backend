@@ -1,4 +1,6 @@
-export function calculateSeoHealthScore(issues: { severity: string; isResolved: boolean }[]): number {
+export function calculateSeoHealthScore(
+  issues: { severity: string; isResolved: boolean }[],
+): number {
   let score = 100;
 
   for (const issue of issues) {

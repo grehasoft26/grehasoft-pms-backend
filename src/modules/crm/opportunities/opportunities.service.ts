@@ -1,8 +1,22 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { OpportunitiesRepository } from './opportunities.repository';
 import { LeadsRepository } from '../leads/leads.repository';
-import { CreateOpportunityDto, UpdateOpportunityDto, OpportunityFilterDto, ConvertLeadDto } from './dto/opportunities.dto';
-import { CreatePipelineDto, UpdatePipelineDto, CreatePipelineStageDto, UpdatePipelineStageDto } from './dto/pipelines.dto';
+import {
+  CreateOpportunityDto,
+  UpdateOpportunityDto,
+  OpportunityFilterDto,
+  ConvertLeadDto,
+} from './dto/opportunities.dto';
+import {
+  CreatePipelineDto,
+  UpdatePipelineDto,
+  CreatePipelineStageDto,
+  UpdatePipelineStageDto,
+} from './dto/pipelines.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -11,10 +25,13 @@ export class OpportunitiesService {
   constructor(
     private readonly repository: OpportunitiesRepository,
     private readonly leadsRepository: LeadsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
-  private calculateItems(items: any[]): { calculatedItems: any[]; totalValue: number } {
+  private calculateItems(items: any[]): {
+    calculatedItems: any[];
+    totalValue: number;
+  } {
     let totalValue = 0;
     const calculatedItems = (items || []).map((item) => {
       const quantity = item.quantity || 1;
@@ -43,11 +60,14 @@ export class OpportunitiesService {
   }
 
   async create(dto: CreateOpportunityDto, context: RequestContext) {
-    const { calculatedItems, totalValue } = this.calculateItems(dto.items || []);
+    const { calculatedItems, totalValue } = this.calculateItems(
+      dto.items || [],
+    );
     const expectedCloseDate = new Date(dto.expectedCloseDate);
 
     // If items are provided, override value with computed total, else use manual value
-    const finalValue = dto.items && dto.items.length > 0 ? totalValue : dto.value;
+    const finalValue =
+      dto.items && dto.items.length > 0 ? totalValue : dto.value;
 
     const opportunity = await this.repository.create({
       leadId: dto.leadId,
@@ -82,12 +102,18 @@ export class OpportunitiesService {
     });
 
     // Audit Log
-    this.logger.audit(context.userId, 'Create Opportunity', 'opportunity', opportunity, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: opportunity,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Opportunity',
+      'opportunity',
+      opportunity,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: opportunity,
+      },
+    );
 
     return this.getById(opportunity.id);
   }
@@ -126,7 +152,9 @@ export class OpportunitiesService {
       }
     }
 
-    const expectedCloseDate = dto.expectedCloseDate ? new Date(dto.expectedCloseDate) : undefined;
+    const expectedCloseDate = dto.expectedCloseDate
+      ? new Date(dto.expectedCloseDate)
+      : undefined;
 
     const updated = await this.repository.update(id, {
       leadId: dto.leadId,
@@ -152,13 +180,19 @@ export class OpportunitiesService {
     });
 
     // Audit Log
-    this.logger.audit(context.userId, 'Update Opportunity', 'opportunity', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Opportunity',
+      'opportunity',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return this.getById(id);
   }
@@ -176,12 +210,18 @@ export class OpportunitiesService {
     });
 
     // Audit Log
-    this.logger.audit(context.userId, 'Delete Opportunity', 'opportunity', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Opportunity',
+      'opportunity',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 
   async restore(id: string, context: RequestContext) {
@@ -196,12 +236,18 @@ export class OpportunitiesService {
     });
 
     // Audit Log
-    this.logger.audit(context.userId, 'Restore Opportunity', 'opportunity', restored, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: restored,
-    });
+    this.logger.audit(
+      context.userId,
+      'Restore Opportunity',
+      'opportunity',
+      restored,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: restored,
+      },
+    );
 
     return restored;
   }
@@ -212,22 +258,82 @@ export class OpportunitiesService {
       throw new NotFoundException(`Lead with ID ${dto.leadId} not found`);
     }
 
-    // Calculate items and final value
-    const { calculatedItems, totalValue } = this.calculateItems(dto.items || []);
-    const expectedCloseDate = new Date(dto.expectedCloseDate);
+    // 1. Check if Opportunity already exists for this Lead to avoid duplicates
+    const existingOpp = await this.repository.prisma.opportunity.findFirst({
+      where: { leadId: lead.id, deletedAt: null },
+    });
+    if (existingOpp) {
+      return this.getById(existingOpp.id);
+    }
 
-    // If budget isn't explicitly set in lead, we calculate it from items
-    const finalValue = dto.items && dto.items.length > 0 ? totalValue : Number(lead.expectedBudget || 0);
+    // 2. Resolve pipelineId and stageId dynamically if not provided
+    let pipelineId = dto.pipelineId;
+    let stageId = dto.stageId;
+
+    if (!pipelineId || !stageId) {
+      let pipeline = await this.repository.prisma.pipeline.findFirst({
+        where: { deletedAt: null },
+        include: { stages: { where: { deletedAt: null }, orderBy: { sortOrder: 'asc' } } },
+      });
+
+      if (!pipeline) {
+        // Silently create default Sales Pipeline
+        pipeline = await this.repository.prisma.pipeline.create({
+          data: {
+            id: 'default-sales-pipeline-id',
+            name: 'Sales Pipeline',
+            description: 'Standard sales opportunities pipeline',
+          },
+          include: { stages: true },
+        });
+      }
+
+      pipelineId = pipeline.id;
+
+      if (pipeline.stages && pipeline.stages.length > 0) {
+        stageId = pipeline.stages[0].id;
+      } else {
+        // Silently create default starting stage
+        const newStage = await this.repository.prisma.pipelineStage.create({
+          data: {
+            id: 'stage-new-prospect',
+            pipelineId: pipelineId,
+            name: 'New Prospect',
+            code: 'NEW_PROSPECT',
+            sortOrder: 1,
+          },
+        });
+        stageId = newStage.id;
+      }
+    }
+
+    // Calculate items and final value
+    const { calculatedItems, totalValue } = this.calculateItems(
+      dto.items || [],
+    );
+
+    // 3. Fallback expectedCloseDate
+    const expectedCloseDate = dto.expectedCloseDate
+      ? new Date(dto.expectedCloseDate)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    const finalValue =
+      dto.items && dto.items.length > 0
+        ? totalValue
+        : Number(lead.expectedBudget || 0);
+
+    // 4. Fallback ownerId
+    const ownerId = dto.ownerId || lead.ownerId || context.userId || '00000000-0000-0000-0000-000000000000';
 
     // Create Opportunity
     const opportunity = await this.repository.create({
       leadId: lead.id,
-      name: `${lead.companyName} - Opportunity`,
+      name: `${lead.companyName || lead.contactName || 'General'} - Opportunity`,
       value: finalValue,
       probability: 10, // Starting probability
       expectedCloseDate,
-      stageId: dto.stageId,
-      ownerId: dto.ownerId,
+      stageId,
+      ownerId,
       createdBy: context.userId,
     });
 
@@ -241,9 +347,10 @@ export class OpportunitiesService {
     }
 
     // Set lead status to Qualified code
-    const qualifiedStatus = await this.leadsRepository.prisma.leadStatus.findFirst({
-      where: { code: 'QUALIFIED' },
-    });
+    const qualifiedStatus =
+      await this.leadsRepository.prisma.leadStatus.findFirst({
+        where: { code: 'QUALIFIED' },
+      });
     if (qualifiedStatus) {
       await this.leadsRepository.update(lead.id, {
         statusId: qualifiedStatus.id,
@@ -270,13 +377,19 @@ export class OpportunitiesService {
     });
 
     // Audit Log
-    this.logger.audit(context.userId, 'Convert Lead to Opportunity', 'opportunity', opportunity, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before: lead,
-      after: opportunity,
-    });
+    this.logger.audit(
+      context.userId,
+      'Convert Lead to Opportunity',
+      'opportunity',
+      opportunity,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before: lead,
+        after: opportunity,
+      },
+    );
 
     return this.getById(opportunity.id);
   }
@@ -300,7 +413,10 @@ export class OpportunitiesService {
     return pl;
   }
 
-  async createPipelineStage(dto: CreatePipelineStageDto, context: RequestContext) {
+  async createPipelineStage(
+    dto: CreatePipelineStageDto,
+    context: RequestContext,
+  ) {
     const stage = await this.repository.createPipelineStage({
       ...dto,
       createdBy: context.userId,

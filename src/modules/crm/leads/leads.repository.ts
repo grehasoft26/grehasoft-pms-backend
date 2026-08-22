@@ -134,12 +134,19 @@ export class LeadsRepository {
     });
   }
 
-  async checkDuplicates(params: { email?: string; phone?: string; companyName?: string; gstNumber?: string; excludeId?: string }) {
+  async checkDuplicates(params: {
+    email?: string;
+    phone?: string;
+    companyName?: string;
+    gstNumber?: string;
+    excludeId?: string;
+  }) {
     const OR: Prisma.LeadWhereInput[] = [];
 
     if (params.email) OR.push({ email: { equals: params.email } });
     if (params.phone) OR.push({ phone: { equals: params.phone } });
-    if (params.companyName) OR.push({ companyName: { equals: params.companyName } });
+    if (params.companyName)
+      OR.push({ companyName: { equals: params.companyName } });
     if (params.gstNumber) OR.push({ gstNumber: { equals: params.gstNumber } });
 
     if (OR.length === 0) return [];
@@ -208,7 +215,10 @@ export class LeadsRepository {
     });
   }
 
-  async updateActivity(id: string, data: Prisma.LeadActivityUncheckedUpdateInput) {
+  async updateActivity(
+    id: string,
+    data: Prisma.LeadActivityUncheckedUpdateInput,
+  ) {
     return this.prisma.leadActivity.update({
       where: { id },
       data,

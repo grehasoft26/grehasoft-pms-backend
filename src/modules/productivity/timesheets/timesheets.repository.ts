@@ -7,8 +7,17 @@ export class TimesheetsRepository {
   constructor(public readonly prisma: PrismaService) {}
 
   // Daily Timesheets
-  async upsertDaily(userId: string, date: Date, totalHours: number, billableHours: number) {
-    const formattedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  async upsertDaily(
+    userId: string,
+    date: Date,
+    totalHours: number,
+    billableHours: number,
+  ) {
+    const formattedDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
     return this.prisma.dailyTimesheet.upsert({
       where: {
         userId_date: {
@@ -31,7 +40,11 @@ export class TimesheetsRepository {
   }
 
   async findDaily(userId: string, date: Date) {
-    const formattedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const formattedDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
     return this.prisma.dailyTimesheet.findUnique({
       where: {
         userId_date: {
@@ -46,9 +59,22 @@ export class TimesheetsRepository {
   }
 
   // Weekly Timesheets
-  async upsertWeekly(userId: string, startDate: Date, endDate: Date, totalHours: number) {
-    const formattedStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-    const formattedEnd = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+  async upsertWeekly(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+    totalHours: number,
+  ) {
+    const formattedStart = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate(),
+    );
+    const formattedEnd = new Date(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate(),
+    );
 
     return this.prisma.weeklyTimesheet.upsert({
       where: {
@@ -71,7 +97,11 @@ export class TimesheetsRepository {
   }
 
   async findWeekly(userId: string, startDate: Date) {
-    const formattedStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const formattedStart = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate(),
+    );
     return this.prisma.weeklyTimesheet.findUnique({
       where: {
         userId_startDate: {
@@ -82,7 +112,9 @@ export class TimesheetsRepository {
       include: {
         approvals: {
           orderBy: { actionedAt: 'desc' },
-          include: { approver: { select: { id: true, firstName: true, lastName: true } } },
+          include: {
+            approver: { select: { id: true, firstName: true, lastName: true } },
+          },
         },
       },
     });
@@ -93,7 +125,9 @@ export class TimesheetsRepository {
       where: { id },
       include: {
         approvals: true,
-        user: { select: { id: true, firstName: true, lastName: true, email: true } },
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
       },
     });
   }

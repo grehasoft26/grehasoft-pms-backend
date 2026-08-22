@@ -57,7 +57,7 @@ export class UsersRepository {
 
   async update(id: string, userData: any, preferenceData?: any) {
     const updatePayload: any = { ...userData };
-    
+
     if (preferenceData) {
       updatePayload.preferences = {
         upsert: {

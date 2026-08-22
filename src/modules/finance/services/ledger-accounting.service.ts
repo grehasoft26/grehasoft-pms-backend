@@ -20,12 +20,18 @@ export class LedgerAccountingService {
   }
 
   // Double entry journal posting
-  async postJournalEntry(description: string, debits: { accountCode: string; amount: number }[], credits: { accountCode: string; amount: number }[]) {
+  async postJournalEntry(
+    description: string,
+    debits: { accountCode: string; amount: number }[],
+    credits: { accountCode: string; amount: number }[],
+  ) {
     // 1. Verify totals match
     const totalDebit = debits.reduce((sum, d) => sum + d.amount, 0);
     const totalCredit = credits.reduce((sum, c) => sum + c.amount, 0);
     if (Math.abs(totalDebit - totalCredit) > 0.01) {
-      throw new BadRequestException(`Debit and Credit amounts must balance (Debits: ${totalDebit}, Credits: ${totalCredit})`);
+      throw new BadRequestException(
+        `Debit and Credit amounts must balance (Debits: ${totalDebit}, Credits: ${totalCredit})`,
+      );
     }
 
     const entryNumber = await this.getNextJournalEntryNumber();
@@ -35,9 +41,14 @@ export class LedgerAccountingService {
 
     // Process Debits
     for (const d of debits) {
-      const account = await this.repository.findLedgerAccountByCode(d.accountCode);
-      if (!account) throw new BadRequestException(`Ledger account with code ${d.accountCode} not found`);
-      
+      const account = await this.repository.findLedgerAccountByCode(
+        d.accountCode,
+      );
+      if (!account)
+        throw new BadRequestException(
+          `Ledger account with code ${d.accountCode} not found`,
+        );
+
       let newBalance = Number(account.balance);
       if (account.type === 'ASSET' || account.type === 'EXPENSE') {
         newBalance += d.amount; // Debit increases Asset/Expense
@@ -49,17 +60,26 @@ export class LedgerAccountingService {
       linesData.push({
         accountId: account.id,
         debit: d.amount,
-        credit: 0.00,
+        credit: 0.0,
       });
     }
 
     // Process Credits
     for (const c of credits) {
-      const account = await this.repository.findLedgerAccountByCode(c.accountCode);
-      if (!account) throw new BadRequestException(`Ledger account with code ${c.accountCode} not found`);
-      
+      const account = await this.repository.findLedgerAccountByCode(
+        c.accountCode,
+      );
+      if (!account)
+        throw new BadRequestException(
+          `Ledger account with code ${c.accountCode} not found`,
+        );
+
       let newBalance = Number(account.balance);
-      if (account.type === 'LIABILITY' || account.type === 'REVENUE' || account.type === 'EQUITY') {
+      if (
+        account.type === 'LIABILITY' ||
+        account.type === 'REVENUE' ||
+        account.type === 'EQUITY'
+      ) {
         newBalance += c.amount; // Credit increases liability/revenue/equity
       } else {
         newBalance -= c.amount; // Credit decreases Asset/Expense
@@ -68,16 +88,19 @@ export class LedgerAccountingService {
 
       linesData.push({
         accountId: account.id,
-        debit: 0.00,
+        debit: 0.0,
         credit: c.amount,
       });
     }
 
     // Save Journal entry
-    return this.repository.createJournalEntry({
-      entryNumber,
-      date: new Date(),
-      description,
-    }, linesData);
+    return this.repository.createJournalEntry(
+      {
+        entryNumber,
+        date: new Date(),
+        description,
+      },
+      linesData,
+    );
   }
 }

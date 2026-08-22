@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsDateString, IsNumber, IsOptional, IsString, IsUUID, Max, Min, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateOpportunityItemDto {
@@ -20,14 +30,17 @@ export class CreateOpportunityItemDto {
   @Type(() => Number)
   price: number;
 
-  @ApiPropertyOptional({ default: 0.00, description: 'Flat discount value' })
+  @ApiPropertyOptional({ default: 0.0, description: 'Flat discount value' })
   @IsNumber()
   @Min(0)
   @IsOptional()
   @Type(() => Number)
   discount?: number;
 
-  @ApiPropertyOptional({ default: 0.00, description: 'Tax percentage (e.g. 18.00)' })
+  @ApiPropertyOptional({
+    default: 0.0,
+    description: 'Tax percentage (e.g. 18.00)',
+  })
   @IsNumber()
   @Min(0)
   @Max(100)
@@ -46,7 +59,9 @@ export class CreateOpportunityDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: 'Opportunity value (sum of line items or manually estimated)' })
+  @ApiProperty({
+    description: 'Opportunity value (sum of line items or manually estimated)',
+  })
   @IsNumber()
   @Min(0)
   @Type(() => Number)
@@ -164,21 +179,25 @@ export class ConvertLeadDto {
   @IsUUID()
   leadId: string;
 
-  @ApiProperty({ description: 'Pipeline ID to associate with the Opportunity' })
+  @ApiPropertyOptional({ description: 'Pipeline ID to associate with the Opportunity' })
   @IsUUID()
-  pipelineId: string;
+  @IsOptional()
+  pipelineId?: string;
 
-  @ApiProperty({ description: 'Starting Pipeline Stage ID' })
+  @ApiPropertyOptional({ description: 'Starting Pipeline Stage ID' })
   @IsUUID()
-  stageId: string;
+  @IsOptional()
+  stageId?: string;
 
-  @ApiProperty({ description: 'Expected close date' })
+  @ApiPropertyOptional({ description: 'Expected close date' })
   @IsDateString()
-  expectedCloseDate: string;
+  @IsOptional()
+  expectedCloseDate?: string;
 
-  @ApiProperty({ description: 'Owner User ID' })
+  @ApiPropertyOptional({ description: 'Owner User ID' })
   @IsUUID()
-  ownerId: string;
+  @IsOptional()
+  ownerId?: string;
 
   @ApiPropertyOptional({ type: [CreateOpportunityItemDto] })
   @IsArray()

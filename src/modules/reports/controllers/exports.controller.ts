@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ExportsService } from '../exports/exports.service';
 import { TriggerExportDto } from '../dto/exports.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -27,12 +40,18 @@ export class ExportsController {
   }
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post()
   @Permissions('exports.manage')
-  @ApiOperation({ summary: 'Trigger report export job in background queue (PDF, Excel, CSV, PowerPoint)' })
+  @ApiOperation({
+    summary:
+      'Trigger report export job in background queue (PDF, Excel, CSV, PowerPoint)',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async trigger(@Body() dto: TriggerExportDto, @Req() req: Request) {
     const context = this.getContext(req);

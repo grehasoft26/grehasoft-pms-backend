@@ -1,20 +1,35 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { LeadsRepository } from './leads.repository';
-import { CreateLeadDto, UpdateLeadDto, LeadFilterDto, AssignLeadDto, MergeLeadsDto } from './dto/leads.dto';
+import {
+  CreateLeadDto,
+  UpdateLeadDto,
+  LeadFilterDto,
+  AssignLeadDto,
+  MergeLeadsDto,
+} from './dto/leads.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { CreateLeadActivityDto, UpdateLeadActivityDto } from '../lead-activities/dto/lead-activities.dto';
+import {
+  CreateLeadActivityDto,
+  UpdateLeadActivityDto,
+} from '../lead-activities/dto/lead-activities.dto';
 
 @Injectable()
 export class LeadsService {
   constructor(
     private readonly repository: LeadsRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateLeadDto, context: RequestContext) {
     // 1. Create Lead
-    const expectedClosingDate = dto.expectedClosingDate ? new Date(dto.expectedClosingDate) : undefined;
+    const expectedClosingDate = dto.expectedClosingDate
+      ? new Date(dto.expectedClosingDate)
+      : undefined;
     const lead = await this.repository.create({
       ...dto,
       expectedClosingDate,
@@ -56,7 +71,9 @@ export class LeadsService {
   async update(id: string, dto: UpdateLeadDto, context: RequestContext) {
     const before = await this.getById(id);
 
-    const expectedClosingDate = dto.expectedClosingDate ? new Date(dto.expectedClosingDate) : undefined;
+    const expectedClosingDate = dto.expectedClosingDate
+      ? new Date(dto.expectedClosingDate)
+      : undefined;
     const updated = await this.repository.update(id, {
       ...dto,
       expectedClosingDate,
@@ -97,12 +114,18 @@ export class LeadsService {
     });
 
     // Log Audit
-    this.logger.audit(context.userId, 'Delete Lead', 'lead', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Lead',
+      'lead',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 
   async restore(id: string, context: RequestContext) {
@@ -143,13 +166,17 @@ export class LeadsService {
       assigneeId: dto.assigneeId,
       assignedById: context.userId,
       notes: dto.notes,
-      transferFromId: previousOwnerId !== dto.assigneeId ? previousOwnerId : null,
+      transferFromId:
+        previousOwnerId !== dto.assigneeId ? previousOwnerId : null,
     });
 
     // Record timeline event
     await this.repository.createTimeline({
       leadId: id,
-      event: previousOwnerId === dto.assigneeId ? 'LEAD_ASSIGNED' : 'LEAD_TRANSFERRED',
+      event:
+        previousOwnerId === dto.assigneeId
+          ? 'LEAD_ASSIGNED'
+          : 'LEAD_TRANSFERRED',
       description: `Lead ownership transferred to assignee ID: ${dto.assigneeId}.`,
       createdBy: context.userId,
       metadata: { assignment },
@@ -167,7 +194,13 @@ export class LeadsService {
     return updated;
   }
 
-  async checkDuplicates(params: { email?: string; phone?: string; companyName?: string; gstNumber?: string; excludeId?: string }) {
+  async checkDuplicates(params: {
+    email?: string;
+    phone?: string;
+    companyName?: string;
+    gstNumber?: string;
+    excludeId?: string;
+  }) {
     return this.repository.checkDuplicates(params);
   }
 
@@ -182,11 +215,16 @@ export class LeadsService {
     // 1. Copy missing fields from secondary to primary
     const updateData: any = {};
     if (!primary.phone && secondary.phone) updateData.phone = secondary.phone;
-    if (!primary.website && secondary.website) updateData.website = secondary.website;
-    if (!primary.gstNumber && secondary.gstNumber) updateData.gstNumber = secondary.gstNumber;
-    if (!primary.expectedBudget && secondary.expectedBudget) updateData.expectedBudget = secondary.expectedBudget;
-    if (!primary.expectedClosingDate && secondary.expectedClosingDate) updateData.expectedClosingDate = secondary.expectedClosingDate;
-    if (!primary.remarks && secondary.remarks) updateData.remarks = secondary.remarks;
+    if (!primary.website && secondary.website)
+      updateData.website = secondary.website;
+    if (!primary.gstNumber && secondary.gstNumber)
+      updateData.gstNumber = secondary.gstNumber;
+    if (!primary.expectedBudget && secondary.expectedBudget)
+      updateData.expectedBudget = secondary.expectedBudget;
+    if (!primary.expectedClosingDate && secondary.expectedClosingDate)
+      updateData.expectedClosingDate = secondary.expectedClosingDate;
+    if (!primary.remarks && secondary.remarks)
+      updateData.remarks = secondary.remarks;
 
     let merged: any = primary;
     if (Object.keys(updateData).length > 0) {
@@ -268,7 +306,9 @@ export class LeadsService {
   async createActivity(dto: CreateLeadActivityDto, context: RequestContext) {
     await this.getById(dto.leadId); // ensure lead exists
 
-    const activityDate = dto.activityDate ? new Date(dto.activityDate) : undefined;
+    const activityDate = dto.activityDate
+      ? new Date(dto.activityDate)
+      : undefined;
     const activity = await this.repository.createActivity({
       ...dto,
       activityDate,
@@ -292,13 +332,19 @@ export class LeadsService {
     return this.repository.getActivities(leadId);
   }
 
-  async updateActivity(id: string, dto: UpdateLeadActivityDto, context: RequestContext) {
+  async updateActivity(
+    id: string,
+    dto: UpdateLeadActivityDto,
+    context: RequestContext,
+  ) {
     const before = await this.repository.findActivityById(id);
     if (!before) {
       throw new NotFoundException(`Lead activity with ID ${id} not found`);
     }
 
-    const activityDate = dto.activityDate ? new Date(dto.activityDate) : undefined;
+    const activityDate = dto.activityDate
+      ? new Date(dto.activityDate)
+      : undefined;
     const updated = await this.repository.updateActivity(id, {
       ...dto,
       activityDate,

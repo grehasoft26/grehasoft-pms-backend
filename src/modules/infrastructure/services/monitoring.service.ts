@@ -8,21 +8,31 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class MonitoringService {
   constructor(
     private readonly repository: InfrastructureRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   // Publish internal events simulation
-  async publishInfraEvent(event: string, resourceId: string, description: string) {
-    console.log(`[INFRASTRUCTURE EVENT] Event: ${event} | Resource: ${resourceId} | Desc: ${description}`);
+  async publishInfraEvent(
+    event: string,
+    resourceId: string,
+    description: string,
+  ) {
+    console.log(
+      `[INFRASTRUCTURE EVENT] Event: ${event} | Resource: ${resourceId} | Desc: ${description}`,
+    );
     await this.repository.createTimelineEvent(
       resourceId,
       'System',
       event,
-      description
+      description,
     );
   }
 
-  async recordMetrics(serverId: string, dto: UpdateMonitoringCheckDto, context: RequestContext) {
+  async recordMetrics(
+    serverId: string,
+    dto: UpdateMonitoringCheckDto,
+    context: RequestContext,
+  ) {
     const check = await this.repository.createMonitoringCheck({
       serverId,
       name: 'System Load check',
@@ -41,14 +51,28 @@ export class MonitoringService {
 
     // Alert triggers checks
     if (dto.cpuUsage && dto.cpuUsage > 90.0) {
-      await this.publishInfraEvent('High CPU', serverId, `CPU load average spiked to ${dto.cpuUsage}%`);
+      await this.publishInfraEvent(
+        'High CPU',
+        serverId,
+        `CPU load average spiked to ${dto.cpuUsage}%`,
+      );
     }
 
     if (dto.status === 'CRITICAL') {
-      await this.publishInfraEvent('Server Down', serverId, `Monitoring status flagged as CRITICAL: Server unreachable`);
+      await this.publishInfraEvent(
+        'Server Down',
+        serverId,
+        `Monitoring status flagged as CRITICAL: Server unreachable`,
+      );
     }
 
-    this.logger.audit(context.userId, 'Record Monitoring Metrics', 'monitoringCheck', check, { after: check });
+    this.logger.audit(
+      context.userId,
+      'Record Monitoring Metrics',
+      'monitoringCheck',
+      check,
+      { after: check },
+    );
     return check;
   }
 

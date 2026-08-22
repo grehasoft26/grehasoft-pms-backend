@@ -7,7 +7,11 @@ import * as crypto from 'crypto';
 export class DeveloperPortalService {
   constructor(private readonly repository: IntegrationsRepository) {}
 
-  async createApplication(tenantId: string, userId: string, dto: CreateDeveloperAppDto) {
+  async createApplication(
+    tenantId: string,
+    userId: string,
+    dto: CreateDeveloperAppDto,
+  ) {
     const clientId = crypto.randomUUID();
     const clientSecret = crypto.randomBytes(32).toString('hex');
 
@@ -20,7 +24,11 @@ export class DeveloperPortalService {
       status: 'PENDING',
     });
 
-    await this.repository.logAudit(tenantId, 'Create Developer App', `Developer application "${dto.name}" created.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Create Developer App',
+      `Developer application "${dto.name}" created.`,
+    );
     return app;
   }
 
@@ -28,17 +36,36 @@ export class DeveloperPortalService {
     return this.repository.findDeveloperApps(tenantId);
   }
 
-  async createTeam(tenantId: string, name: string, members: { email: string; role: string }[]) {
+  async createTeam(
+    tenantId: string,
+    name: string,
+    members: { email: string; role: string }[],
+  ) {
     const team = await this.repository.createDeveloperTeam(tenantId, name);
     for (const m of members) {
-      await this.repository.addDeveloperMember(tenantId, team.id, m.email, m.role);
+      await this.repository.addDeveloperMember(
+        tenantId,
+        team.id,
+        m.email,
+        m.role,
+      );
     }
 
-    await this.repository.logAudit(tenantId, 'Create Developer Team', `Team "${name}" registered.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Create Developer Team',
+      `Team "${name}" registered.`,
+    );
     return team;
   }
 
-  async registerSDKPackage(tenantId: string, name: string, language: 'TYPESCRIPT' | 'PYTHON' | 'PHP', version: string, downloadUrl: string) {
+  async registerSDKPackage(
+    tenantId: string,
+    name: string,
+    language: 'TYPESCRIPT' | 'PYTHON' | 'PHP',
+    version: string,
+    downloadUrl: string,
+  ) {
     const sdk = await this.repository.createSDKPackage(tenantId, {
       name,
       language,
@@ -46,7 +73,11 @@ export class DeveloperPortalService {
       downloadUrl,
     });
 
-    await this.repository.logAudit(tenantId, 'Register SDK Package', `SDK package ${name} (${language}) version ${version} added.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Register SDK Package',
+      `SDK package ${name} (${language}) version ${version} added.`,
+    );
     return sdk;
   }
 

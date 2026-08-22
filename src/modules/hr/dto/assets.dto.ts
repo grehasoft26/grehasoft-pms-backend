@@ -1,9 +1,20 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsDateString, IsNumber, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsDateString,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { AssetStatus } from '@prisma/client';
 
 export class CreateAssetAssignmentDto {
-  @ApiProperty({ description: 'LAPTOP, DESKTOP, MONITOR, MOBILE, SIM, ACCESS_CARD, SOFTWARE_LICENSE' })
+  @ApiProperty({
+    description:
+      'LAPTOP, DESKTOP, MONITOR, MOBILE, SIM, ACCESS_CARD, SOFTWARE_LICENSE',
+  })
   @IsNotEmpty()
   @IsString()
   assetType: string;

@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InfrastructureRepository } from '../repositories/infrastructure.repository';
-import { CreateIncidentDto, CreateMaintenanceWindowDto } from '../dto/incidents.dto';
+import {
+  CreateIncidentDto,
+  CreateMaintenanceWindowDto,
+} from '../dto/incidents.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 
@@ -8,7 +11,7 @@ import { LoggerService } from '../../../shared/logger/logger.service';
 export class IncidentsService {
   constructor(
     private readonly repository: InfrastructureRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createIncident(dto: CreateIncidentDto, context: RequestContext) {
@@ -25,7 +28,13 @@ export class IncidentsService {
       assignedEngineer: dto.assignedEngineer || '',
     });
 
-    this.logger.audit(context.userId, 'Report Infrastructure Incident', 'incident', incident, { after: incident });
+    this.logger.audit(
+      context.userId,
+      'Report Infrastructure Incident',
+      'incident',
+      incident,
+      { after: incident },
+    );
     return incident;
   }
 
@@ -41,7 +50,13 @@ export class IncidentsService {
       resolvedAt: new Date(),
     });
 
-    this.logger.audit(context.userId, 'Resolve Infrastructure Incident', 'incident', updated, { before, after: updated });
+    this.logger.audit(
+      context.userId,
+      'Resolve Infrastructure Incident',
+      'incident',
+      updated,
+      { before, after: updated },
+    );
     return updated;
   }
 
@@ -49,7 +64,10 @@ export class IncidentsService {
     return this.repository.findIncidents(status);
   }
 
-  async createMaintenanceWindow(dto: CreateMaintenanceWindowDto, context: RequestContext) {
+  async createMaintenanceWindow(
+    dto: CreateMaintenanceWindowDto,
+    context: RequestContext,
+  ) {
     const window = await this.repository.createMaintenanceWindow({
       title: dto.title,
       description: dto.description || '',
@@ -59,7 +77,13 @@ export class IncidentsService {
       status: dto.status ?? 'SCHEDULED',
     });
 
-    this.logger.audit(context.userId, 'Schedule Maintenance Window', 'maintenanceWindow', window, { after: window });
+    this.logger.audit(
+      context.userId,
+      'Schedule Maintenance Window',
+      'maintenanceWindow',
+      window,
+      { after: window },
+    );
     return window;
   }
 

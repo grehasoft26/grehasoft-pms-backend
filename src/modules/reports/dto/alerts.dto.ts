@@ -13,7 +13,10 @@ export class TriggerAlertDto {
   @IsString()
   description: string;
 
-  @ApiProperty({ description: 'FINANCE, CRM, PROJECTS, TASKS, HR, INFRASTRUCTURE, PRODUCTIVITY' })
+  @ApiProperty({
+    description:
+      'FINANCE, CRM, PROJECTS, TASKS, HR, INFRASTRUCTURE, PRODUCTIVITY',
+  })
   @IsNotEmpty()
   @IsString()
   category: string;

@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDateString, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { ContractStatus } from '@prisma/client';
 
 export class CreateClientContractDto {
@@ -28,7 +37,11 @@ export class CreateClientContractDto {
   @IsDateString()
   renewalDate?: string;
 
-  @ApiProperty({ enum: ContractStatus, example: ContractStatus.DRAFT, required: false })
+  @ApiProperty({
+    enum: ContractStatus,
+    example: ContractStatus.DRAFT,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(ContractStatus)
   status?: ContractStatus;
@@ -43,7 +56,7 @@ export class CreateClientContractDto {
   @IsString()
   documentReference?: string;
 
-  @ApiProperty({ example: 150000.00, required: false })
+  @ApiProperty({ example: 150000.0, required: false })
   @IsOptional()
   @IsNumber()
   contractValue?: number;
@@ -58,7 +71,11 @@ export class CreateClientContractDto {
   @IsBoolean()
   autoRenewal?: boolean;
 
-  @ApiProperty({ example: 30, description: 'Notice period in days', required: false })
+  @ApiProperty({
+    example: 30,
+    description: 'Notice period in days',
+    required: false,
+  })
   @IsOptional()
   @IsNumber()
   noticePeriod?: number;
@@ -90,7 +107,11 @@ export class UpdateClientContractDto {
   @IsDateString()
   renewalDate?: string;
 
-  @ApiProperty({ enum: ContractStatus, example: ContractStatus.ACTIVE, required: false })
+  @ApiProperty({
+    enum: ContractStatus,
+    example: ContractStatus.ACTIVE,
+    required: false,
+  })
   @IsOptional()
   @IsEnum(ContractStatus)
   status?: ContractStatus;
@@ -105,7 +126,7 @@ export class UpdateClientContractDto {
   @IsString()
   documentReference?: string;
 
-  @ApiProperty({ example: 150000.00, required: false })
+  @ApiProperty({ example: 150000.0, required: false })
   @IsOptional()
   @IsNumber()
   contractValue?: number;
@@ -120,7 +141,11 @@ export class UpdateClientContractDto {
   @IsBoolean()
   autoRenewal?: boolean;
 
-  @ApiProperty({ example: 30, description: 'Notice period in days', required: false })
+  @ApiProperty({
+    example: 30,
+    description: 'Notice period in days',
+    required: false,
+  })
   @IsOptional()
   @IsNumber()
   noticePeriod?: number;

@@ -1,8 +1,27 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClientContactsService } from './client-contacts.service';
-import { CreateClientContactDto, UpdateClientContactDto } from './dto/client-contacts.dto';
+import {
+  CreateClientContactDto,
+  UpdateClientContactDto,
+} from './dto/client-contacts.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -38,7 +57,9 @@ export class ClientContactsController {
 
   @Get()
   @Permissions('client-contacts.read')
-  @ApiOperation({ summary: 'Get all client contacts, optionally filtered by clientId' })
+  @ApiOperation({
+    summary: 'Get all client contacts, optionally filtered by clientId',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(@Query('clientId') clientId?: string) {
     const data = await this.contactsService.getMany(clientId);
@@ -58,7 +79,11 @@ export class ClientContactsController {
   @Permissions('client-contacts.update')
   @ApiOperation({ summary: 'Update client contact details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateClientContactDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateClientContactDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.contactsService.update(id, dto, context);
     return { message: 'Client contact updated successfully', data };

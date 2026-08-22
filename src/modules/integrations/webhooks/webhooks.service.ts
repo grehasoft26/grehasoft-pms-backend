@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IntegrationsRepository } from '../repositories/integrations.repository';
 import { CreateWebhookDto } from '../dto/webhooks.dto';
-import { generateWebhookSignature, verifyWebhookSignature } from '../utils/signature.helper';
+import {
+  generateWebhookSignature,
+  verifyWebhookSignature,
+} from '../utils/signature.helper';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -19,7 +22,11 @@ export class WebhooksService {
       status: 'ACTIVE',
     });
 
-    await this.repository.logAudit(tenantId, 'Create Webhook', `Webhook endpoint "${dto.name}" registered.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Create Webhook',
+      `Webhook endpoint "${dto.name}" registered.`,
+    );
     return webhook;
   }
 
@@ -27,13 +34,22 @@ export class WebhooksService {
     return this.repository.findWebhooks(tenantId);
   }
 
-  async sendEvent(tenantId: string, webhookId: string, eventType: string, payload: Record<string, any>) {
+  async sendEvent(
+    tenantId: string,
+    webhookId: string,
+    eventType: string,
+    payload: Record<string, any>,
+  ) {
     const webhook = await this.repository.findWebhookById(tenantId, webhookId);
     if (!webhook) throw new NotFoundException('Webhook not found');
 
     const timestamp = Math.floor(Date.now() / 1000);
     const payloadJson = JSON.stringify(payload);
-    const signature = generateWebhookSignature(webhook.secretToken, payloadJson, timestamp);
+    const signature = generateWebhookSignature(
+      webhook.secretToken,
+      payloadJson,
+      timestamp,
+    );
 
     // Mock outgoing delivery attempt
     let responseStatus = 200;
@@ -59,7 +75,9 @@ export class WebhooksService {
       webhookId: webhook.id,
       targetUrl: webhook.targetUrl,
       responseStatus,
-      responseBody: success ? '{"received": true}' : '{"error": "Internal Server Error"}',
+      responseBody: success
+        ? '{"received": true}'
+        : '{"error": "Internal Server Error"}',
       duration: 120,
       success,
       retryCount: 0,
@@ -77,7 +95,11 @@ export class WebhooksService {
       });
     }
 
-    await this.repository.logAudit(tenantId, 'Dispatch Webhook Event', `Webhook event ${eventType} sent to targetUrl: ${webhook.targetUrl}`);
+    await this.repository.logAudit(
+      tenantId,
+      'Dispatch Webhook Event',
+      `Webhook event ${eventType} sent to targetUrl: ${webhook.targetUrl}`,
+    );
     return { success, deliveryId: delivery.id, eventId: eventLog.id };
   }
 }

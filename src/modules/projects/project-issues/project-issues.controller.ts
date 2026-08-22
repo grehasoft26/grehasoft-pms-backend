@@ -1,8 +1,27 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectIssuesService } from './project-issues.service';
-import { CreateProjectIssueDto, UpdateProjectIssueDto } from './dto/project-issues.dto';
+import {
+  CreateProjectIssueDto,
+  UpdateProjectIssueDto,
+} from './dto/project-issues.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -58,7 +77,11 @@ export class ProjectIssuesController {
   @Permissions('project-issues.update')
   @ApiOperation({ summary: 'Update project issue details or resolution' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateProjectIssueDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProjectIssueDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.issuesService.update(id, dto, context);
     return { message: 'Issue updated successfully', data };

@@ -48,28 +48,39 @@ describe('DomainsService', () => {
 
   describe('registerDomain', () => {
     it('should throw BadRequestException if domain already registered', async () => {
-      repository.findDomainByName.mockResolvedValue({ id: 'existing-domain-uuid' } as any);
+      repository.findDomainByName.mockResolvedValue({
+        id: 'existing-domain-uuid',
+      } as any);
 
       await expect(
-        service.registerDomain({
-          name: 'grehasoft.com',
-          registrar: 'GoDaddy',
-          purchaseDate: '2026-08-06',
-          expiryDate: '2027-08-06',
-        }, mockContext)
+        service.registerDomain(
+          {
+            name: 'grehasoft.com',
+            registrar: 'GoDaddy',
+            purchaseDate: '2026-08-06',
+            expiryDate: '2027-08-06',
+          },
+          mockContext,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should register domain successfully', async () => {
       repository.findDomainByName.mockResolvedValue(null);
-      repository.createDomain.mockResolvedValue({ id: 'new-domain-uuid', name: 'grehasoft.com' } as any);
-
-      const result = await service.registerDomain({
+      repository.createDomain.mockResolvedValue({
+        id: 'new-domain-uuid',
         name: 'grehasoft.com',
-        registrar: 'GoDaddy',
-        purchaseDate: '2026-08-06',
-        expiryDate: '2027-08-06',
-      }, mockContext);
+      } as any);
+
+      const result = await service.registerDomain(
+        {
+          name: 'grehasoft.com',
+          registrar: 'GoDaddy',
+          purchaseDate: '2026-08-06',
+          expiryDate: '2027-08-06',
+        },
+        mockContext,
+      );
 
       expect(result.id).toEqual('new-domain-uuid');
       expect(repository.createDomain).toHaveBeenCalled();

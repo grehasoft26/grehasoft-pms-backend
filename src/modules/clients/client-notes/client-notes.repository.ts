@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { CreateClientNoteDto, UpdateClientNoteDto } from './dto/client-notes.dto';
+import {
+  CreateClientNoteDto,
+  UpdateClientNoteDto,
+} from './dto/client-notes.dto';
 
 @Injectable()
 export class ClientNotesRepository {
@@ -12,7 +15,9 @@ export class ClientNotesRepository {
       data: {
         ...noteData,
         mentions: mentions ? mentions : undefined,
-        attachmentsReference: attachmentsReference ? attachmentsReference : undefined,
+        attachmentsReference: attachmentsReference
+          ? attachmentsReference
+          : undefined,
       },
     });
   }
@@ -39,7 +44,8 @@ export class ClientNotesRepository {
       version: { increment: 1 },
     };
     if (mentions) updateData.mentions = mentions;
-    if (attachmentsReference) updateData.attachmentsReference = attachmentsReference;
+    if (attachmentsReference)
+      updateData.attachmentsReference = attachmentsReference;
 
     return this.prisma.clientNote.update({
       where: { id },

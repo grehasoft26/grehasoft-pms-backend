@@ -1,6 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InfrastructureRepository } from '../repositories/infrastructure.repository';
-import { CreateRepositoryDto, CreateRepositoryBranchDto, TriggerDeploymentDto, RollbackDeploymentDto } from '../dto/deployments.dto';
+import {
+  CreateRepositoryDto,
+  CreateRepositoryBranchDto,
+  TriggerDeploymentDto,
+  RollbackDeploymentDto,
+} from '../dto/deployments.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { DeploymentStatus } from '@prisma/client';
@@ -9,7 +18,7 @@ import { DeploymentStatus } from '@prisma/client';
 export class DeploymentsService {
   constructor(
     private readonly repository: InfrastructureRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   // Repository
@@ -25,11 +34,21 @@ export class DeploymentsService {
       webhookEnabled: dto.webhookEnabled ?? false,
     });
 
-    this.logger.audit(context.userId, 'Create Git Repository', 'repository', repo, { after: repo });
+    this.logger.audit(
+      context.userId,
+      'Create Git Repository',
+      'repository',
+      repo,
+      { after: repo },
+    );
     return repo;
   }
 
-  async addBranch(repositoryId: string, dto: CreateRepositoryBranchDto, context: RequestContext) {
+  async addBranch(
+    repositoryId: string,
+    dto: CreateRepositoryBranchDto,
+    context: RequestContext,
+  ) {
     const repo = await this.repository.findRepositoryById(repositoryId);
     if (!repo) throw new NotFoundException('Repository not found');
 
@@ -38,7 +57,13 @@ export class DeploymentsService {
       name: dto.name,
     });
 
-    this.logger.audit(context.userId, 'Add Repository Branch', 'repositoryBranch', branch, { after: branch });
+    this.logger.audit(
+      context.userId,
+      'Add Repository Branch',
+      'repositoryBranch',
+      branch,
+      { after: branch },
+    );
     return branch;
   }
 
@@ -48,7 +73,9 @@ export class DeploymentsService {
 
   // Trigger Deployment
   async triggerDeployment(dto: TriggerDeploymentDto, context: RequestContext) {
-    const env = await this.repository.findServerEnvironmentById(dto.serverEnvironmentId);
+    const env = await this.repository.findServerEnvironmentById(
+      dto.serverEnvironmentId,
+    );
     if (!env) throw new NotFoundException('Server Environment not found');
 
     const deployment = await this.repository.createDeployment({
@@ -74,7 +101,8 @@ export class DeploymentsService {
     const updated = await this.repository.updateDeployment(deployment.id, {
       status: DeploymentStatus.SUCCESS,
       duration: dto.duration ?? 45, // default 45 seconds duration
-      buildLogs: dto.buildLogs || 'Build Success. Assets Compiled. Nginx Reloaded.',
+      buildLogs:
+        dto.buildLogs || 'Build Success. Assets Compiled. Nginx Reloaded.',
       finishedAt: new Date(),
     });
 
@@ -84,17 +112,29 @@ export class DeploymentsService {
       status: DeploymentStatus.SUCCESS,
     });
 
-    this.logger.audit(context.userId, 'Trigger Deployment Success', 'deployment', updated, { after: updated });
+    this.logger.audit(
+      context.userId,
+      'Trigger Deployment Success',
+      'deployment',
+      updated,
+      { after: updated },
+    );
     return updated;
   }
 
   // Rollback Deployment
-  async rollbackDeployment(deploymentId: string, dto: RollbackDeploymentDto, context: RequestContext) {
+  async rollbackDeployment(
+    deploymentId: string,
+    dto: RollbackDeploymentDto,
+    context: RequestContext,
+  ) {
     const baseDep = await this.repository.findDeploymentById(deploymentId);
     if (!baseDep) throw new NotFoundException('Deployment not found');
 
     if (!baseDep.rollbackSupport) {
-      throw new BadRequestException('Rollback support is disabled for this deployment configuration');
+      throw new BadRequestException(
+        'Rollback support is disabled for this deployment configuration',
+      );
     }
 
     // Trigger a new deployment copy with ROLLBACK status
@@ -117,7 +157,13 @@ export class DeploymentsService {
       status: DeploymentStatus.ROLLBACK,
     });
 
-    this.logger.audit(context.userId, 'Rollback Deployment Triggered', 'deployment', rollbackDep, { after: rollbackDep });
+    this.logger.audit(
+      context.userId,
+      'Rollback Deployment Triggered',
+      'deployment',
+      rollbackDep,
+      { after: rollbackDep },
+    );
     return rollbackDep;
   }
 

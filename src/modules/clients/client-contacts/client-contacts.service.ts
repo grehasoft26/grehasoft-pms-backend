@@ -2,7 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ClientContactsRepository } from './client-contacts.repository';
 import { ClientTimelinesRepository } from '../client-timelines/client-timelines.repository';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { CreateClientContactDto, UpdateClientContactDto } from './dto/client-contacts.dto';
+import {
+  CreateClientContactDto,
+  UpdateClientContactDto,
+} from './dto/client-contacts.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 
 @Injectable()
@@ -10,7 +13,7 @@ export class ClientContactsService {
   constructor(
     private readonly repository: ClientContactsRepository,
     private readonly timelineRepository: ClientTimelinesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async create(dto: CreateClientContactDto, context: RequestContext) {
@@ -35,12 +38,18 @@ export class ClientContactsService {
       metadata: { contact },
     });
 
-    this.logger.audit(context.userId, 'Create Client Contact', 'clientContact', contact, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      after: contact,
-    });
+    this.logger.audit(
+      context.userId,
+      'Create Client Contact',
+      'clientContact',
+      contact,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        after: contact,
+      },
+    );
 
     return contact;
   }
@@ -55,7 +64,11 @@ export class ClientContactsService {
     return contact;
   }
 
-  async update(id: string, dto: UpdateClientContactDto, context: RequestContext) {
+  async update(
+    id: string,
+    dto: UpdateClientContactDto,
+    context: RequestContext,
+  ) {
     const before = await this.getById(id);
 
     if (dto.isPrimary) {
@@ -68,7 +81,10 @@ export class ClientContactsService {
     });
 
     if (dto.isPrimary) {
-      await this.repository.setClientPrimaryContact(before.clientId, updated.id);
+      await this.repository.setClientPrimaryContact(
+        before.clientId,
+        updated.id,
+      );
     } else if (dto.isPrimary === false && before.isPrimary) {
       await this.repository.setClientPrimaryContact(before.clientId, null);
     }
@@ -81,13 +97,19 @@ export class ClientContactsService {
       metadata: { before, after: updated },
     });
 
-    this.logger.audit(context.userId, 'Update Client Contact', 'clientContact', updated, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-      after: updated,
-    });
+    this.logger.audit(
+      context.userId,
+      'Update Client Contact',
+      'clientContact',
+      updated,
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+        after: updated,
+      },
+    );
 
     return updated;
   }
@@ -107,11 +129,17 @@ export class ClientContactsService {
       createdBy: context.userId,
     });
 
-    this.logger.audit(context.userId, 'Delete Client Contact', 'clientContact', { id }, {
-      ip: context.ip,
-      userAgent: context.userAgent,
-      correlationId: context.correlationId,
-      before,
-    });
+    this.logger.audit(
+      context.userId,
+      'Delete Client Contact',
+      'clientContact',
+      { id },
+      {
+        ip: context.ip,
+        userAgent: context.userAgent,
+        correlationId: context.correlationId,
+        before,
+      },
+    );
   }
 }

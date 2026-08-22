@@ -1,6 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { Prisma, InfrastructureStatus, ServerType, Environment, DeploymentStatus, BackupStatus, MonitoringStatus } from '@prisma/client';
+import {
+  Prisma,
+  InfrastructureStatus,
+  ServerType,
+  Environment,
+  DeploymentStatus,
+  BackupStatus,
+  MonitoringStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class InfrastructureRepository {
@@ -8,7 +16,9 @@ export class InfrastructureRepository {
 
   // Providers
   async findProviders() {
-    return this.prisma.infrastructureProvider.findMany({ include: { hostingPlans: true } });
+    return this.prisma.infrastructureProvider.findMany({
+      include: { hostingPlans: true },
+    });
   }
 
   async findProviderByCode(code: string) {
@@ -33,25 +43,41 @@ export class InfrastructureRepository {
     return this.prisma.hostingAccount.create({ data });
   }
 
-  async updateHostingAccount(id: string, data: Prisma.HostingAccountUncheckedUpdateInput) {
+  async updateHostingAccount(
+    id: string,
+    data: Prisma.HostingAccountUncheckedUpdateInput,
+  ) {
     return this.prisma.hostingAccount.update({ where: { id }, data });
   }
 
-  async findHostingAccounts(filters: { clientId?: string; projectId?: string }) {
+  async findHostingAccounts(filters: {
+    clientId?: string;
+    projectId?: string;
+  }) {
     const where: Prisma.HostingAccountWhereInput = {};
     if (filters.clientId) where.clientId = filters.clientId;
     if (filters.projectId) where.projectId = filters.projectId;
 
     return this.prisma.hostingAccount.findMany({
       where,
-      include: { provider: true, hostingPlan: true, client: true, project: true },
+      include: {
+        provider: true,
+        hostingPlan: true,
+        client: true,
+        project: true,
+      },
     });
   }
 
   async findHostingAccountById(id: string) {
     return this.prisma.hostingAccount.findUnique({
       where: { id },
-      include: { provider: true, hostingPlan: true, backups: true, credentials: true },
+      include: {
+        provider: true,
+        hostingPlan: true,
+        backups: true,
+        credentials: true,
+      },
     });
   }
 
@@ -64,7 +90,10 @@ export class InfrastructureRepository {
     return this.prisma.server.update({ where: { id }, data });
   }
 
-  async findServers(filters: { status?: InfrastructureStatus; projectId?: string }) {
+  async findServers(filters: {
+    status?: InfrastructureStatus;
+    projectId?: string;
+  }) {
     const where: Prisma.ServerWhereInput = {};
     if (filters.status) where.status = filters.status;
     if (filters.projectId) where.projectId = filters.projectId;
@@ -91,7 +120,9 @@ export class InfrastructureRepository {
   }
 
   // Server Environments
-  async createServerEnvironment(data: Prisma.ServerEnvironmentUncheckedCreateInput) {
+  async createServerEnvironment(
+    data: Prisma.ServerEnvironmentUncheckedCreateInput,
+  ) {
     return this.prisma.serverEnvironment.create({ data });
   }
 
@@ -119,7 +150,10 @@ export class InfrastructureRepository {
   }
 
   async findRepositoryById(id: string) {
-    return this.prisma.repository.findUnique({ where: { id }, include: { branches: true } });
+    return this.prisma.repository.findUnique({
+      where: { id },
+      include: { branches: true },
+    });
   }
 
   async addBranch(data: Prisma.RepositoryBranchUncheckedCreateInput) {
@@ -127,7 +161,10 @@ export class InfrastructureRepository {
   }
 
   async findBranchById(id: string) {
-    return this.prisma.repositoryBranch.findUnique({ where: { id }, include: { repository: true } });
+    return this.prisma.repositoryBranch.findUnique({
+      where: { id },
+      include: { repository: true },
+    });
   }
 
   // Deployments
@@ -135,7 +172,10 @@ export class InfrastructureRepository {
     return this.prisma.deployment.create({ data });
   }
 
-  async updateDeployment(id: string, data: Prisma.DeploymentUncheckedUpdateInput) {
+  async updateDeployment(
+    id: string,
+    data: Prisma.DeploymentUncheckedUpdateInput,
+  ) {
     return this.prisma.deployment.update({
       where: { id },
       data,
@@ -143,14 +183,22 @@ export class InfrastructureRepository {
     });
   }
 
-  async findDeployments(filters: { projectId?: string; status?: DeploymentStatus }) {
+  async findDeployments(filters: {
+    projectId?: string;
+    status?: DeploymentStatus;
+  }) {
     const where: Prisma.DeploymentWhereInput = {};
     if (filters.projectId) where.projectId = filters.projectId;
     if (filters.status) where.status = filters.status;
 
     return this.prisma.deployment.findMany({
       where,
-      include: { project: true, serverEnvironment: { include: { server: true } }, repositoryBranch: true, startedBy: true },
+      include: {
+        project: true,
+        serverEnvironment: { include: { server: true } },
+        repositoryBranch: true,
+        startedBy: true,
+      },
       orderBy: { startedAt: 'desc' },
     });
   }
@@ -158,11 +206,19 @@ export class InfrastructureRepository {
   async findDeploymentById(id: string) {
     return this.prisma.deployment.findUnique({
       where: { id },
-      include: { project: true, serverEnvironment: { include: { server: true } }, repositoryBranch: true, startedBy: true, historyLogs: true },
+      include: {
+        project: true,
+        serverEnvironment: { include: { server: true } },
+        repositoryBranch: true,
+        startedBy: true,
+        historyLogs: true,
+      },
     });
   }
 
-  async createDeploymentHistory(data: Prisma.DeploymentHistoryUncheckedCreateInput) {
+  async createDeploymentHistory(
+    data: Prisma.DeploymentHistoryUncheckedCreateInput,
+  ) {
     return this.prisma.deploymentHistory.create({ data });
   }
 
@@ -175,7 +231,10 @@ export class InfrastructureRepository {
     return this.prisma.domain.update({ where: { id }, data });
   }
 
-  async findDomains(filters: { status?: InfrastructureStatus; clientId?: string }) {
+  async findDomains(filters: {
+    status?: InfrastructureStatus;
+    clientId?: string;
+  }) {
     const where: Prisma.DomainWhereInput = {};
     if (filters.status) where.status = filters.status;
     if (filters.clientId) where.clientId = filters.clientId;
@@ -189,7 +248,13 @@ export class InfrastructureRepository {
   async findDomainById(id: string) {
     return this.prisma.domain.findUnique({
       where: { id },
-      include: { subDomains: true, dnsRecords: true, sslCertificates: true, monitoringChecks: true, credentials: true },
+      include: {
+        subDomains: true,
+        dnsRecords: true,
+        sslCertificates: true,
+        monitoringChecks: true,
+        credentials: true,
+      },
     });
   }
 
@@ -220,7 +285,10 @@ export class InfrastructureRepository {
     return this.prisma.sSLCertificate.create({ data });
   }
 
-  async updateSSLCertificate(id: string, data: Prisma.SSLCertificateUncheckedUpdateInput) {
+  async updateSSLCertificate(
+    id: string,
+    data: Prisma.SSLCertificateUncheckedUpdateInput,
+  ) {
     return this.prisma.sSLCertificate.update({ where: { id }, data });
   }
 
@@ -252,7 +320,8 @@ export class InfrastructureRepository {
   async findBackups(filters: { serverId?: string; hostingAccountId?: string }) {
     const where: Prisma.BackupWhereInput = {};
     if (filters.serverId) where.serverId = filters.serverId;
-    if (filters.hostingAccountId) where.hostingAccountId = filters.hostingAccountId;
+    if (filters.hostingAccountId)
+      where.hostingAccountId = filters.hostingAccountId;
 
     return this.prisma.backup.findMany({
       where,
@@ -266,15 +335,23 @@ export class InfrastructureRepository {
   }
 
   // Monitoring
-  async createMonitoringCheck(data: Prisma.MonitoringCheckUncheckedCreateInput) {
+  async createMonitoringCheck(
+    data: Prisma.MonitoringCheckUncheckedCreateInput,
+  ) {
     return this.prisma.monitoringCheck.create({ data });
   }
 
-  async updateMonitoringCheck(id: string, data: Prisma.MonitoringCheckUncheckedUpdateInput) {
+  async updateMonitoringCheck(
+    id: string,
+    data: Prisma.MonitoringCheckUncheckedUpdateInput,
+  ) {
     return this.prisma.monitoringCheck.update({ where: { id }, data });
   }
 
-  async findMonitoringChecks(filters: { serverId?: string; domainId?: string }) {
+  async findMonitoringChecks(filters: {
+    serverId?: string;
+    domainId?: string;
+  }) {
     const where: Prisma.MonitoringCheckWhereInput = {};
     if (filters.serverId) where.serverId = filters.serverId;
     if (filters.domainId) where.domainId = filters.domainId;
@@ -311,28 +388,43 @@ export class InfrastructureRepository {
     return this.prisma.maintenanceWindow.create({ data });
   }
 
-  async updateMaintenanceWindow(id: string, data: Prisma.MaintenanceWindowUpdateInput) {
+  async updateMaintenanceWindow(
+    id: string,
+    data: Prisma.MaintenanceWindowUpdateInput,
+  ) {
     return this.prisma.maintenanceWindow.update({ where: { id }, data });
   }
 
   async findMaintenanceWindows() {
-    return this.prisma.maintenanceWindow.findMany({ orderBy: { scheduledStart: 'asc' } });
+    return this.prisma.maintenanceWindow.findMany({
+      orderBy: { scheduledStart: 'asc' },
+    });
   }
 
   // Credentials
-  async createCredential(data: Prisma.InfrastructureCredentialUncheckedCreateInput) {
+  async createCredential(
+    data: Prisma.InfrastructureCredentialUncheckedCreateInput,
+  ) {
     return this.prisma.infrastructureCredential.create({ data });
   }
 
-  async updateCredential(id: string, data: Prisma.InfrastructureCredentialUncheckedUpdateInput) {
+  async updateCredential(
+    id: string,
+    data: Prisma.InfrastructureCredentialUncheckedUpdateInput,
+  ) {
     return this.prisma.infrastructureCredential.update({ where: { id }, data });
   }
 
-  async findCredentials(filters: { serverId?: string; domainId?: string; hostingAccountId?: string }) {
+  async findCredentials(filters: {
+    serverId?: string;
+    domainId?: string;
+    hostingAccountId?: string;
+  }) {
     const where: Prisma.InfrastructureCredentialWhereInput = {};
     if (filters.serverId) where.serverId = filters.serverId;
     if (filters.domainId) where.domainId = filters.domainId;
-    if (filters.hostingAccountId) where.hostingAccountId = filters.hostingAccountId;
+    if (filters.hostingAccountId)
+      where.hostingAccountId = filters.hostingAccountId;
 
     return this.prisma.infrastructureCredential.findMany({ where });
   }
@@ -342,7 +434,12 @@ export class InfrastructureRepository {
   }
 
   // Timeline
-  async createTimelineEvent(resourceId: string, resourceType: string, event: string, description: string) {
+  async createTimelineEvent(
+    resourceId: string,
+    resourceType: string,
+    event: string,
+    description: string,
+  ) {
     return this.prisma.infrastructureTimeline.create({
       data: { resourceId, resourceType, event, description },
     });
@@ -353,5 +450,17 @@ export class InfrastructureRepository {
       where: { resourceId },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async deleteServer(id: string) {
+    return this.prisma.server.delete({ where: { id } });
+  }
+
+  async deleteDomain(id: string) {
+    return this.prisma.domain.delete({ where: { id } });
+  }
+
+  async deleteCredential(id: string) {
+    return this.prisma.infrastructureCredential.delete({ where: { id } });
   }
 }

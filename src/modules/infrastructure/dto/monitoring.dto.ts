@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsDateString, IsNumber, Min, IsEnum, IsUUID } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsDateString,
+  IsNumber,
+  Min,
+  IsEnum,
+  IsUUID,
+} from 'class-validator';
 import { MonitoringStatus } from '@prisma/client';
 
 export class CreateSSLCertificateDto {
@@ -13,7 +23,9 @@ export class CreateSSLCertificateDto {
   @IsUUID()
   subDomainId?: string;
 
-  @ApiProperty({ description: 'LETS_ENCRYPT, CLOUDFLARE, SECTIGO, DIGICERT, CUSTOM' })
+  @ApiProperty({
+    description: 'LETS_ENCRYPT, CLOUDFLARE, SECTIGO, DIGICERT, CUSTOM',
+  })
   @IsNotEmpty()
   @IsString()
   issuer: string;

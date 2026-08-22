@@ -1,5 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CrmDashboardService } from './crm-dashboard.service';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -15,7 +20,9 @@ export class CrmDashboardController {
 
   @Get()
   @Permissions('leads.read')
-  @ApiOperation({ summary: 'Get CRM analytics metrics for dashboard reporting' })
+  @ApiOperation({
+    summary: 'Get CRM analytics metrics for dashboard reporting',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getStats() {
     const data = await this.dashboardService.getDashboardStats();

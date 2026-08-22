@@ -1,8 +1,27 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectMilestonesService } from './project-milestones.service';
-import { CreateProjectMilestoneDto, UpdateProjectMilestoneDto } from './dto/project-milestones.dto';
+import {
+  CreateProjectMilestoneDto,
+  UpdateProjectMilestoneDto,
+} from './dto/project-milestones.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -28,7 +47,9 @@ export class ProjectMilestonesController {
 
   @Post()
   @Permissions('project-milestones.create')
-  @ApiOperation({ summary: 'Create project milestone with scheduling dependencies' })
+  @ApiOperation({
+    summary: 'Create project milestone with scheduling dependencies',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async create(@Body() dto: CreateProjectMilestoneDto, @Req() req: Request) {
     const context = this.getContext(req);
@@ -58,7 +79,11 @@ export class ProjectMilestonesController {
   @Permissions('project-milestones.update')
   @ApiOperation({ summary: 'Update milestone details and dependency links' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateProjectMilestoneDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProjectMilestoneDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.milestonesService.update(id, dto, context);
     return { message: 'Milestone updated successfully', data };

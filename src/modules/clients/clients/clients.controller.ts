@@ -1,9 +1,30 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ClientsService } from './clients.service';
 import { ClientTimelinesService } from '../client-timelines/client-timelines.service';
-import { CreateClientDto, UpdateClientDto, ClientFilterDto } from './dto/clients.dto';
+import {
+  CreateClientDto,
+  UpdateClientDto,
+  ClientFilterDto,
+} from './dto/clients.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -18,7 +39,7 @@ import { ClientStatus } from '@prisma/client';
 export class ClientsController {
   constructor(
     private readonly clientsService: ClientsService,
-    private readonly timelineService: ClientTimelinesService
+    private readonly timelineService: ClientTimelinesService,
   ) {}
 
   private getContext(req: Request): RequestContext {
@@ -43,14 +64,16 @@ export class ClientsController {
 
   @Get()
   @Permissions('clients.read')
-  @ApiOperation({ summary: 'Get all clients with advanced search, filter, and pagination' })
+  @ApiOperation({
+    summary: 'Get all clients with advanced search, filter, and pagination',
+  })
   @ApiResponse({ type: SuccessResponseDto })
   async getMany(@Query() query: ClientFilterDto) {
     const { data, totalCount } = await this.clientsService.getMany(query);
     const page = query.page || 1;
     const limit = query.limit || 10;
     const totalPages = Math.ceil(totalCount / limit);
-    
+
     return {
       success: true,
       statusCode: HttpStatus.OK,
@@ -80,7 +103,11 @@ export class ClientsController {
   @Permissions('clients.update')
   @ApiOperation({ summary: 'Update client details and preferences' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateClientDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateClientDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.clientsService.update(id, dto, context);
     return { message: 'Client updated successfully', data };
@@ -110,7 +137,11 @@ export class ClientsController {
   @Permissions('clients.update')
   @ApiOperation({ summary: 'Update client status' })
   @ApiResponse({ type: SuccessResponseDto })
-  async setStatus(@Param('id') id: string, @Body('status') status: ClientStatus, @Req() req: Request) {
+  async setStatus(
+    @Param('id') id: string,
+    @Body('status') status: ClientStatus,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.clientsService.setStatus(id, status, context);
     return { message: `Client status updated to ${status} successfully`, data };

@@ -53,7 +53,11 @@ describe('DeploymentsService', () => {
       } as any);
 
       await expect(
-        service.rollbackDeployment('dep-uuid', { rollbackReason: 'Testing' }, mockContext)
+        service.rollbackDeployment(
+          'dep-uuid',
+          { rollbackReason: 'Testing' },
+          mockContext,
+        ),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -67,9 +71,15 @@ describe('DeploymentsService', () => {
         commitHash: 'commit-hash',
       } as any);
 
-      repository.createDeployment.mockResolvedValue({ id: 'rollback-uuid' } as any);
+      repository.createDeployment.mockResolvedValue({
+        id: 'rollback-uuid',
+      } as any);
 
-      const result = await service.rollbackDeployment('dep-uuid', { rollbackReason: 'Testing' }, mockContext);
+      const result = await service.rollbackDeployment(
+        'dep-uuid',
+        { rollbackReason: 'Testing' },
+        mockContext,
+      );
       expect(result.id).toEqual('rollback-uuid');
       expect(repository.createDeployment).toHaveBeenCalled();
     });

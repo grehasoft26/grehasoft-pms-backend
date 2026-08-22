@@ -80,7 +80,7 @@ describe('ProjectMilestonesService', () => {
           ownerId: 'owner-uuid',
           estimatedHours: 40,
         },
-        mockContext
+        mockContext,
       );
 
       expect(result).toEqual(mockMilestone);
@@ -89,15 +89,19 @@ describe('ProjectMilestonesService', () => {
 
     it('should throw BadRequestException if circular dependency detected', async () => {
       repository.create.mockResolvedValue(mockMilestone);
-      
+
       // Mock cycle: current milestone (milestone-uuid) -> depends on 'depends-uuid'
       // and 'depends-uuid' depends on current milestone (milestone-uuid)
-      repository.prisma.projectDependency.findMany.mockImplementation((args: any) => {
-        if (args.where.milestoneId === 'depends-uuid') {
-          return Promise.resolve([{ dependsOnMilestoneId: 'milestone-uuid' }]);
-        }
-        return Promise.resolve([]);
-      });
+      repository.prisma.projectDependency.findMany.mockImplementation(
+        (args: any) => {
+          if (args.where.milestoneId === 'depends-uuid') {
+            return Promise.resolve([
+              { dependsOnMilestoneId: 'milestone-uuid' },
+            ]);
+          }
+          return Promise.resolve([]);
+        },
+      );
 
       await expect(
         service.create(
@@ -109,11 +113,14 @@ describe('ProjectMilestonesService', () => {
             estimatedHours: 40,
             dependsOnMilestones: ['depends-uuid'],
           },
-          mockContext
-        )
+          mockContext,
+        ),
       ).rejects.toThrow(BadRequestException);
 
-      expect(repository.delete).toHaveBeenCalledWith(mockMilestone.id, mockContext.userId);
+      expect(repository.delete).toHaveBeenCalledWith(
+        mockMilestone.id,
+        mockContext.userId,
+      );
     });
   });
 });

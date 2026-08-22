@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { TaskTimersRepository } from './task-timers.repository';
 import { StartTimerDto, HeartbeatTimerDto } from './dto/task-timers.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
@@ -12,8 +16,12 @@ export class TaskTimersService {
   constructor(
     private readonly repository: TaskTimersRepository,
     private readonly entriesRepository: TimeEntriesRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
+
+  async getActive(userId: string) {
+    return this.repository.findActiveTimer(userId);
+  }
 
   async startTimer(dto: StartTimerDto, context: RequestContext) {
     const active = await this.repository.findActiveTimer(context.userId);
@@ -28,7 +36,9 @@ export class TaskTimersService {
       description: dto.description || '',
     });
 
-    this.logger.audit(context.userId, 'Start Task Timer', 'taskTimer', timer, { after: timer });
+    this.logger.audit(context.userId, 'Start Task Timer', 'taskTimer', timer, {
+      after: timer,
+    });
     return timer;
   }
 
@@ -42,7 +52,9 @@ export class TaskTimersService {
     }
 
     const now = new Date();
-    const elapsed = Math.round((now.getTime() - timer.startTime.getTime()) / 1000);
+    const elapsed = Math.round(
+      (now.getTime() - timer.startTime.getTime()) / 1000,
+    );
     const accumulatedTime = timer.accumulatedTime + elapsed;
 
     const updated = await this.repository.update(id, {
@@ -82,7 +94,9 @@ export class TaskTimersService {
     const now = new Date();
     let duration = timer.accumulatedTime;
     if (timer.isRunning) {
-      const elapsed = Math.round((now.getTime() - timer.startTime.getTime()) / 1000);
+      const elapsed = Math.round(
+        (now.getTime() - timer.startTime.getTime()) / 1000,
+      );
       duration += elapsed;
     }
 
@@ -102,11 +116,21 @@ export class TaskTimersService {
     // Delete timer
     await this.repository.delete(id);
 
-    this.logger.audit(context.userId, 'Stop Task Timer & Create TimeEntry', 'timeEntry', entry, { after: entry });
+    this.logger.audit(
+      context.userId,
+      'Stop Task Timer & Create TimeEntry',
+      'timeEntry',
+      entry,
+      { after: entry },
+    );
     return entry;
   }
 
-  async sendHeartbeat(id: string, dto: HeartbeatTimerDto, context: RequestContext) {
+  async sendHeartbeat(
+    id: string,
+    dto: HeartbeatTimerDto,
+    context: RequestContext,
+  ) {
     const timer = await this.repository.findById(id);
     if (!timer || timer.userId !== context.userId) {
       throw new NotFoundException('Timer not found');
@@ -121,13 +145,20 @@ export class TaskTimersService {
   // Heartbeat Recovery handler (runs every 5 mins)
   @Cron('*/5 * * * *')
   async recoverAbandonedTimers() {
-    this.logger.log('Checking for abandoned task timers to recover...', 'TaskTimerRecovery');
+    this.logger.log(
+      'Checking for abandoned task timers to recover...',
+      'TaskTimerRecovery',
+    );
     const abandoned = await this.repository.findRecoverableTimers();
 
     for (const timer of abandoned) {
       try {
-        const totalDuration = timer.accumulatedTime + Math.round((timer.lastHeartbeat.getTime() - timer.startTime.getTime()) / 1000);
-        
+        const totalDuration =
+          timer.accumulatedTime +
+          Math.round(
+            (timer.lastHeartbeat.getTime() - timer.startTime.getTime()) / 1000,
+          );
+
         // Save TimeEntry using heartbeat values
         await this.entriesRepository.create({
           userId: timer.userId,
@@ -143,9 +174,16 @@ export class TaskTimersService {
 
         // Delete timer
         await this.repository.delete(timer.id);
-        this.logger.log(`Recovered timer ${timer.id} for user ${timer.userId}. Logs saved.`, 'TaskTimerRecovery');
+        this.logger.log(
+          `Recovered timer ${timer.id} for user ${timer.userId}. Logs saved.`,
+          'TaskTimerRecovery',
+        );
       } catch (e) {
-        this.logger.error(`Failed to recover timer ${timer.id}: ${e.message}`, 'TaskTimerRecovery');
+        const error = e as Error;
+        this.logger.error(
+          `Failed to recover timer ${timer.id}: ${error.message}`,
+          'TaskTimerRecovery',
+        );
       }
     }
   }

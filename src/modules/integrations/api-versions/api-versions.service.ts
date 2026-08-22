@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { IntegrationsRepository } from '../repositories/integrations.repository';
-import { resolveApiVersion, getVersionStatus } from '../utils/api-version.helper';
+import {
+  resolveApiVersion,
+  getVersionStatus,
+} from '../utils/api-version.helper';
 
 @Injectable()
 export class ApiVersionsService {
@@ -14,7 +17,11 @@ export class ApiVersionsService {
     return record.status;
   }
 
-  async resolveAndValidate(tenantId: string, acceptHeader?: string, urlPath?: string): Promise<{ version: string; status: string }> {
+  async resolveAndValidate(
+    tenantId: string,
+    acceptHeader?: string,
+    urlPath?: string,
+  ): Promise<{ version: string; status: string }> {
     const version = resolveApiVersion(acceptHeader, urlPath);
     const record = await this.repository.prisma.apiVersion.findUnique({
       where: { versionString: version },

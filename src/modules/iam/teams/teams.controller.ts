@@ -1,10 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TeamsService } from './teams.service';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
-import { CreateTeamDto, UpdateTeamDto, TeamAssignmentsDto } from './dto/teams.dto';
+import {
+  CreateTeamDto,
+  UpdateTeamDto,
+  TeamAssignmentsDto,
+} from './dto/teams.dto';
 import { Status } from '@prisma/client';
 
 @ApiTags('Teams')
@@ -49,7 +62,11 @@ export class TeamsController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update team details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateTeamDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTeamDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.teamsService.update(id, dto, context);
     return { message: 'Team updated successfully', data };
@@ -87,16 +104,28 @@ export class TeamsController {
   @ApiResponse({ type: SuccessResponseDto })
   async deactivate(@Param('id') id: string, @Req() req: Request) {
     const context = this.getContext(req);
-    const data = await this.teamsService.setStatus(id, Status.INACTIVE, context);
+    const data = await this.teamsService.setStatus(
+      id,
+      Status.INACTIVE,
+      context,
+    );
     return { message: 'Team deactivated successfully', data };
   }
 
   @Post(':id/members')
   @ApiOperation({ summary: 'Assign a list of members to a team with roles' })
   @ApiResponse({ type: SuccessResponseDto })
-  async assignMembers(@Param('id') id: string, @Body() dto: TeamAssignmentsDto, @Req() req: Request) {
+  async assignMembers(
+    @Param('id') id: string,
+    @Body() dto: TeamAssignmentsDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
-    const data = await this.teamsService.assignMembers(id, dto.members, context);
+    const data = await this.teamsService.assignMembers(
+      id,
+      dto.members,
+      context,
+    );
     return { message: 'Members assigned to team successfully', data };
   }
 }

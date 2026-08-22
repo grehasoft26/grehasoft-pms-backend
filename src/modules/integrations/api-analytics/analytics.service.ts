@@ -5,9 +5,15 @@ import { IntegrationsRepository } from '../repositories/integrations.repository'
 export class AnalyticsService {
   constructor(private readonly repository: IntegrationsRepository) {}
 
-  async logRequest(tenantId: string, endpointPath: string, method: string, latencyMs: number, statusCode: number) {
+  async logRequest(
+    tenantId: string,
+    endpointPath: string,
+    method: string,
+    latencyMs: number,
+    statusCode: number,
+  ) {
     const isError = statusCode >= 400;
-    
+
     // Log in analytics
     await this.repository.logApiAnalytics(tenantId, {
       endpointPath,
@@ -34,11 +40,18 @@ export class AnalyticsService {
 
     const totalRequests = records.reduce((acc, r) => acc + r.totalRequests, 0);
     const errorRequests = records.reduce((acc, r) => acc + r.errorRequests, 0);
-    const avgLatencyMs = records.length > 0 
-      ? Math.round(records.reduce((acc, r) => acc + r.avgLatencyMs, 0) / records.length) 
-      : 0;
+    const avgLatencyMs =
+      records.length > 0
+        ? Math.round(
+            records.reduce((acc, r) => acc + r.avgLatencyMs, 0) /
+              records.length,
+          )
+        : 0;
 
-    const errorRate = totalRequests > 0 ? Number(((errorRequests / totalRequests) * 100).toFixed(2)) : 0.0;
+    const errorRate =
+      totalRequests > 0
+        ? Number(((errorRequests / totalRequests) * 100).toFixed(2))
+        : 0.0;
 
     // Top endpoints
     const topEndpoints = records

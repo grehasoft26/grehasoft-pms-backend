@@ -1,7 +1,8 @@
 import * as crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = process.env.INFRA_ENCRYPTION_KEY || 'DevOpsSecureEncryptionKey12345678'; // Fallback 32 byte key
+const ENCRYPTION_KEY =
+  process.env.INFRA_ENCRYPTION_KEY || 'DevOpsSecureEncryptionKey12345678'; // Fallback 32 byte key
 const KEY = crypto.scryptSync(ENCRYPTION_KEY, 'infra-salt', 32);
 
 export function encryptSecret(text: string): string {

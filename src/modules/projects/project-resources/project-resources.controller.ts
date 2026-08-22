@@ -1,8 +1,27 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProjectResourcesService } from './project-resources.service';
-import { CreateProjectResourceDto, UpdateProjectResourceDto } from './dto/project-resources.dto';
+import {
+  CreateProjectResourceDto,
+  UpdateProjectResourceDto,
+} from './dto/project-resources.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
@@ -58,7 +77,11 @@ export class ProjectResourcesController {
   @Permissions('project-resources.manage')
   @ApiOperation({ summary: 'Update resource allocation details' })
   @ApiResponse({ type: SuccessResponseDto })
-  async update(@Param('id') id: string, @Body() dto: UpdateProjectResourceDto, @Req() req: Request) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateProjectResourceDto,
+    @Req() req: Request,
+  ) {
     const context = this.getContext(req);
     const data = await this.resourcesService.update(id, dto, context);
     return { message: 'Allocation updated successfully', data };

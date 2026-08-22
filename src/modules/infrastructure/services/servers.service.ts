@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InfrastructureRepository } from '../repositories/infrastructure.repository';
-import { CreateServerDto, CreateServerEnvironmentDto } from '../dto/servers.dto';
+import {
+  CreateServerDto,
+  CreateServerEnvironmentDto,
+} from '../dto/servers.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import { encryptSecret, decryptSecret } from '../utils/crypto.helper';
@@ -9,7 +12,7 @@ import { encryptSecret, decryptSecret } from '../utils/crypto.helper';
 export class ServersService {
   constructor(
     private readonly repository: InfrastructureRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   async createServer(dto: CreateServerDto, context: RequestContext) {
@@ -27,16 +30,63 @@ export class ServersService {
       cpuCores: dto.cpuCores || null,
       clientId: dto.clientId || null,
       projectId: dto.projectId || null,
+      owner: dto.owner || '',
+      serverIp: dto.serverIp || '',
     });
 
     await this.repository.createTimelineEvent(
       server.id,
       'Server',
       'Server Provisioned',
-      `Server ${dto.name} (${dto.ipAddress}) provisioned successfully`
+      `Server ${dto.name} (${dto.ipAddress}) provisioned successfully`,
     );
 
-    this.logger.audit(context.userId, 'Create Server', 'server', server, { after: server });
+    this.logger.audit(context.userId, 'Create Server', 'server', server, {
+      after: server,
+    });
+    return server;
+  }
+
+  async updateServer(id: string, dto: any, context: RequestContext) {
+    const before = await this.getServer(id);
+    const server = await this.repository.updateServer(id, {
+      name: dto.name,
+      ipAddress: dto.ipAddress,
+      sshPort: dto.sshPort,
+      os: dto.os,
+      location: dto.location,
+      providerId: dto.providerId,
+      type: dto.type,
+      status: dto.status,
+      diskGb: dto.diskGb,
+      ramGb: dto.ramGb,
+      cpuCores: dto.cpuCores,
+      clientId: dto.clientId,
+      projectId: dto.projectId,
+      owner: dto.owner,
+      serverIp: dto.serverIp,
+    });
+
+    await this.repository.createTimelineEvent(
+      server.id,
+      'Server',
+      'Server Updated',
+      `Server ${server.name} config updated`,
+    );
+
+    this.logger.audit(context.userId, 'Update Server', 'server', server, {
+      before,
+      after: server,
+    });
+    return server;
+  }
+
+  async deleteServer(id: string, context: RequestContext) {
+    const before = await this.getServer(id);
+    const server = await this.repository.deleteServer(id);
+    this.logger.audit(context.userId, 'Delete Server', 'server', server, {
+      before,
+    });
     return server;
   }
 
@@ -54,7 +104,9 @@ export class ServersService {
   async addCredential(serverId: string, dto: any, context: RequestContext) {
     const server = await this.getServer(serverId);
     const passwordEncrypted = dto.password ? encryptSecret(dto.password) : null;
-    const sshPrivateKey = dto.sshPrivateKey ? encryptSecret(dto.sshPrivateKey) : null;
+    const sshPrivateKey = dto.sshPrivateKey
+      ? encryptSecret(dto.sshPrivateKey)
+      : null;
     const apiToken = dto.apiToken ? encryptSecret(dto.apiToken) : null;
 
     const credential = await this.repository.createCredential({
@@ -68,8 +120,18 @@ export class ServersService {
       expiryDate: dto.expiryDate ? new Date(dto.expiryDate) : null,
     });
 
-    this.logger.audit(context.userId, 'Add Server Credential', 'infrastructureCredential', credential, { after: credential });
-    return { id: credential.id, credentialType: credential.credentialType, message: 'Secrets encrypted & saved successfully' };
+    this.logger.audit(
+      context.userId,
+      'Add Server Credential',
+      'infrastructureCredential',
+      credential,
+      { after: credential },
+    );
+    return {
+      id: credential.id,
+      credentialType: credential.credentialType,
+      message: 'Secrets encrypted & saved successfully',
+    };
   }
 
   async getCredentials(serverId: string) {
@@ -86,7 +148,10 @@ export class ServersService {
   }
 
   // Server Environments
-  async createServerEnvironment(dto: CreateServerEnvironmentDto, context: RequestContext) {
+  async createServerEnvironment(
+    dto: CreateServerEnvironmentDto,
+    context: RequestContext,
+  ) {
     const env = await this.repository.createServerEnvironment({
       serverId: dto.serverId,
       projectId: dto.projectId,
@@ -95,7 +160,13 @@ export class ServersService {
       domainName: dto.domainName || '',
     });
 
-    this.logger.audit(context.userId, 'Create Server Environment', 'serverEnvironment', env, { after: env });
+    this.logger.audit(
+      context.userId,
+      'Create Server Environment',
+      'serverEnvironment',
+      env,
+      { after: env },
+    );
     return env;
   }
 

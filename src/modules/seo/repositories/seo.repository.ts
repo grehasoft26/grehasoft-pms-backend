@@ -90,7 +90,12 @@ export class SeoRepository {
   }
 
   // Page SEO
-  async upsertPageSeo(tenantId: string, seoProjectId: string, urlPath: string, data: any) {
+  async upsertPageSeo(
+    tenantId: string,
+    seoProjectId: string,
+    urlPath: string,
+    data: any,
+  ) {
     const existing = await this.prisma.pageSEO.findFirst({
       where: { tenantId, seoProjectId, urlPath },
     });
@@ -171,7 +176,12 @@ export class SeoRepository {
   }
 
   // Sitemap & Robots
-  async upsertSitemap(tenantId: string, seoProjectId: string, sitemapUrl: string, xmlContent: string) {
+  async upsertSitemap(
+    tenantId: string,
+    seoProjectId: string,
+    sitemapUrl: string,
+    xmlContent: string,
+  ) {
     const existing = await this.prisma.sitemap.findFirst({
       where: { tenantId, seoProjectId, sitemapUrl },
     });
@@ -214,7 +224,13 @@ export class SeoRepository {
   }
 
   // Schema Markup
-  async upsertSchemaMarkup(tenantId: string, seoProjectId: string, urlPath: string, type: SchemaType, jsonLdContent: string) {
+  async upsertSchemaMarkup(
+    tenantId: string,
+    seoProjectId: string,
+    urlPath: string,
+    type: SchemaType,
+    jsonLdContent: string,
+  ) {
     const existing = await this.prisma.schemaMarkup.findFirst({
       where: { tenantId, seoProjectId, urlPath, type },
     });
@@ -302,7 +318,11 @@ export class SeoRepository {
     });
   }
 
-  async upsertAnalyticsProperty(tenantId: string, seoProjectId: string, data: any) {
+  async upsertAnalyticsProperty(
+    tenantId: string,
+    seoProjectId: string,
+    data: any,
+  ) {
     const existing = await this.prisma.googleAnalyticsProperty.findFirst({
       where: { tenantId, seoProjectId, measurementId: data.measurementId },
     });

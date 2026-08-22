@@ -1,6 +1,19 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { SchemaService } from '../schema/schema.service';
 import { CreateSchemaDto } from '../dto/schema.dto';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
@@ -16,7 +29,10 @@ export class SchemaController {
   constructor(private readonly service: SchemaService) {}
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post('generate')
@@ -26,10 +42,16 @@ export class SchemaController {
   async generate(
     @Param('seoProjectId') seoProjectId: string,
     @Body() body: any,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const tenantId = this.getTenantId(req);
-    const data = await this.service.generateAndSaveSchema(tenantId, seoProjectId, body.urlPath, body.type, body.data);
+    const data = await this.service.generateAndSaveSchema(
+      tenantId,
+      seoProjectId,
+      body.urlPath,
+      body.type,
+      body.data,
+    );
     return { message: 'JSON-LD Schema markup generated successfully', data };
   }
 

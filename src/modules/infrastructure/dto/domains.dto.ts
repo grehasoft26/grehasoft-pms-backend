@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsDateString, IsNumber, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsDateString,
+  IsNumber,
+  Min,
+} from 'class-validator';
 
 export class RegisterDomainDto {
   @ApiProperty()
@@ -74,6 +82,11 @@ export class RegisterDomainDto {
   @IsOptional()
   @IsString()
   projectId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  serverId?: string;
 }
 
 export class CreateDnsRecordDto {

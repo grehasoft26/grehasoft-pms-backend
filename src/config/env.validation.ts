@@ -1,5 +1,11 @@
 import { plainToInstance } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  validateSync,
+} from 'class-validator';
 
 export enum Environment {
   Development = 'development',
@@ -59,29 +65,35 @@ export function validate(config: Record<string, any>) {
     {
       ...config,
       PORT: config.PORT ? parseInt(config.PORT, 10) : undefined,
-      REDIS_PORT: config.REDIS_PORT ? parseInt(config.REDIS_PORT, 10) : undefined,
+      REDIS_PORT: config.REDIS_PORT
+        ? parseInt(config.REDIS_PORT, 10)
+        : undefined,
       SMTP_PORT: config.SMTP_PORT ? parseInt(config.SMTP_PORT, 10) : undefined,
     },
-    { enableImplicitConversion: true }
+    { enableImplicitConversion: true },
   );
 
-  const errors = validateSync(validatedConfig, { skipMissingProperties: false });
+  const errors = validateSync(validatedConfig, {
+    skipMissingProperties: false,
+  });
 
   if (errors.length > 0) {
     const errorDetails = errors
       .map((err) => {
-        const constraints = err.constraints ? Object.values(err.constraints).join(', ') : 'unknown validation issue';
+        const constraints = err.constraints
+          ? Object.values(err.constraints).join(', ')
+          : 'unknown validation issue';
         return `  - ${err.property}: ${constraints}`;
       })
       .join('\n');
 
     throw new Error(
       `\n==================================================\n` +
-      `❌ CONFIGURATION ERROR: Invalid environment variables\n` +
-      `==================================================\n` +
-      `${errorDetails}\n` +
-      `==================================================\n` +
-      `⚠️  Application failed to start. Fix .env or system environment variables.\n`
+        `❌ CONFIGURATION ERROR: Invalid environment variables\n` +
+        `==================================================\n` +
+        `${errorDetails}\n` +
+        `==================================================\n` +
+        `⚠️  Application failed to start. Fix .env or system environment variables.\n`,
     );
   }
 

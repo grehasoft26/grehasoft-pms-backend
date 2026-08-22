@@ -9,7 +9,7 @@ import { EstimateStatus } from '@prisma/client';
 export class EstimatesService {
   constructor(
     private readonly repository: FinanceRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
   private async getNextEstimateNumber(): Promise<string> {
@@ -30,7 +30,7 @@ export class EstimatesService {
 
     let subtotal = 0;
     const items = dto.items.map((it) => {
-      const total = (it.quantity * it.rate) - (it.discount || 0) + (it.tax || 0);
+      const total = it.quantity * it.rate - (it.discount || 0) + (it.tax || 0);
       subtotal += total;
       return {
         description: it.description,
@@ -60,16 +60,28 @@ export class EstimatesService {
       },
     });
 
-    this.logger.audit(context.userId, 'Create Estimate', 'estimate', estimate, { after: estimate });
+    this.logger.audit(context.userId, 'Create Estimate', 'estimate', estimate, {
+      after: estimate,
+    });
     return estimate;
   }
 
-  async updateStatus(id: string, status: EstimateStatus, context: RequestContext) {
+  async updateStatus(
+    id: string,
+    status: EstimateStatus,
+    context: RequestContext,
+  ) {
     const before = await this.repository.findEstimateById(id);
     if (!before) throw new NotFoundException('Estimate not found');
 
     const updated = await this.repository.updateEstimateStatus(id, status);
-    this.logger.audit(context.userId, 'Update Estimate Status', 'estimate', updated, { before, after: updated });
+    this.logger.audit(
+      context.userId,
+      'Update Estimate Status',
+      'estimate',
+      updated,
+      { before, after: updated },
+    );
     return updated;
   }
 

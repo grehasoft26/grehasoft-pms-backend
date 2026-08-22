@@ -1,6 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
-import { IssueType, IssuePriority, IssueSeverity, IssueStatus } from '@prisma/client';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
+import {
+  IssueType,
+  IssuePriority,
+  IssueSeverity,
+  IssueStatus,
+} from '@prisma/client';
 
 export class CreateProjectIssueDto {
   @ApiProperty({ description: 'Project ID' })
@@ -38,7 +49,9 @@ export class CreateProjectIssueDto {
   @IsEnum(IssueStatus)
   status?: IssueStatus;
 
-  @ApiPropertyOptional({ description: 'User ID assigned to resolve this issue' })
+  @ApiPropertyOptional({
+    description: 'User ID assigned to resolve this issue',
+  })
   @IsOptional()
   @IsUUID()
   assignedToId?: string;

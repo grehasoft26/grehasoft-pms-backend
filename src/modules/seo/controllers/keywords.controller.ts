@@ -1,22 +1,45 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { KeywordsService } from '../keywords/keywords.service';
 import { CreateKeywordDto, CreateKeywordGroupDto } from '../dto/keywords.dto';
 import { SuccessResponseDto } from '../../../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { PermissionGuard } from '../../auth/guards/permissions.guard';
 import { Permissions } from '../../auth/decorators/permissions.decorator';
+import { FeatureGuard } from '../../auth/guards/feature.guard';
+import { FeatureRequired } from '../../auth/decorators/feature.decorator';
 
 @ApiTags('SEO Keywords')
 @ApiBearerAuth('JWT')
-@UseGuards(JwtAuthGuard, PermissionGuard)
+@UseGuards(JwtAuthGuard, PermissionGuard, FeatureGuard)
+@FeatureRequired('SEO_KEYWORDS')
 @Controller('seo/projects/:seoProjectId/keywords')
 export class KeywordsController {
   constructor(private readonly service: KeywordsService) {}
 
   private getTenantId(req: Request): string {
-    return (req.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000000';
+    const user = (req as any).user;
+    if (user && user.effectiveCompanyId) {
+      return user.effectiveCompanyId;
+    }
+    return (
+      (req.headers['x-tenant-id'] as string) ||
+      '00000000-0000-0000-0000-000000000000'
+    );
   }
 
   @Post()
@@ -26,7 +49,7 @@ export class KeywordsController {
   async addKeyword(
     @Param('seoProjectId') seoProjectId: string,
     @Body() dto: CreateKeywordDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const tenantId = this.getTenantId(req);
     const data = await this.service.addKeyword(tenantId, seoProjectId, dto);
@@ -37,7 +60,10 @@ export class KeywordsController {
   @Permissions('seo.read')
   @ApiOperation({ summary: 'Get list of tracked keywords' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getKeywords(@Param('seoProjectId') seoProjectId: string, @Req() req: Request) {
+  async getKeywords(
+    @Param('seoProjectId') seoProjectId: string,
+    @Req() req: Request,
+  ) {
     const tenantId = this.getTenantId(req);
     const data = await this.service.getKeywords(tenantId, seoProjectId);
     return { message: 'Keywords retrieved successfully', data };
@@ -50,7 +76,7 @@ export class KeywordsController {
   async createGroup(
     @Param('seoProjectId') seoProjectId: string,
     @Body() dto: CreateKeywordGroupDto,
-    @Req() req: Request
+    @Req() req: Request,
   ) {
     const tenantId = this.getTenantId(req);
     const data = await this.service.createGroup(tenantId, seoProjectId, dto);
@@ -61,7 +87,10 @@ export class KeywordsController {
   @Permissions('seo.read')
   @ApiOperation({ summary: 'Get keyword cluster groups' })
   @ApiResponse({ type: SuccessResponseDto })
-  async getGroups(@Param('seoProjectId') seoProjectId: string, @Req() req: Request) {
+  async getGroups(
+    @Param('seoProjectId') seoProjectId: string,
+    @Req() req: Request,
+  ) {
     const tenantId = this.getTenantId(req);
     const data = await this.service.getGroups(tenantId, seoProjectId);
     return { message: 'Keyword groups list retrieved', data };
@@ -69,11 +98,19 @@ export class KeywordsController {
 
   @Post('cluster')
   @Permissions('keywords.manage')
-  @ApiOperation({ summary: 'Run automatic clustering algorithm on project keywords' })
+  @ApiOperation({
+    summary: 'Run automatic clustering algorithm on project keywords',
+  })
   @ApiResponse({ type: SuccessResponseDto })
-  async runClustering(@Param('seoProjectId') seoProjectId: string, @Req() req: Request) {
+  async runClustering(
+    @Param('seoProjectId') seoProjectId: string,
+    @Req() req: Request,
+  ) {
     const tenantId = this.getTenantId(req);
-    const data = await this.service.runKeywordClustering(tenantId, seoProjectId);
+    const data = await this.service.runKeywordClustering(
+      tenantId,
+      seoProjectId,
+    );
     return { message: 'Semantic clustering completed successfully', data };
   }
 }

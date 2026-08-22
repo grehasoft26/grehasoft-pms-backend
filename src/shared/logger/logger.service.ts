@@ -12,7 +12,7 @@ export class LoggerService implements NestLoggerService {
   constructor() {
     const logFormat = winston.format.combine(
       winston.format.timestamp(),
-      winston.format.json()
+      winston.format.json(),
     );
 
     const consoleFormat = winston.format.combine(
@@ -22,7 +22,7 @@ export class LoggerService implements NestLoggerService {
         const ctx = context ? ` [${context}]` : '';
         const trc = trace ? `\n${trace}` : '';
         return `${timestamp} ${level}:${ctx} ${message}${trc}`;
-      })
+      }),
     );
 
     // 1. Application Logger (Info, Warn, Error logs)
@@ -113,7 +113,13 @@ export class LoggerService implements NestLoggerService {
     action: string,
     target: string,
     metadata: Record<string, any> = {},
-    context?: { ip?: string; userAgent?: string; correlationId?: string; before?: any; after?: any }
+    context?: {
+      ip?: string;
+      userAgent?: string;
+      correlationId?: string;
+      before?: any;
+      after?: any;
+    },
   ) {
     this.auditLogger.info(action, {
       userId,
@@ -134,7 +140,11 @@ export class LoggerService implements NestLoggerService {
     });
   }
 
-  performance(metric: string, durationMs: number, details: Record<string, any> = {}) {
+  performance(
+    metric: string,
+    durationMs: number,
+    details: Record<string, any> = {},
+  ) {
     this.performanceLogger.info(metric, {
       durationMs,
       details,

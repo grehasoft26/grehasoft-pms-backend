@@ -7,7 +7,11 @@ export class TimeTrackingDashboardService {
 
   async getDashboardStats() {
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
 
     // 1. Working Users (active WorkSession with no end time)
     const workingSessions = await this.prisma.workSession.findMany({
@@ -33,8 +37,11 @@ export class TimeTrackingDashboardService {
     });
 
     // 4. Offline Users (Total user accounts - working users count)
-    const totalUsers = await this.prisma.user.count({ where: { deletedAt: null } });
-    const offlineCount = totalUsers - workingCount >= 0 ? totalUsers - workingCount : 0;
+    const totalUsers = await this.prisma.user.count({
+      where: { deletedAt: null },
+    });
+    const offlineCount =
+      totalUsers - workingCount >= 0 ? totalUsers - workingCount : 0;
 
     // 5. Daily, Weekly, Monthly Hours
     // Daily Hours

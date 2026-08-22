@@ -9,22 +9,31 @@ export class PagesService {
     tenantId: string,
     seoProjectId: string,
     urlPath: string,
-    data: any
+    data: any,
   ) {
-    const page = await this.repository.upsertPageSeo(tenantId, seoProjectId, urlPath, {
-      title: data.title || '',
-      metaDescription: data.metaDescription || '',
-      canonicalUrl: data.canonicalUrl || '',
-      robotsMeta: data.robotsMeta || 'index, follow',
-      openGraphJson: data.openGraphJson || '{}',
-      twitterCardJson: data.twitterCardJson || '{}',
-      headingStructureJson: data.headingStructureJson || '[]',
-      internalLinksCount: data.internalLinksCount || 0,
-      externalLinksCount: data.externalLinksCount || 0,
-      status: data.status || 'OPTIMIZED',
-    });
+    const page = await this.repository.upsertPageSeo(
+      tenantId,
+      seoProjectId,
+      urlPath,
+      {
+        title: data.title || '',
+        metaDescription: data.metaDescription || '',
+        canonicalUrl: data.canonicalUrl || '',
+        robotsMeta: data.robotsMeta || 'index, follow',
+        openGraphJson: data.openGraphJson || '{}',
+        twitterCardJson: data.twitterCardJson || '{}',
+        headingStructureJson: data.headingStructureJson || '[]',
+        internalLinksCount: data.internalLinksCount || 0,
+        externalLinksCount: data.externalLinksCount || 0,
+        status: data.status || 'OPTIMIZED',
+      },
+    );
 
-    await this.repository.logAudit(tenantId, 'Upsert Page SEO', `SEO metadata updated for path ${urlPath}.`);
+    await this.repository.logAudit(
+      tenantId,
+      'Upsert Page SEO',
+      `SEO metadata updated for path ${urlPath}.`,
+    );
     return page;
   }
 

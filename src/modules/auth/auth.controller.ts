@@ -1,6 +1,23 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RateLimiterService } from './services/rate-limiter.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -8,14 +25,20 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import { RequestContext } from '../../common/interfaces/request-context.interface';
 import { SuccessResponseDto } from '../../common/dto/api-response.dto';
-import { LoginDto, TokenRefreshDto, ForgotPasswordDto, ResetPasswordDto, ChangePasswordDto } from './dto/auth.dto';
+import {
+  LoginDto,
+  TokenRefreshDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  ChangePasswordDto,
+} from './dto/auth.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly rateLimiter: RateLimiterService
+    private readonly rateLimiter: RateLimiterService,
   ) {}
 
   private getContext(req: Request, customUserId?: string): RequestContext {
@@ -126,7 +149,11 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change password for logged-in user' })
   @ApiResponse({ type: SuccessResponseDto })
-  async changePassword(@Req() req: Request, @CurrentUser() user: any, @Body() dto: ChangePasswordDto) {
+  async changePassword(
+    @Req() req: Request,
+    @CurrentUser() user: any,
+    @Body() dto: ChangePasswordDto,
+  ) {
     const context = this.getContext(req, user.id);
     await this.authService.changePassword(user.id, dto, context);
     return { message: 'Password updated successfully' };
@@ -137,9 +164,45 @@ export class AuthController {
   @Delete('sessions/:id')
   @ApiOperation({ summary: 'Admin session revocation by ID' })
   @ApiResponse({ type: SuccessResponseDto })
-  async revokeSession(@Param('id') sessionId: string, @Req() req: Request, @CurrentUser() user: any) {
+  async revokeSession(
+    @Param('id') sessionId: string,
+    @Req() req: Request,
+    @CurrentUser() user: any,
+  ) {
     const context = this.getContext(req, user.id);
     await this.authService.revokeSession(user.id, sessionId, context);
     return { message: 'Session revoked successfully' };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('mfa/setup')
+  @ApiOperation({ summary: 'Initiate MFA setup and generate secret QR code' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async mfaSetup(@CurrentUser() user: any) {
+    const data = await this.authService.mfaSetup(user.id, user.email);
+    return { message: 'MFA setup initiated successfully', data };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('mfa/verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify code and enable MFA' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async mfaVerify(@CurrentUser() user: any, @Body() dto: { code: string }) {
+    const data = await this.authService.mfaVerify(user.id, dto.code);
+    return { message: 'MFA enabled successfully', data };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('mfa/disable')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Disable MFA' })
+  @ApiResponse({ type: SuccessResponseDto })
+  async mfaDisable(@CurrentUser() user: any) {
+    const data = await this.authService.mfaDisable(user.id);
+    return { message: 'MFA disabled successfully', data };
   }
 }

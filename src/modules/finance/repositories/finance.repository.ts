@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma.service';
-import { Prisma, InvoiceStatus, EstimateStatus, ExpenseStatus } from '@prisma/client';
+import {
+  Prisma,
+  InvoiceStatus,
+  EstimateStatus,
+  ExpenseStatus,
+} from '@prisma/client';
 
 @Injectable()
 export class FinanceRepository {
@@ -53,7 +58,13 @@ export class FinanceRepository {
   async createExpense(data: Prisma.ExpenseUncheckedCreateInput) {
     return this.prisma.expense.create({
       data,
-      include: { category: true, project: true, user: true, vendor: true, currency: true },
+      include: {
+        category: true,
+        project: true,
+        user: true,
+        vendor: true,
+        currency: true,
+      },
     });
   }
 
@@ -61,11 +72,21 @@ export class FinanceRepository {
     return this.prisma.expense.update({
       where: { id },
       data,
-      include: { category: true, project: true, user: true, vendor: true, currency: true },
+      include: {
+        category: true,
+        project: true,
+        user: true,
+        vendor: true,
+        currency: true,
+      },
     });
   }
 
-  async findExpenses(filters: { projectId?: string; userId?: string; status?: ExpenseStatus }) {
+  async findExpenses(filters: {
+    projectId?: string;
+    userId?: string;
+    status?: ExpenseStatus;
+  }) {
     const where: Prisma.ExpenseWhereInput = {};
     if (filters.projectId) where.projectId = filters.projectId;
     if (filters.userId) where.userId = filters.userId;
@@ -73,7 +94,13 @@ export class FinanceRepository {
 
     return this.prisma.expense.findMany({
       where,
-      include: { category: true, project: true, user: true, vendor: true, currency: true },
+      include: {
+        category: true,
+        project: true,
+        user: true,
+        vendor: true,
+        currency: true,
+      },
       orderBy: { date: 'desc' },
     });
   }
@@ -81,7 +108,13 @@ export class FinanceRepository {
   async findExpenseById(id: string) {
     return this.prisma.expense.findUnique({
       where: { id },
-      include: { category: true, project: true, user: true, vendor: true, currency: true },
+      include: {
+        category: true,
+        project: true,
+        user: true,
+        vendor: true,
+        currency: true,
+      },
     });
   }
 
@@ -238,7 +271,11 @@ export class FinanceRepository {
     });
   }
 
-  async findInvoices(filters: { clientId?: string; projectId?: string; status?: InvoiceStatus }) {
+  async findInvoices(filters: {
+    clientId?: string;
+    projectId?: string;
+    status?: InvoiceStatus;
+  }) {
     const where: Prisma.InvoiceWhereInput = {};
     if (filters.clientId) where.clientId = filters.clientId;
     if (filters.projectId) where.projectId = filters.projectId;
@@ -259,7 +296,9 @@ export class FinanceRepository {
         client: true,
         currency: true,
         timelines: { orderBy: { createdAt: 'asc' } },
-        payments: { include: { payment: { include: { paymentMethod: true } } } },
+        payments: {
+          include: { payment: { include: { paymentMethod: true } } },
+        },
         creditNotes: true,
         debitNotes: true,
       },
@@ -278,7 +317,9 @@ export class FinanceRepository {
     });
   }
 
-  async createInvoiceTimeline(data: Prisma.InvoiceTimelineUncheckedCreateInput) {
+  async createInvoiceTimeline(
+    data: Prisma.InvoiceTimelineUncheckedCreateInput,
+  ) {
     return this.prisma.invoiceTimeline.create({ data });
   }
 
@@ -290,26 +331,36 @@ export class FinanceRepository {
     });
   }
 
-  async createPaymentAllocation(data: Prisma.InvoicePaymentAllocationUncheckedCreateInput) {
+  async createPaymentAllocation(
+    data: Prisma.InvoicePaymentAllocationUncheckedCreateInput,
+  ) {
     return this.prisma.invoicePaymentAllocation.create({ data });
   }
 
   async findPaymentById(id: string) {
     return this.prisma.invoicePayment.findUnique({
       where: { id },
-      include: { allocations: { include: { invoice: true } }, paymentMethod: true },
+      include: {
+        allocations: { include: { invoice: true } },
+        paymentMethod: true,
+      },
     });
   }
 
   // Recurring Invoices
-  async createRecurringInvoice(data: Prisma.RecurringInvoiceUncheckedCreateInput) {
+  async createRecurringInvoice(
+    data: Prisma.RecurringInvoiceUncheckedCreateInput,
+  ) {
     return this.prisma.recurringInvoice.create({
       data,
       include: { client: true, currency: true },
     });
   }
 
-  async updateRecurringInvoice(id: string, data: Prisma.RecurringInvoiceUncheckedUpdateInput) {
+  async updateRecurringInvoice(
+    id: string,
+    data: Prisma.RecurringInvoiceUncheckedUpdateInput,
+  ) {
     return this.prisma.recurringInvoice.update({
       where: { id },
       data,
@@ -374,7 +425,10 @@ export class FinanceRepository {
     });
   }
 
-  async createJournalEntry(data: Prisma.JournalEntryUncheckedCreateInput, lines: Prisma.JournalLineUncheckedCreateWithoutJournalEntryInput[]) {
+  async createJournalEntry(
+    data: Prisma.JournalEntryUncheckedCreateInput,
+    lines: Prisma.JournalLineUncheckedCreateWithoutJournalEntryInput[],
+  ) {
     return this.prisma.journalEntry.create({
       data: {
         ...data,

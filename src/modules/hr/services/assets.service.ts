@@ -1,18 +1,22 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { HrRepository } from '../repositories/hr.repository';
 import { CreateAssetAssignmentDto, ReturnAssetDto } from '../dto/assets.dto';
 import { RequestContext } from '../../../common/interfaces/request-context.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
-import { AssetStatus } from '@prisma/client';
+import { AssetStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class AssetsService {
   constructor(
     private readonly repository: HrRepository,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {}
 
-  async assignAsset(employeeProfileId: string, dto: CreateAssetAssignmentDto, context: RequestContext) {
+  async assignAsset(
+    employeeProfileId: string,
+    dto: CreateAssetAssignmentDto,
+    context: RequestContext,
+  ) {
     const profile = await this.repository.findProfileById(employeeProfileId);
     if (!profile) throw new NotFoundException('Employee profile not found');
 
@@ -28,26 +32,50 @@ export class AssetsService {
       status: AssetStatus.ASSIGNED,
     });
 
-    this.logger.audit(context.userId, 'Assign Asset to Employee', 'assetAssignment', assignment, { after: assignment });
+    this.logger.audit(
+      context.userId,
+      'Assign Asset to Employee',
+      'assetAssignment',
+      assignment,
+      { after: assignment },
+    );
     return assignment;
   }
 
-  async updateAssetStatus(id: string, dto: ReturnAssetDto, context: RequestContext) {
+  async updateAssetStatus(
+    id: string,
+    dto: ReturnAssetDto,
+    context: RequestContext,
+  ) {
     const before = await this.repository.findAssetAssignmentById(id);
     if (!before) throw new NotFoundException('Asset assignment not found');
 
-    const updateData: any = { status: dto.status };
+    const updateData: Prisma.AssetAssignmentUncheckedUpdateInput = {
+      status: dto.status,
+    };
     if (dto.status === AssetStatus.RETURNED) {
-      updateData.returnedDate = dto.returnedDate ? new Date(dto.returnedDate) : new Date();
+      updateData.returnedDate = dto.returnedDate
+        ? new Date(dto.returnedDate)
+        : new Date();
     }
 
     const updated = await this.repository.updateAssetAssignment(id, updateData);
-    this.logger.audit(context.userId, `Update Asset Status to ${dto.status}`, 'assetAssignment', updated, { before, after: updated });
+    this.logger.audit(
+      context.userId,
+      `Update Asset Status to ${dto.status}`,
+      'assetAssignment',
+      updated,
+      { before, after: updated },
+    );
     return updated;
   }
 
   async getAssetAssignments(employeeProfileId: string) {
     return this.repository.findAssetAssignments(employeeProfileId);
+  }
+
+  async getAllAssetAssignments() {
+    return this.repository.findManyAssetAssignments();
   }
 
   async getAssetAssignmentById(id: string) {

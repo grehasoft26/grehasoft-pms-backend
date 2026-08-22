@@ -8,7 +8,9 @@ describe('RankingsService', () => {
 
   beforeEach(async () => {
     const mockRepository = {
-      logKeywordRanking: jest.fn().mockImplementation((tenantId, data) => ({ id: 'rank-1', ...data })),
+      logKeywordRanking: jest
+        .fn()
+        .mockImplementation((tenantId, data) => ({ id: 'rank-1', ...data })),
       findKeywords: jest.fn().mockResolvedValue([
         { id: 'kw-1', term: 'pms' },
         { id: 'kw-2', term: 'software' },
@@ -16,7 +18,8 @@ describe('RankingsService', () => {
       prisma: {
         keywordRanking: {
           findFirst: jest.fn().mockImplementation(({ where }) => {
-            if (where.keywordId === 'kw-1') return Promise.resolve({ position: 3 });
+            if (where.keywordId === 'kw-1')
+              return Promise.resolve({ position: 3 });
             return Promise.resolve({ position: 22 });
           }),
         },

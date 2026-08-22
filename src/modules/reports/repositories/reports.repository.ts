@@ -48,7 +48,11 @@ export class ReportsRepository {
     });
   }
 
-  async findDefinitions(tenantId: string, categoryId?: string, search?: string) {
+  async findDefinitions(
+    tenantId: string,
+    categoryId?: string,
+    search?: string,
+  ) {
     const where: any = this.tenantWhere(tenantId);
     if (categoryId) where.categoryId = categoryId;
     if (search) {
@@ -57,7 +61,10 @@ export class ReportsRepository {
         { code: { contains: search } },
       ];
     }
-    return this.prisma.reportDefinition.findMany({ where, include: { category: true } });
+    return this.prisma.reportDefinition.findMany({
+      where,
+      include: { category: true },
+    });
   }
 
   async findDefinitionById(tenantId: string, id: string) {
@@ -87,7 +94,11 @@ export class ReportsRepository {
     });
   }
 
-  async findVersionBySemver(tenantId: string, reportDefinitionId: string, version: string) {
+  async findVersionBySemver(
+    tenantId: string,
+    reportDefinitionId: string,
+    version: string,
+  ) {
     return this.prisma.reportVersion.findFirst({
       where: this.tenantWhere(tenantId, { reportDefinitionId, version }),
     });
@@ -120,10 +131,7 @@ export class ReportsRepository {
     // Return custom owner dashboards or shared with user/roles
     return this.prisma.dashboard.findMany({
       where: this.tenantWhere(tenantId, {
-        OR: [
-          { ownerId: userId },
-          { shares: { some: { userId } } },
-        ],
+        OR: [{ ownerId: userId }, { shares: { some: { userId } } }],
       }),
       include: { owner: true, widgets: { include: { widget: true } } },
     });
@@ -161,14 +169,15 @@ export class ReportsRepository {
     });
   }
 
-  async findSavedFilters(tenantId: string, reportDefinitionId: string, userId: string) {
+  async findSavedFilters(
+    tenantId: string,
+    reportDefinitionId: string,
+    userId: string,
+  ) {
     return this.prisma.savedFilter.findMany({
       where: this.tenantWhere(tenantId, {
         reportDefinitionId,
-        OR: [
-          { scope: 'GLOBAL' },
-          { userId },
-        ],
+        OR: [{ scope: 'GLOBAL' }, { userId }],
       }),
     });
   }
@@ -239,7 +248,11 @@ export class ReportsRepository {
     });
   }
 
-  async recordKpiSnapshot(tenantId: string, kpiDefinitionId: string, value: number) {
+  async recordKpiSnapshot(
+    tenantId: string,
+    kpiDefinitionId: string,
+    value: number,
+  ) {
     return this.prisma.kpiSnapshot.create({
       data: {
         tenantId,
@@ -271,7 +284,11 @@ export class ReportsRepository {
   }
 
   // Favorites & Recent
-  async toggleFavorite(tenantId: string, userId: string, reportDefinitionId: string) {
+  async toggleFavorite(
+    tenantId: string,
+    userId: string,
+    reportDefinitionId: string,
+  ) {
     const existing = await this.prisma.reportFavorite.findFirst({
       where: { tenantId, userId, reportDefinitionId },
     });
@@ -285,7 +302,11 @@ export class ReportsRepository {
     return { favorited: true };
   }
 
-  async logRecentOpen(tenantId: string, userId: string, reportDefinitionId: string) {
+  async logRecentOpen(
+    tenantId: string,
+    userId: string,
+    reportDefinitionId: string,
+  ) {
     return this.prisma.recentlyOpenedReport.create({
       data: { tenantId, userId, reportDefinitionId },
     });

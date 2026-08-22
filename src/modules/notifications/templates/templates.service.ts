@@ -18,9 +18,10 @@ export class NotificationTemplateService {
   }
 
   async getTemplate(tenantId: string, code: string) {
-    const template = await this.repository.prisma.notificationTemplate.findFirst({
-      where: { tenantId, code },
-    });
+    const template =
+      await this.repository.prisma.notificationTemplate.findFirst({
+        where: { tenantId, code },
+      });
     if (!template) {
       // Fallback system template check
       return this.repository.prisma.notificationTemplate.findUnique({
