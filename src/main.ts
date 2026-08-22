@@ -80,19 +80,19 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
 
-  const port = configService.get<number>('app.port') || 3000;
+  const port = Number(process.env.PORT) || 3000;
 
-  await app.listen(port);
+await app.listen(port, '0.0.0.0');
 
-  logger.log(`==================================================`, 'Bootstrap');
-  logger.log(
-    `🚀 Grehasoft backend is running on: http://localhost:${port}/api/v1`,
-    'Bootstrap',
-  );
-  logger.log(
-    `📑 Swagger Documentation is available on: http://localhost:${port}/docs`,
-    'Bootstrap',
-  );
-  logger.log(`==================================================`, 'Bootstrap');
+logger.log(`==================================================`, 'Bootstrap');
+logger.log(
+  `🚀 Grehasoft backend is running on port ${port}`,
+  'Bootstrap',
+);
+logger.log(
+  `📑 Swagger Documentation is available on port ${port}/docs`,
+  'Bootstrap',
+);
+logger.log(`==================================================`, 'Bootstrap');
 }
 bootstrap();
