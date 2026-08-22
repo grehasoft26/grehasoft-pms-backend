@@ -50,7 +50,10 @@
     "rxjs": "^7.8.1",
     "uuid": "^14.0.1",
     "winston": "^3.19.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^5.0.0",
+     "@types/pdfkit": "^0.17.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -59,12 +62,11 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@types/bcryptjs": "^2.4.6",
-    "@types/compression": "^1.8.1",
-    "@types/express": "^5.0.0",
+   
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/nodemailer": "^8.0.1",
-    "@types/pdfkit": "^0.17.6",
+   
     "@types/supertest": "^7.0.0",
     "@types/uuid": "^10.0.0",
     "eslint": "^9.18.0",
